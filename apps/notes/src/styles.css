@@ -13,8 +13,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    linear-gradient(120deg, rgba(13, 124, 102, 0.18) 0 25%, transparent 25% 100%),
-    #eef3de;
+    linear-gradient(120deg, rgba(13, 124, 102, 0.18) 0 25%, transparent 25% 100%), #eef3de;
 }
 
 .desk {

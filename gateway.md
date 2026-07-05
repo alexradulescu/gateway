@@ -26,6 +26,8 @@
 - `bun run build` -> build launcher + all sub-apps into `dist`.
 - `bun run preview` -> preview built `dist`, closest to Vercel.
 - `bun run typecheck` -> TS check all apps.
+- `bun run lint` -> oxlint all apps.
+- `bun run format` -> oxfmt all supported files.
 
 ## Add New App
 
@@ -59,3 +61,12 @@
 - Keep registry small, readable, human-owned.
 - Do not hand-edit generated `dist`.
 - Test deploy shape with `bun run build` then `bun run preview`.
+
+## Package Policy
+
+- Shared boring deps live in root `package.json`.
+- Experiment-specific deps may live in `apps/my-app/package.json`.
+- Router/UI experiments can differ per app.
+- Avoid different React major versions across apps.
+- styled-static is available for styling; Vite plugin must run before React plugin.
+- TanStack Router is available; add router plugin per app only when file routes need it.
