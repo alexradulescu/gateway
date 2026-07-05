@@ -1,0 +1,167 @@
+:root {
+  color: #1e1c18;
+  background: #f4f0e7;
+  font-family:
+    ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    linear-gradient(90deg, rgba(30, 28, 24, 0.05) 1px, transparent 1px) 0 0 / 72px 72px,
+    linear-gradient(rgba(30, 28, 24, 0.05) 1px, transparent 1px) 0 0 / 72px 72px,
+    #f4f0e7;
+}
+
+a {
+  color: inherit;
+}
+
+.shell {
+  width: min(1120px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 56px 0;
+}
+
+.hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 260px;
+  border-bottom: 2px solid #1e1c18;
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 760px;
+  margin: 0 0 32px;
+  font-size: clamp(3.4rem, 12vw, 9rem);
+  line-height: 0.86;
+  letter-spacing: 0;
+}
+
+.new-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 16px;
+  margin-bottom: 36px;
+  border: 2px solid #1e1c18;
+  background: #f8c24a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 5px 5px 0 #1e1c18;
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  padding: 28px 0 0;
+}
+
+.app-card {
+  --accent: #d64550;
+  display: grid;
+  min-height: 260px;
+  padding: 20px;
+  border: 2px solid #1e1c18;
+  background: #fffaf0;
+  text-decoration: none;
+  box-shadow: 7px 7px 0 #1e1c18;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.app-card:hover {
+  transform: translate(-2px, -2px);
+  background: color-mix(in srgb, var(--accent) 14%, #fffaf0);
+  box-shadow: 10px 10px 0 #1e1c18;
+}
+
+.app-number,
+.open-link {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 800;
+}
+
+.app-number {
+  color: var(--accent);
+}
+
+.app-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 34px 0 24px;
+  border: 2px solid #1e1c18;
+  background: var(--accent);
+  color: #fffaf0;
+}
+
+.app-name {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.app-description {
+  display: block;
+  max-width: 34ch;
+  margin-top: 12px;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.open-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  margin-top: 38px;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    padding: 32px 0;
+  }
+
+  .hero {
+    display: block;
+    min-height: auto;
+  }
+
+  h1 {
+    margin-bottom: 22px;
+  }
+
+  .new-app {
+    margin-bottom: 28px;
+  }
+}

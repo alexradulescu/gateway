@@ -1,0 +1,27 @@
+{
+  "name": "gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --cwd apps/main dev",
+    "build": "bun scripts/build-all.ts",
+    "preview": "bun run --cwd apps/main preview",
+    "typecheck": "bun run typecheck:all",
+    "typecheck:all": "bun run --cwd apps/main typecheck && bun run --cwd apps/counter typecheck && bun run --cwd apps/notes typecheck"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "dependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}

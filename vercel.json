@@ -1,0 +1,16 @@
+{
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
+  "installCommand": "bun install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/counter/:path*",
+      "destination": "/counter/index.html"
+    },
+    {
+      "source": "/notes/:path*",
+      "destination": "/notes/index.html"
+    }
+  ]
+}
