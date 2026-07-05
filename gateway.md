@@ -62,6 +62,14 @@
 - Do not hand-edit generated `dist`.
 - Test deploy shape with `bun run build` then `bun run preview`.
 
+## Repo-Local Skills
+
+- `.agents/skills` contains repo-local agent skills.
+- `.claude/skills` mirrors same skills for Claude-compatible tooling.
+- Matt Pocock skills are vendored from `mattpocock/skills`.
+- Caveman skill is vendored at `misc/caveman`.
+- Prefer repo-local skills when working in this repo.
+
 ## Package Policy
 
 - Shared boring deps live in root `package.json`.
