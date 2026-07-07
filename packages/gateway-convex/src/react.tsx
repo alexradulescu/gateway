@@ -10,7 +10,7 @@ export function getGatewayConvexUrl() {
     throw new Error("Missing VITE_CONVEX_URL. Set it to your Convex .convex.cloud deployment URL.");
   }
 
-  return convexUrl;
+  return convexUrl.replace(/\/+$/, "");
 }
 
 export function getGatewayConvexClient() {
