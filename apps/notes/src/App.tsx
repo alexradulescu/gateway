@@ -1,8 +1,8 @@
 import { Plus } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { createGlobalStyle, styled } from "@alex.radulescu/styled-static";
-
-const initialNotes = ["Try TanStack Router here", "Check Vercel nested refreshes"];
+import { api } from "../../../convex/_generated/api";
 
 const GlobalStyle = createGlobalStyle`
   :root {
@@ -106,16 +106,17 @@ const NoteItem = styled.li`
 `;
 
 export function App() {
-  const [notes, setNotes] = useState(initialNotes);
+  const notes = useQuery(api.notes.listCards);
+  const createNote = useMutation(api.notes.createCard);
 
-  function addNote(event: FormEvent<HTMLFormElement>) {
+  async function addNote(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const note = String(data.get("note") ?? "").trim();
 
     if (note.length === 0) return;
 
-    setNotes((current) => [note, ...current]);
+    await createNote({ body: note });
     event.currentTarget.reset();
   }
 
@@ -135,8 +136,10 @@ export function App() {
           </AddButton>
         </NoteForm>
         <NoteList>
-          {notes.map((note, index) => (
-            <NoteItem key={`${note}-${index}`}>{note}</NoteItem>
+          {notes === undefined && <NoteItem>Loading notes...</NoteItem>}
+          {notes !== undefined && notes.length === 0 && <NoteItem>No notes yet.</NoteItem>}
+          {notes?.map((note) => (
+            <NoteItem key={note._id}>{note.body}</NoteItem>
           ))}
         </NoteList>
       </NotesSection>
