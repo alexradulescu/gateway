@@ -35,7 +35,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Component, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { createGlobalStyle, styled } from "@alex.radulescu/styled-static";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
@@ -279,6 +279,44 @@ const EmptyState = styled.div`
   background: rgba(255, 255, 255, 0.72);
 `;
 
+const StatePanel = styled.section`
+  display: grid;
+  gap: 14px;
+  max-width: 720px;
+  padding: 22px;
+  border: 1px solid #dfe3ec;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 48px rgba(20, 24, 33, 0.08);
+`;
+
+const StateTitle = styled.h2`
+  margin: 0;
+  color: #202124;
+  font-size: 1.2rem;
+  letter-spacing: 0;
+`;
+
+const StateText = styled.p`
+  margin: 0;
+  color: #596172;
+  line-height: 1.55;
+`;
+
+const ErrorText = styled.pre`
+  max-height: 180px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #ffd3d3;
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #8a1f1f;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+`;
+
 const TaskRowRoot = styled.div`
   display: grid;
   grid-template-columns: 32px 32px minmax(0, 1fr) auto auto 34px;
@@ -506,6 +544,68 @@ function useAutosaveToast() {
   }
 
   return { toast, showToast };
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function AppStateShell({
+  action,
+  message,
+  title,
+}: {
+  action?: ReactNode;
+  message: ReactNode;
+  title: string;
+}) {
+  return (
+    <Shell>
+      <GlobalStyle />
+      <Sidebar>
+        <Brand href="/">Tasks</Brand>
+      </Sidebar>
+      <MobileHeader>
+        <Brand href="/">Tasks</Brand>
+      </MobileHeader>
+      <Content>
+        <Topbar>
+          <TitleBlock>
+            <Kicker>Tasks</Kicker>
+            <Title>Tasks</Title>
+          </TitleBlock>
+        </Topbar>
+        <StatePanel>
+          <StateTitle>{title}</StateTitle>
+          <StateText>{message}</StateText>
+          {action}
+        </StatePanel>
+      </Content>
+    </Shell>
+  );
+}
+
+export class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <AppStateShell
+          title="Tasks could not load"
+          message="The app hit a runtime error while loading task data. This usually means the Convex backend for this preview is not deployed or the browser cannot reach it."
+          action={<ErrorText>{getErrorMessage(this.state.error)}</ErrorText>}
+        />
+      );
+    }
+
+    return this.props.children;
+  }
 }
 
 function SortableGroup({
@@ -906,6 +1006,8 @@ export function App() {
   const isMobile = useMediaQuery("(max-width: 860px)");
   const drawerState = useOverlayState();
   const { toast, showToast } = useAutosaveToast();
+  const setupAttempted = useRef(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<View | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
@@ -914,8 +1016,10 @@ export function App() {
   const tasks = useMemo<Task[]>(() => data?.tasks ?? [], [data?.tasks]);
 
   useEffect(() => {
-    if (data && data.groups.length === 0) {
-      void ensureDefaults();
+    if (data && data.groups.length === 0 && !setupAttempted.current) {
+      setupAttempted.current = true;
+      setSetupError(null);
+      void ensureDefaults().catch((error: unknown) => setSetupError(getErrorMessage(error)));
     }
   }, [data, ensureDefaults]);
 
@@ -1005,6 +1109,46 @@ export function App() {
       }}
     />
   );
+
+  if (data === undefined) {
+    return (
+      <AppStateShell
+        title="Loading tasks"
+        message="Connecting to Convex and loading task groups."
+      />
+    );
+  }
+
+  if (groups.length === 0) {
+    return (
+      <AppStateShell
+        title={setupError ? "Tasks setup failed" : "Preparing Inbox"}
+        message={
+          setupError
+            ? "The default Inbox could not be created. Check the Convex deployment, then retry."
+            : "Creating the default group for this workspace."
+        }
+        action={
+          setupError ? (
+            <>
+              <ErrorText>{setupError}</ErrorText>
+              <Button
+                variant="primary"
+                onPress={() => {
+                  setSetupError(null);
+                  void ensureDefaults().catch((error: unknown) =>
+                    setSetupError(getErrorMessage(error)),
+                  );
+                }}
+              >
+                Retry
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
+    );
+  }
 
   return (
     <Shell>
