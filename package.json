@@ -2,12 +2,15 @@
   "name": "gateway",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "type": "module",
   "scripts": {
     "dev": "bun run --cwd apps/main dev",
     "build": "bun scripts/build-all.ts",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy",
     "preview": "bun run --cwd apps/main preview",
     "lint": "oxlint . --react-plugin --jsx-a11y-plugin",
     "lint:fix": "oxlint . --react-plugin --jsx-a11y-plugin --fix",
@@ -21,6 +24,7 @@
     "@tanstack/react-router": "^1.170.17",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "convex": "^1.30.0",
     "lucide-react": "latest",
     "nuqs": "^2.9.0",
     "react": "latest",

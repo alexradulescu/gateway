@@ -1,0 +1,12 @@
+{
+  "name": "@gateway/convex",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./react": "./src/react.tsx"
+  },
+  "peerDependencies": {
+    "convex": "^1.30.0",
+    "react": "latest"
+  }
+}

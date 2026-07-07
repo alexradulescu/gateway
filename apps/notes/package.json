@@ -7,5 +7,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@gateway/convex": "workspace:*"
   }
 }
