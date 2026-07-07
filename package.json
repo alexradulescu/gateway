@@ -17,10 +17,15 @@
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
     "typecheck": "bun run typecheck:all",
-    "typecheck:all": "bun run --cwd apps/main typecheck && bun run --cwd apps/counter typecheck && bun run --cwd apps/notes typecheck"
+    "typecheck:all": "bun run --cwd apps/main typecheck && bun run --cwd apps/counter typecheck && bun run --cwd apps/notes typecheck && bun run --cwd apps/tasks typecheck"
   },
   "dependencies": {
     "@alex.radulescu/styled-static": "^0.12.1",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@heroui/react": "^3.2.2",
+    "@heroui/styles": "^3.2.2",
     "@tanstack/react-router": "^1.170.17",
     "@types/react": "latest",
     "@types/react-dom": "latest",
@@ -29,14 +34,18 @@
     "nuqs": "^2.9.0",
     "react": "latest",
     "react-dom": "latest",
+    "tailwind-variants": "^3.2.2",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
     "@tanstack/intent": "^0.3.5",
     "@tanstack/router-plugin": "^1.168.19",
     "@vitejs/plugin-react": "latest",
     "oxfmt": "^0.57.0",
     "oxlint": "^1.72.0",
+    "postcss": "^8.5.16",
+    "tailwindcss": "^4.3.2",
     "typescript": "latest",
     "vite": "latest"
   }

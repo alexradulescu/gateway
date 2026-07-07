@@ -9,11 +9,13 @@
  */
 
 import type * as notes from "../notes.js";
+import type * as tasks from "../tasks.js";
 
 import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
   notes: typeof notes;
+  tasks: typeof tasks;
 }>;
 
 /**

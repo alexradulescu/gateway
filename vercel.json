@@ -11,6 +11,10 @@
     {
       "source": "/notes/:path*",
       "destination": "/notes/index.html"
+    },
+    {
+      "source": "/tasks/:path*",
+      "destination": "/tasks/index.html"
     }
   ]
 }
