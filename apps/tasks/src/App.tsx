@@ -290,6 +290,13 @@ const StatePanel = styled.section`
   box-shadow: 0 18px 48px rgba(20, 24, 33, 0.08);
 `;
 
+const EmptyPanel = styled(StatePanel)`
+  align-items: start;
+  max-width: none;
+  min-height: 220px;
+  place-content: center;
+`;
+
 const StateTitle = styled.h2`
   margin: 0;
   color: #202124;
@@ -583,6 +590,24 @@ function AppStateShell({
         </StatePanel>
       </Content>
     </Shell>
+  );
+}
+
+function ViewEmptyState({
+  action,
+  message,
+  title,
+}: {
+  action?: ReactNode;
+  message: string;
+  title: string;
+}) {
+  return (
+    <EmptyPanel>
+      <StateTitle>{title}</StateTitle>
+      <StateText>{message}</StateText>
+      {action}
+    </EmptyPanel>
   );
 }
 
@@ -1069,7 +1094,11 @@ export function App() {
   async function addTask() {
     const groupId = selectedView?.type === "group" ? selectedView.groupId : groups[0]?._id;
     if (!groupId) return;
-    await createTask({ groupId, title: "New task" });
+    await createTask({
+      groupId,
+      dueDate: selectedView?.type === "today" ? todayString() : undefined,
+      title: "New task",
+    });
   }
 
   function handleTaskReorder(event: DragEndEvent) {
@@ -1109,6 +1138,39 @@ export function App() {
       }}
     />
   );
+  const hasVisibleTasks = activeTasks.length > 0 || doneTasks.length > 0;
+  const emptyState =
+    selectedView?.type === "today"
+      ? {
+          action: (
+            <Button variant="primary" onPress={addTask}>
+              <Plus size={18} />
+              New Task
+            </Button>
+          ),
+          message: "No active tasks are due today.",
+          title: "Today is clear",
+        }
+      : selectedView?.type === "upcoming"
+        ? {
+            message: "Tasks with future due dates will appear here.",
+            title: "No upcoming tasks",
+          }
+        : selectedView?.type === "done"
+          ? {
+              message: "Completed tasks will appear here.",
+              title: "No done tasks",
+            }
+          : {
+              action: (
+                <Button variant="primary" onPress={addTask}>
+                  <Plus size={18} />
+                  New Task
+                </Button>
+              ),
+              message: `Add tasks to ${selectedGroup?.name ?? "this group"} to start planning.`,
+              title: "No tasks yet",
+            };
 
   if (data === undefined) {
     return (
@@ -1179,9 +1241,14 @@ export function App() {
         </Topbar>
 
         <TaskListShell>
-          {data === undefined && <EmptyState>Loading tasks...</EmptyState>}
-          {data !== undefined && !groups.length && <EmptyState>Preparing Inbox...</EmptyState>}
-          {data !== undefined && groups.length > 0 && (
+          {!hasVisibleTasks && (
+            <ViewEmptyState
+              action={emptyState.action}
+              message={emptyState.message}
+              title={emptyState.title}
+            />
+          )}
+          {hasVisibleTasks && (
             <DndContext
               collisionDetection={closestCenter}
               sensors={sensors}
@@ -1195,7 +1262,9 @@ export function App() {
                 <Card>
                   <Card.Content>
                     <TaskList>
-                      {activeTasks.length === 0 && <EmptyState>No active tasks.</EmptyState>}
+                      {activeTasks.length === 0 && (
+                        <EmptyState>No active tasks in this view.</EmptyState>
+                      )}
                       <SortableContext
                         items={activeTasks.map((task) => task._id)}
                         strategy={verticalListSortingStrategy}
@@ -1224,7 +1293,9 @@ export function App() {
                 <Card>
                   <Card.Content>
                     <TaskList>
-                      {doneTasks.length === 0 && <EmptyState>No done tasks.</EmptyState>}
+                      {doneTasks.length === 0 && (
+                        <EmptyState>Done tasks will appear here.</EmptyState>
+                      )}
                       <SortableContext
                         items={doneTasks.map((task) => task._id)}
                         strategy={verticalListSortingStrategy}

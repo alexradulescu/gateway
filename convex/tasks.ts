@@ -131,6 +131,7 @@ export const reorderGroups = mutation({
 export const createTask = mutation({
   args: {
     groupId: v.optional(v.id("task_groups")),
+    dueDate: v.optional(v.string()),
     title: v.string(),
   },
   handler: async (ctx, args) => {
@@ -140,6 +141,7 @@ export const createTask = mutation({
     return await ctx.db.insert("tasks", {
       groupId,
       title: cleanTitle(args.title),
+      dueDate: cleanOptionalText(args.dueDate),
       priority: "P4",
       done: false,
       order: now,
