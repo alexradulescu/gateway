@@ -48,7 +48,7 @@ export function GroupDrawer({
         onOpenChange={(open) => !open && close()}
       >
         <Drawer.Content placement="bottom">
-          <Drawer.Dialog className="things-glass things-glass--drawer things-group-drawer">
+          <Drawer.Dialog className="things-frosted things-group-drawer">
             <div ref={setOverlayPortal} className="things-item-overlay-root" />
             <GroupDrawerHeader openedGroup={openedGroup} onClose={close} />
             <Drawer.Body className="things-group-drawer__body">
@@ -150,6 +150,7 @@ function GroupDrawerHeader({
         {isEditing ? (
           <form ref={renameFormRef} onSubmit={submitRename}>
             <TextField
+              aria-label="Group name"
               isInvalid={Boolean(error)}
               isDisabled={isSaving}
               value={name}
@@ -229,11 +230,7 @@ function GroupSwitcher({ currentGroupId }: { currentGroupId: string }) {
         }}
       >
         {home.groups.map((group) => (
-          <ToggleButton
-            className="things-group-toggle things-glass--control"
-            id={group._id}
-            key={group._id}
-          >
+          <ToggleButton className="things-group-toggle" id={group._id} key={group._id}>
             {group.name}
           </ToggleButton>
         ))}

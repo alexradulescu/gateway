@@ -44,7 +44,7 @@ export function ConfirmAction({
         onOpenChange={isPending ? undefined : setIsOpen}
       >
         <AlertDialog.Container>
-          <AlertDialog.Dialog className="things-glass things-glass--popover">
+          <AlertDialog.Dialog className="things-frosted things-confirm-dialog">
             <AlertDialog.Header>
               <AlertDialog.Icon status="danger" />
               <AlertDialog.Heading>{title}</AlertDialog.Heading>

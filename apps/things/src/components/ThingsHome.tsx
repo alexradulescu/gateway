@@ -15,14 +15,11 @@ export function ThingsHome() {
   return (
     <main className="things-shell">
       <header className="things-header">
-        <a className="things-back-link" href="/">
-          Gateway
-        </a>
         <h1>Things</h1>
         <p>Shared lists, without the ceremony.</p>
       </header>
 
-      <Surface className="things-glass things-glass--panel things-group-surface">
+      <Surface className="things-frosted things-group-surface">
         {home.groups.length === 0 ? (
           <p className="things-empty">Add your first household list below.</p>
         ) : (
@@ -108,8 +105,9 @@ function AddGroupRow() {
   }
 
   return (
-    <form ref={formRef} className="things-add-group things-glass--control" onSubmit={submit}>
+    <form ref={formRef} className="things-add-group" onSubmit={submit}>
       <TextField
+        aria-label="Group name"
         className="things-add-group__field"
         isInvalid={Boolean(error)}
         isDisabled={isPending}

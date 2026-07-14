@@ -48,6 +48,7 @@ export function CatalogueComboBox({
     <ComboBox
       allowsCustomValue
       allowsEmptyCollection
+      aria-label={label}
       className="things-combobox"
       defaultFilter={keepPreRankedMatch}
       inputValue={value}
@@ -90,7 +91,7 @@ export function CatalogueComboBox({
         />
       </ComboBox.InputGroup>
       {value.trim() && (
-        <ComboBox.Popover className="things-glass things-glass--popover">
+        <ComboBox.Popover className="things-frosted">
           <ListBox
             items={matches}
             renderEmptyState={() => (

@@ -3,7 +3,8 @@ import {
   closestCenter,
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -44,7 +45,10 @@ export function SortableList<Item extends { _id: string }>({
   const [orderedItems, setOrderedItems] = useState(items);
   const [isSaving, setIsSaving] = useState(false);
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // TouchSensor installs the non-passive touchmove listener required by iOS Safari.
+    // A short hold avoids accidental reorders while keeping the dedicated handle responsive.
+    useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const displayedItems = isSaving ? orderedItems : items;

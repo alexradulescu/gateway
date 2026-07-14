@@ -39,7 +39,7 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
   }
 
   return (
-    <form ref={formRef} className="things-add-item things-glass--control" onSubmit={submit}>
+    <form ref={formRef} className="things-add-item" onSubmit={submit}>
       <CatalogueComboBox
         key={focusVersion}
         shouldFocus={focusVersion > 0}
@@ -54,6 +54,7 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
       />
       <Separator className="things-separator" orientation="vertical" />
       <TextField
+        aria-label="Quantity"
         className="things-add-item__quantity"
         isDisabled={isPending}
         value={quantity}

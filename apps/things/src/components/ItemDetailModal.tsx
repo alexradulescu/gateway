@@ -107,7 +107,7 @@ function ItemDetailForm({
       <div className="things-item-overlay">
         <dialog
           open
-          className="things-glass things-glass--drawer things-item-modal"
+          className="things-frosted things-item-modal"
           aria-labelledby="things-item-dialog-title"
           aria-modal="true"
           onKeyDown={handleKeyDown}

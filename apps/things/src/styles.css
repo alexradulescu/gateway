@@ -19,38 +19,34 @@
   --things-safe-top: max(12px, env(safe-area-inset-top));
   --things-safe-bottom: max(14px, env(safe-area-inset-bottom));
 
-  --things-accent: oklch(0.57 0.105 163);
-  --things-accent-strong: oklch(0.46 0.105 163);
-  --things-accent-ink: oklch(0.985 0.005 163);
-  --things-accent-soft: color-mix(in oklab, var(--things-accent) 13%, transparent);
-  --things-danger: oklch(0.55 0.19 25);
-  --things-danger-soft: color-mix(in oklab, var(--things-danger) 10%, transparent);
+  --things-accent: var(--accent);
+  --things-accent-strong: var(--accent);
+  --things-accent-ink: var(--accent-foreground);
+  --things-accent-soft: var(--accent-soft);
+  --things-danger: var(--danger);
+  --things-danger-soft: var(--danger-soft);
 
-  --things-page-base: oklch(0.965 0.012 158);
-  --things-page-ink: oklch(0.22 0.018 160);
-  --things-page-muted: oklch(0.48 0.02 160);
-  --things-page-faint: oklch(0.61 0.018 160);
+  --things-page-base: var(--background);
+  --things-page-ink: var(--foreground);
+  --things-page-muted: var(--muted);
+  --things-page-faint: color-mix(in oklab, var(--muted) 72%, transparent);
 
   --things-pattern-color: rgb(25 82 67 / 0.075);
   --things-glow-a: rgb(182 225 208 / 0.46);
   --things-glow-b: rgb(225 236 229 / 0.72);
   --things-glow-c: rgb(201 218 234 / 0.28);
 
-  --things-glass-panel: rgb(255 255 255 / 0.62);
-  --things-glass-panel-strong: rgb(255 255 255 / 0.78);
-  --things-glass-control: rgb(255 255 255 / 0.48);
-  --things-glass-popover: rgb(255 255 255 / 0.88);
-  --things-glass-border: rgb(255 255 255 / 0.72);
-  --things-glass-border-subtle: rgb(255 255 255 / 0.48);
-  --things-glass-separator: rgb(27 58 49 / 0.105);
-  --things-scrim: rgb(18 35 30 / 0.18);
+  --things-glass-panel: color-mix(in oklab, var(--surface) 82%, transparent);
+  --things-glass-panel-strong: color-mix(in oklab, var(--overlay) 88%, transparent);
+  --things-glass-control: color-mix(in oklab, var(--field-background) 84%, transparent);
+  --things-glass-popover: color-mix(in oklab, var(--overlay) 92%, transparent);
+  --things-glass-border: color-mix(in oklab, var(--border) 72%, transparent);
+  --things-glass-border-subtle: color-mix(in oklab, var(--border) 58%, transparent);
+  --things-glass-separator: var(--separator);
+  --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
 
-  --things-glass-shadow:
-    0 18px 50px rgb(24 54 45 / 0.13), 0 2px 8px rgb(24 54 45 / 0.07),
-    inset 0 1px 0 rgb(255 255 255 / 0.82), inset 0 -1px 0 rgb(16 35 29 / 0.035);
-  --things-glass-shadow-raised:
-    0 24px 70px rgb(24 54 45 / 0.18), 0 4px 14px rgb(24 54 45 / 0.09),
-    inset 0 1px 0 rgb(255 255 255 / 0.88), inset 0 -1px 0 rgb(16 35 29 / 0.05);
+  --things-glass-shadow: var(--surface-shadow);
+  --things-glass-shadow-raised: var(--overlay-shadow);
 
   --things-radius-panel: 24px;
   --things-radius-drawer: 28px;
@@ -62,38 +58,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --things-accent: oklch(0.7 0.105 163);
-    --things-accent-strong: oklch(0.8 0.09 163);
-    --things-accent-ink: oklch(0.14 0.015 160);
-    --things-accent-soft: color-mix(in oklab, var(--things-accent) 17%, transparent);
-    --things-danger: oklch(0.7 0.16 25);
-    --things-danger-soft: color-mix(in oklab, var(--things-danger) 14%, transparent);
-
-    --things-page-base: oklch(0.17 0.016 160);
-    --things-page-ink: oklch(0.94 0.012 160);
-    --things-page-muted: oklch(0.72 0.018 160);
-    --things-page-faint: oklch(0.59 0.018 160);
-
     --things-pattern-color: rgb(156 216 193 / 0.075);
     --things-glow-a: rgb(37 92 73 / 0.44);
     --things-glow-b: rgb(35 47 43 / 0.62);
     --things-glow-c: rgb(40 58 78 / 0.28);
-
-    --things-glass-panel: rgb(20 28 25 / 0.62);
-    --things-glass-panel-strong: rgb(20 28 25 / 0.82);
-    --things-glass-control: rgb(255 255 255 / 0.055);
-    --things-glass-popover: rgb(17 24 22 / 0.92);
-    --things-glass-border: rgb(255 255 255 / 0.13);
-    --things-glass-border-subtle: rgb(255 255 255 / 0.085);
-    --things-glass-separator: rgb(255 255 255 / 0.085);
-    --things-scrim: rgb(0 0 0 / 0.38);
-
-    --things-glass-shadow:
-      0 22px 62px rgb(0 0 0 / 0.38), 0 3px 12px rgb(0 0 0 / 0.22),
-      inset 0 1px 0 rgb(255 255 255 / 0.12), inset 0 -1px 0 rgb(0 0 0 / 0.2);
-    --things-glass-shadow-raised:
-      0 28px 80px rgb(0 0 0 / 0.48), 0 5px 18px rgb(0 0 0 / 0.28),
-      inset 0 1px 0 rgb(255 255 255 / 0.15), inset 0 -1px 0 rgb(0 0 0 / 0.25);
+    --things-glass-panel: color-mix(in oklab, var(--surface) 76%, transparent);
+    --things-glass-panel-strong: color-mix(in oklab, var(--overlay) 86%, transparent);
+    --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
   }
 }
 
@@ -215,26 +186,6 @@ button {
   line-height: 1.35;
 }
 
-.things-back-link {
-  display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  margin: 0 0 12px -3px;
-  padding: 0 8px;
-  border-radius: 999px;
-  color: var(--things-accent-strong);
-  font-size: 0.74rem;
-  font-weight: 680;
-  text-decoration: none;
-}
-
-.things-back-link::before {
-  margin-right: 5px;
-  content: "‹";
-  font-size: 1.15em;
-  line-height: 1;
-}
-
 .things-eyebrow {
   margin: 0 0 5px;
   color: var(--things-page-muted);
@@ -251,15 +202,14 @@ button {
 
 /* Shared material primitives */
 
-.things-glass {
+.things-frosted {
   border: 1px solid var(--things-glass-border);
-  background: var(--things-glass-panel);
+  background: var(--things-glass-panel-strong);
   box-shadow: var(--things-glass-shadow);
-  -webkit-backdrop-filter: blur(var(--things-blur-panel)) saturate(1.16);
-  backdrop-filter: blur(var(--things-blur-panel)) saturate(1.16);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
-.things-glass--panel,
 .things-group-surface,
 .things-surface {
   overflow: clip;
@@ -267,25 +217,19 @@ button {
   border-radius: var(--things-radius-panel);
   background: var(--things-glass-panel);
   box-shadow: var(--things-glass-shadow);
-  -webkit-backdrop-filter: blur(var(--things-blur-panel)) saturate(1.16);
-  backdrop-filter: blur(var(--things-blur-panel)) saturate(1.16);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
-.things-glass--control,
 .things-control-surface,
 .things-add-group,
 .things-add-item {
   border: 1px solid var(--things-glass-border-subtle);
   border-radius: var(--things-radius-control);
   background: var(--things-glass-control);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.36),
-    0 1px 3px rgb(20 48 40 / 0.06);
-  -webkit-backdrop-filter: blur(var(--things-blur-control)) saturate(1.08);
-  backdrop-filter: blur(var(--things-blur-control)) saturate(1.08);
+  box-shadow: var(--field-shadow);
 }
 
-.things-glass--popover,
 .things-popover,
 .things-combobox-popover,
 .things-toast {
@@ -293,8 +237,8 @@ button {
   border-radius: 18px;
   background: var(--things-glass-popover);
   box-shadow: var(--things-glass-shadow-raised);
-  -webkit-backdrop-filter: blur(var(--things-blur-popover)) saturate(1.2);
-  backdrop-filter: blur(var(--things-blur-popover)) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
 .things-separator {
@@ -401,6 +345,9 @@ button {
   background: transparent;
   cursor: grab;
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .things-drag-handle:active,
@@ -415,7 +362,7 @@ button {
   z-index: 2;
   border-radius: 14px;
   background: var(--things-glass-panel-strong);
-  box-shadow: 0 12px 30px rgb(21 48 39 / 0.16);
+  box-shadow: var(--overlay-shadow);
 }
 
 /* Unified creation controls */
@@ -452,13 +399,17 @@ button {
 }
 
 .things-add-item {
+  position: sticky;
+  z-index: 3;
+  bottom: 0;
   display: grid;
   min-width: 0;
   min-height: 48px;
   grid-template-columns: minmax(0, 1fr) 1px minmax(76px, 28%) 1px 48px;
   align-items: stretch;
   overflow: visible;
-  margin: 12px 0 18px;
+  margin: 8px 0 10px;
+  background: var(--things-glass-popover);
 }
 
 .things-add-item > button {
@@ -580,7 +531,6 @@ body .alert-dialog__backdrop--blur {
 
 .things-drawer,
 .things-drawer-dialog,
-body .things-glass--drawer,
 body .drawer__dialog,
 body .modal__dialog,
 body .alert-dialog__dialog {
@@ -591,13 +541,10 @@ body .alert-dialog__dialog {
   color: var(--things-page-ink);
   background: var(--things-glass-panel-strong);
   box-shadow: var(--things-glass-shadow-raised);
-  -webkit-backdrop-filter: blur(var(--things-blur-popover)) saturate(1.18);
-  backdrop-filter: blur(var(--things-blur-popover)) saturate(1.18);
 }
 
 .things-drawer,
 .things-drawer-dialog,
-body .things-glass--drawer,
 body .drawer__dialog {
   overflow: hidden;
   border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
@@ -606,17 +553,18 @@ body .drawer__dialog {
 .things-group-drawer,
 .things-drawer--group,
 [data-things-drawer="group"] {
-  height: min(94svh, 920px);
-  max-height: 94svh;
   display: flex;
+  width: min(100%, var(--things-max-width));
+  max-height: min(720px, calc(var(--visual-viewport-height, 100dvh) - 8px));
   flex-direction: column;
+  padding: 0;
 }
 
 .things-item-drawer,
 .things-drawer--item,
 [data-things-drawer="item"] {
   z-index: 70;
-  max-height: min(76svh, 660px);
+  max-height: min(660px, calc(var(--visual-viewport-height, 100dvh) - 8px));
 }
 
 .things-item-overlay-root {
@@ -633,11 +581,12 @@ body .drawer__dialog {
 .things-item-overlay {
   position: fixed;
   z-index: 80;
-  inset: 0;
+  inset: auto 0 0;
   display: flex;
+  height: var(--visual-viewport-height, 100dvh);
   align-items: flex-end;
   justify-content: center;
-  padding: 16px;
+  padding: 8px 0 0;
   pointer-events: auto;
   background: var(--things-scrim);
   -webkit-backdrop-filter: blur(5px) saturate(1.04);
@@ -648,7 +597,7 @@ body .drawer__dialog {
   display: flex;
   width: min(100%, var(--things-max-width));
   max-width: var(--things-max-width);
-  max-height: min(76svh, 660px);
+  max-height: min(660px, calc(var(--visual-viewport-height, 100dvh) - 8px));
   flex-direction: column;
   overflow: hidden;
   padding: 0;
@@ -679,8 +628,8 @@ body .alert-dialog__dialog {
   border-radius: 22px;
 }
 
-body .alert-dialog__dialog.things-glass--popover,
-.alert-dialog__dialog.things-glass--popover {
+body .alert-dialog__dialog.things-confirm-dialog,
+.alert-dialog__dialog.things-confirm-dialog {
   width: min(calc(100vw - 24px), 400px);
   margin-inline: 12px;
 }
@@ -689,12 +638,12 @@ body .alert-dialog__dialog.things-glass--popover,
   position: relative;
   z-index: 2;
   display: grid;
-  min-height: 58px;
+  min-height: 52px;
   grid-template-columns: 48px minmax(0, 1fr) 48px;
   align-items: center;
-  padding: 6px 8px 4px;
+  padding: 4px 6px 2px;
   border-bottom: 1px solid var(--things-glass-separator);
-  background: color-mix(in oklab, var(--things-glass-panel-strong) 88%, transparent);
+  background: transparent;
 }
 
 .things-drawer-title,
@@ -795,11 +744,12 @@ body .alert-dialog__dialog.things-glass--popover,
 }
 
 .things-group-drawer__body {
-  flex: 1;
+  min-height: 0;
+  flex: 0 1 auto;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 8px var(--things-page-gutter) var(--things-safe-bottom);
+  padding: 4px 12px max(10px, env(safe-area-inset-bottom));
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -841,8 +791,8 @@ body .alert-dialog__dialog.things-glass--popover,
 
 .things-group-switcher {
   overflow-x: auto;
-  margin: 0 calc(-1 * var(--things-page-gutter));
-  padding: 6px var(--things-page-gutter) 12px;
+  margin: 0 -12px;
+  padding: 6px 12px 10px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -859,26 +809,14 @@ body .alert-dialog__dialog.things-glass--popover,
 
 .things-group-toggle {
   min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--things-glass-border-subtle);
-  border-radius: 999px;
-  color: var(--things-page-muted);
-  background: var(--things-glass-control);
+  padding-inline: 14px;
   font-size: 0.82rem;
-  font-weight: 610;
   white-space: nowrap;
-  cursor: pointer;
-  -webkit-backdrop-filter: blur(var(--things-blur-control));
-  backdrop-filter: blur(var(--things-blur-control));
 }
 
 .things-group-toggle[data-selected="true"],
 .things-group-toggle[aria-pressed="true"] {
-  color: var(--things-accent-strong);
-  background: var(--things-accent-soft);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.3),
-    0 0 0 1px color-mix(in oklab, var(--things-accent) 24%, transparent);
+  box-shadow: none;
 }
 
 /* Item list */
@@ -1070,12 +1008,6 @@ body .alert-dialog__dialog.things-glass--popover,
   width: 100%;
   min-width: 0;
   min-height: 48px;
-  padding: 0 13px;
-  border: 1px solid var(--things-glass-border-subtle);
-  border-radius: var(--things-radius-control);
-  color: var(--things-page-ink);
-  background: var(--things-glass-control);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
 }
 
 .things-item-form .things-combobox .input-group,
@@ -1103,7 +1035,6 @@ body .alert-dialog__dialog.things-glass--popover,
   border: 1px solid var(--things-glass-border-subtle);
   border-radius: var(--things-radius-control);
   background: var(--things-glass-control);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
 }
 
 .things-primary-button,
@@ -1124,9 +1055,6 @@ body .alert-dialog__dialog.things-glass--popover,
 .things-primary-button {
   color: var(--things-accent-ink);
   background: var(--things-accent);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.26),
-    0 7px 20px color-mix(in oklab, var(--things-accent) 24%, transparent);
 }
 
 .things-danger-button {
@@ -1367,12 +1295,10 @@ body .alert-dialog__dialog.things-glass--popover,
 }
 
 @media (forced-colors: active) {
-  .things-glass,
-  .things-glass--panel,
+  .things-frosted,
   .things-group-surface,
   .things-drawer,
   .things-drawer-dialog,
-  .things-glass--control,
   .things-add-group,
   .things-add-item {
     border: 1px solid CanvasText;
@@ -1387,14 +1313,11 @@ body .alert-dialog__dialog.things-glass--popover,
 
 /* Solid, readable materials when backdrop-filter is not available. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .things-glass,
-  .things-glass--panel,
+  .things-frosted,
   .things-group-surface,
-  .things-glass--control,
   .things-control-surface,
   .things-add-group,
   .things-add-item,
-  .things-glass--popover,
   .things-popover,
   .things-combobox-popover,
   .things-toast,

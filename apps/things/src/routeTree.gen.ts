@@ -8,98 +8,96 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as GroupIdRouteRouteImport } from './routes/$groupId/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as GroupIdItemIdRouteImport } from './routes/$groupId/$itemId'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as GroupIdRouteRouteImport } from "./routes/$groupId/route";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as GroupIdItemIdRouteImport } from "./routes/$groupId/$itemId";
 
 const GroupIdRouteRoute = GroupIdRouteRouteImport.update({
-  id: '/$groupId',
-  path: '/$groupId',
+  id: "/$groupId",
+  path: "/$groupId",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const GroupIdItemIdRoute = GroupIdItemIdRouteImport.update({
-  id: '/$itemId',
-  path: '/$itemId',
+  id: "/$itemId",
+  path: "/$itemId",
   getParentRoute: () => GroupIdRouteRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/$groupId': typeof GroupIdRouteRouteWithChildren
-  '/$groupId/$itemId': typeof GroupIdItemIdRoute
+  "/": typeof IndexRoute;
+  "/$groupId": typeof GroupIdRouteRouteWithChildren;
+  "/$groupId/$itemId": typeof GroupIdItemIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/$groupId': typeof GroupIdRouteRouteWithChildren
-  '/$groupId/$itemId': typeof GroupIdItemIdRoute
+  "/": typeof IndexRoute;
+  "/$groupId": typeof GroupIdRouteRouteWithChildren;
+  "/$groupId/$itemId": typeof GroupIdItemIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/$groupId': typeof GroupIdRouteRouteWithChildren
-  '/$groupId/$itemId': typeof GroupIdItemIdRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/$groupId": typeof GroupIdRouteRouteWithChildren;
+  "/$groupId/$itemId": typeof GroupIdItemIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$groupId' | '/$groupId/$itemId'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$groupId' | '/$groupId/$itemId'
-  id: '__root__' | '/' | '/$groupId' | '/$groupId/$itemId'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "/$groupId" | "/$groupId/$itemId";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/$groupId" | "/$groupId/$itemId";
+  id: "__root__" | "/" | "/$groupId" | "/$groupId/$itemId";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  GroupIdRouteRoute: typeof GroupIdRouteRouteWithChildren
+  IndexRoute: typeof IndexRoute;
+  GroupIdRouteRoute: typeof GroupIdRouteRouteWithChildren;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/$groupId': {
-      id: '/$groupId'
-      path: '/$groupId'
-      fullPath: '/$groupId'
-      preLoaderRoute: typeof GroupIdRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/$groupId/$itemId': {
-      id: '/$groupId/$itemId'
-      path: '/$itemId'
-      fullPath: '/$groupId/$itemId'
-      preLoaderRoute: typeof GroupIdItemIdRouteImport
-      parentRoute: typeof GroupIdRouteRoute
-    }
+    "/$groupId": {
+      id: "/$groupId";
+      path: "/$groupId";
+      fullPath: "/$groupId";
+      preLoaderRoute: typeof GroupIdRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/$groupId/$itemId": {
+      id: "/$groupId/$itemId";
+      path: "/$itemId";
+      fullPath: "/$groupId/$itemId";
+      preLoaderRoute: typeof GroupIdItemIdRouteImport;
+      parentRoute: typeof GroupIdRouteRoute;
+    };
   }
 }
 
 interface GroupIdRouteRouteChildren {
-  GroupIdItemIdRoute: typeof GroupIdItemIdRoute
+  GroupIdItemIdRoute: typeof GroupIdItemIdRoute;
 }
 
 const GroupIdRouteRouteChildren: GroupIdRouteRouteChildren = {
   GroupIdItemIdRoute: GroupIdItemIdRoute,
-}
+};
 
-const GroupIdRouteRouteWithChildren = GroupIdRouteRoute._addFileChildren(
-  GroupIdRouteRouteChildren,
-)
+const GroupIdRouteRouteWithChildren = GroupIdRouteRoute._addFileChildren(GroupIdRouteRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GroupIdRouteRoute: GroupIdRouteRouteWithChildren,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
