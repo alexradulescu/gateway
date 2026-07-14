@@ -18,4 +18,10 @@ export const gatewayApps = [
     description: "Local note cards for testing forms, lists, and browser storage.",
     accent: "#0d7c66",
   },
+  {
+    id: "things",
+    name: "Things",
+    description: "Shared household lists with quick entry, live updates, and tidy completion.",
+    accent: "#2f6f5e",
+  },
 ] satisfies GatewayApp[];

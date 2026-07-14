@@ -1,0 +1,109 @@
+import { useMemo, useRef } from "react";
+import { ComboBox, Input, ListBox } from "@heroui/react";
+import { rankCatalogueMatches } from "../../../../convex/thingsDomain";
+import { useThingsData } from "../context/ThingsDataContext";
+
+const keepPreRankedMatch = () => true;
+
+type CatalogueComboBoxProps = {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmitRequest?: () => void;
+  label: string;
+  placeholder?: string;
+  isDisabled?: boolean;
+  isInvalid?: boolean;
+  errorId?: string;
+};
+
+export function CatalogueComboBox({
+  value,
+  onChange,
+  onSubmitRequest,
+  label,
+  placeholder,
+  isDisabled = false,
+  isInvalid = false,
+  errorId,
+}: CatalogueComboBoxProps) {
+  const { catalogue } = useThingsData();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const selectionHandledEnterRef = useRef(false);
+  const selectedKey = useMemo(
+    () => catalogue.find((item) => item.canonicalName === value)?._id ?? null,
+    [catalogue, value],
+  );
+  const matches = useMemo(
+    () => (value.trim() ? rankCatalogueMatches(catalogue, value) : []),
+    [catalogue, value],
+  );
+
+  return (
+    <ComboBox
+      allowsCustomValue
+      allowsEmptyCollection
+      aria-label={label}
+      className="things-combobox"
+      defaultFilter={keepPreRankedMatch}
+      fullWidth
+      inputValue={value}
+      isDisabled={isDisabled}
+      menuTrigger="input"
+      selectedKey={selectedKey}
+      onInputChange={onChange}
+      onSelectionChange={(key) => {
+        const selected = catalogue.find((item) => item._id === key);
+        if (selected) {
+          selectionHandledEnterRef.current = true;
+          onChange(selected.canonicalName);
+        }
+      }}
+    >
+      <ComboBox.InputGroup className="things-combobox__control">
+        <Input
+          ref={inputRef}
+          aria-label={label}
+          aria-describedby={errorId}
+          aria-invalid={isInvalid || undefined}
+          autoComplete="off"
+          fullWidth
+          name="itemName"
+          placeholder={placeholder}
+          variant="secondary"
+          onKeyDown={(event) => {
+            if (
+              event.key !== "Enter" ||
+              event.nativeEvent.isComposing ||
+              onSubmitRequest === undefined
+            ) {
+              return;
+            }
+
+            if (event.currentTarget.getAttribute("aria-activedescendant")) return;
+
+            selectionHandledEnterRef.current = false;
+            window.setTimeout(() => {
+              if (!selectionHandledEnterRef.current) onSubmitRequest();
+            }, 0);
+          }}
+        />
+      </ComboBox.InputGroup>
+      {value.trim() && (
+        <ComboBox.Popover className="things-frosted">
+          <ListBox
+            items={matches}
+            renderEmptyState={() => (
+              <p className="things-combobox__empty">Press Enter to add “{value.trim()}”</p>
+            )}
+          >
+            {(item) => (
+              <ListBox.Item id={item._id} textValue={item.canonicalName}>
+                {item.canonicalName}
+              </ListBox.Item>
+            )}
+          </ListBox>
+        </ComboBox.Popover>
+      )}
+    </ComboBox>
+  );
+}
