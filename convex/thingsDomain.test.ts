@@ -3,7 +3,6 @@
 import { describe, expect, test } from "bun:test";
 import {
   assertCompleteOrder,
-  cleanDisplayText,
   cleanVisibleText,
   nextPosition,
   normalizeCatalogueKey,
@@ -18,7 +17,6 @@ describe("cleanVisibleText", () => {
 
   test("preserves case, punctuation, and symbols", () => {
     expect(cleanVisibleText("  Home-Tasks & More  ")).toBe("Home-Tasks & More");
-    expect(cleanDisplayText("  same   rule  ")).toBe("same rule");
   });
 });
 

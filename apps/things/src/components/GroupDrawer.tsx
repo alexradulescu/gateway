@@ -62,7 +62,7 @@ export function GroupDrawer({
               key={groupId}
               actionGroupId={!isLoading ? openedGroup?.group._id : undefined}
               groupName={groupName}
-              isDisabled={isLoading || openedGroup === null}
+              isDisabled={isLoading}
               onClose={close}
             />
             <Drawer.Body className="things-group-drawer__body">
@@ -100,10 +100,8 @@ export function GroupDrawer({
                     <AddGroupItemRow group={openedGroup.group} />
                     <DoneSection key={openedGroup.group._id} openedGroup={openedGroup} />
                   </>
-                ) : isLoading ? (
-                  <div className="things-drawer-placeholder" aria-hidden="true" />
                 ) : (
-                  <p className="things-drawer-message">That group does not exist.</p>
+                  <div className="things-drawer-placeholder" aria-hidden="true" />
                 )}
               </div>
               <ThingsBusyOverlay isBusy={isLoading} label={`Opening ${groupName}`} />

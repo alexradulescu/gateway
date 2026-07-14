@@ -29,6 +29,14 @@ async function groupItems(db: DatabaseReader, groupId: Id<"thingsGroups">) {
     .collect();
 }
 
+function isActiveItem(item: Doc<"thingsGroupItems">) {
+  return item.deletedAt === undefined && item.completedAt === undefined;
+}
+
+async function activeGroupItems(db: DatabaseReader, groupId: Id<"thingsGroups">) {
+  return (await groupItems(db, groupId)).filter(isActiveItem);
+}
+
 async function requireActiveGroup(db: DatabaseReader, groupId: Id<"thingsGroups">) {
   const group = await db.get(groupId);
   if (!group || group.deletedAt !== undefined) throw new Error("Group not found.");
@@ -127,7 +135,7 @@ export const openedGroup = query({
       (item) => item.deletedAt === undefined,
     );
     const activeItems = items
-      .filter((item) => item.completedAt === undefined)
+      .filter(isActiveItem)
       .sort((left, right) => left.position - right.position);
     const completedItems = items
       .filter((item) => item.completedAt !== undefined)
@@ -212,9 +220,7 @@ export const addGroupItem = mutation({
   handler: async (ctx, args) => {
     await requireActiveGroup(ctx.db, args.groupId);
     const catalogueItem = await resolveCatalogueItem(ctx, args.name);
-    const activeItems = (await groupItems(ctx.db, args.groupId)).filter(
-      (item) => item.deletedAt === undefined && item.completedAt === undefined,
-    );
+    const activeItems = await activeGroupItems(ctx.db, args.groupId);
 
     return await ctx.db.insert("thingsGroupItems", {
       groupId: args.groupId,
@@ -248,9 +254,7 @@ export const setGroupItemCompleted = mutation({
       return;
     }
 
-    const activeItems = (await groupItems(ctx.db, item.groupId)).filter(
-      (candidate) => candidate.deletedAt === undefined && candidate.completedAt === undefined,
-    );
+    const activeItems = await activeGroupItems(ctx.db, item.groupId);
     await ctx.db.patch(args.itemId, {
       completedAt: undefined,
       position: nextPosition(activeItems),
@@ -262,9 +266,7 @@ export const reorderGroupItems = mutation({
   args: { groupId: v.id("thingsGroups"), itemIds: v.array(v.id("thingsGroupItems")) },
   handler: async (ctx, args) => {
     await requireActiveGroup(ctx.db, args.groupId);
-    const activeItems = (await groupItems(ctx.db, args.groupId)).filter(
-      (item) => item.deletedAt === undefined && item.completedAt === undefined,
-    );
+    const activeItems = await activeGroupItems(ctx.db, args.groupId);
     assertCompleteOrder(
       args.itemIds.map(String),
       activeItems.map((item) => String(item._id)),
@@ -294,9 +296,7 @@ export const restoreGroupItem = mutation({
       return;
     }
 
-    const activeItems = (await groupItems(ctx.db, item.groupId)).filter(
-      (candidate) => candidate.deletedAt === undefined && candidate.completedAt === undefined,
-    );
+    const activeItems = await activeGroupItems(ctx.db, item.groupId);
     await ctx.db.patch(args.itemId, {
       deletedAt: undefined,
       position: nextPosition(activeItems),

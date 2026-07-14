@@ -36,7 +36,6 @@
   --things-glow-b: rgb(225 236 229 / 0.72);
   --things-glow-c: rgb(201 218 234 / 0.28);
 
-  --things-glass-panel: color-mix(in oklab, var(--surface) 82%, transparent);
   --things-glass-panel-strong: color-mix(in oklab, var(--overlay) 88%, transparent);
   --things-glass-control: color-mix(in oklab, var(--field-background) 84%, transparent);
   --things-glass-popover: color-mix(in oklab, var(--overlay) 92%, transparent);
@@ -56,9 +55,6 @@
   --things-radius-panel: 24px;
   --things-radius-drawer: 28px;
   --things-radius-control: 14px;
-  --things-blur-panel: 20px;
-  --things-blur-control: 12px;
-  --things-blur-popover: 26px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,7 +63,6 @@
     --things-glow-a: rgb(37 92 73 / 0.44);
     --things-glow-b: rgb(35 47 43 / 0.62);
     --things-glow-c: rgb(40 58 78 / 0.28);
-    --things-glass-panel: color-mix(in srgb, var(--surface) 68%, transparent);
     --things-glass-panel-strong: color-mix(in srgb, var(--overlay) 70%, transparent);
     --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
     --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
@@ -171,15 +166,12 @@ button {
 
 /* Page shell */
 
-.things-shell,
-.things-page,
-.things-app {
+.things-shell {
   width: 100%;
   min-height: 100dvh;
 }
 
-.things-shell,
-.things-page {
+.things-shell {
   width: min(100%, calc(var(--things-max-width) + (2 * var(--things-page-gutter))));
   margin-inline: auto;
   padding: var(--things-safe-top) var(--things-page-gutter) calc(28px + var(--things-safe-bottom));
@@ -193,7 +185,6 @@ button {
   padding: 4px 4px 14px;
 }
 
-.things-title,
 .things-header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 8vw, 2.15rem);
@@ -209,20 +200,6 @@ button {
   line-height: 1.35;
 }
 
-.things-eyebrow {
-  margin: 0 0 5px;
-  color: var(--things-page-muted);
-  font-size: 0.7rem;
-  font-weight: 720;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.things-home-content,
-.things-content {
-  width: 100%;
-}
-
 /* Shared material primitives */
 
 .things-frosted {
@@ -233,8 +210,7 @@ button {
   backdrop-filter: blur(14px);
 }
 
-.things-group-surface,
-.things-surface {
+.things-group-surface {
   overflow: clip;
   border: 1px solid var(--things-glass-border);
   border-radius: var(--things-radius-panel);
@@ -244,7 +220,6 @@ button {
   backdrop-filter: blur(2px);
 }
 
-.things-control-surface,
 .things-add-group,
 .things-add-item {
   border: 1px solid var(--things-glass-border-subtle);
@@ -253,29 +228,7 @@ button {
   box-shadow: var(--field-shadow);
 }
 
-.things-popover,
-.things-combobox-popover,
-.things-toast {
-  border: 1px solid var(--things-glass-border);
-  border-radius: 18px;
-  background: var(--things-glass-popover);
-  box-shadow: var(--things-glass-shadow-raised);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-
-.things-separator {
-  background: var(--things-glass-separator);
-}
-
 /* Group list */
-
-.things-group-list,
-.things-item-list {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
 
 .things-group-row {
   position: relative;
@@ -288,7 +241,6 @@ button {
 
 .things-group-row + .things-group-row,
 .things-item-row + .things-item-row,
-.things-group-row + .things-add-group-row,
 .things-group-row + .things-add-group {
   border-top: 1px solid var(--things-glass-separator);
 }
@@ -298,8 +250,6 @@ button {
   border-top: 1px solid var(--things-glass-separator);
 }
 
-.things-order-marker,
-.things-group-index,
 .things-order {
   display: grid;
   place-items: center;
@@ -312,7 +262,6 @@ button {
 }
 
 .things-group-main,
-.things-item-main,
 .things-row-main {
   min-width: 0;
   min-height: 44px;
@@ -330,9 +279,7 @@ button {
   padding-block: 9px;
 }
 
-.things-group-name,
 .things-item-label,
-.things-row-label,
 .things-row-title {
   overflow: hidden;
   color: var(--things-page-ink);
@@ -343,7 +290,6 @@ button {
   white-space: nowrap;
 }
 
-.things-group-counts,
 .things-row-meta {
   overflow: hidden;
   margin-top: 2px;
@@ -389,10 +335,6 @@ button {
 }
 
 /* Unified creation controls */
-
-.things-add-group-row {
-  padding: 8px;
-}
 
 .things-add-group {
   position: relative;
@@ -497,14 +439,6 @@ button {
   box-shadow: none;
 }
 
-.things-add-item > .things-separator,
-.things-add-item-divider {
-  width: 1px;
-  margin-block: 9px;
-  background: var(--things-glass-separator);
-}
-
-.things-input,
 .things-add-group input,
 .things-add-item input {
   width: 100%;
@@ -519,15 +453,12 @@ button {
   appearance: none;
 }
 
-.things-input::placeholder,
 .things-add-group input::placeholder,
 .things-add-item input::placeholder {
   color: var(--things-page-faint);
   opacity: 1;
 }
 
-.things-add-button,
-.things-icon-button,
 .things-close-button {
   display: inline-grid;
   min-width: 44px;
@@ -541,21 +472,7 @@ button {
   cursor: pointer;
 }
 
-.things-add-button {
-  align-self: stretch;
-  border-radius: 0 calc(var(--things-radius-control) - 1px) calc(var(--things-radius-control) - 1px)
-    0;
-  color: var(--things-accent-ink);
-  background: var(--things-accent);
-}
-
-.things-add-button:hover:not(:disabled) {
-  background: color-mix(in oklab, var(--things-accent) 90%, black);
-}
-
-.things-field-error,
-.things-form-error,
-.things-inline-error {
+.things-field-error {
   margin: 6px 4px 0;
   color: var(--things-danger);
   font-size: 0.76rem;
@@ -565,7 +482,6 @@ button {
 
 /* Drawers and route overlays */
 
-.things-drawer-backdrop,
 body .drawer__backdrop--blur,
 body .modal__backdrop--blur,
 body .alert-dialog__backdrop--blur {
@@ -574,8 +490,6 @@ body .alert-dialog__backdrop--blur {
   backdrop-filter: blur(5px) saturate(1.04);
 }
 
-.things-drawer,
-.things-drawer-dialog,
 body .drawer__dialog,
 body .modal__dialog,
 body .alert-dialog__dialog {
@@ -588,29 +502,18 @@ body .alert-dialog__dialog {
   box-shadow: var(--things-glass-shadow-raised);
 }
 
-.things-drawer,
-.things-drawer-dialog,
 body .drawer__dialog {
   overflow: hidden;
   border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
 }
 
-.things-group-drawer,
-.things-drawer--group,
-[data-things-drawer="group"] {
+.things-group-drawer {
   position: relative;
   display: flex;
   width: min(100%, var(--things-max-width));
   max-height: min(720px, calc(var(--visual-viewport-height, 100dvh) - 8px));
   flex-direction: column;
   padding: 0;
-}
-
-.things-item-drawer,
-.things-drawer--item,
-[data-things-drawer="item"] {
-  z-index: 70;
-  max-height: min(660px, calc(var(--visual-viewport-height, 100dvh) - 8px));
 }
 
 .things-item-overlay-root {
@@ -720,8 +623,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding-block: 4px;
 }
 
-.things-drawer-title,
-.things-drawer-title-button {
+.things-drawer-title {
   min-width: 0;
   overflow: hidden;
   margin: 0;
@@ -804,16 +706,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   place-items: center;
 }
 
-.things-drawer-body {
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 8px var(--things-page-gutter) var(--things-safe-bottom);
-  scrollbar-width: thin;
-  scrollbar-color: var(--things-glass-separator) transparent;
-}
-
 .things-group-drawer__body {
   position: relative;
   min-height: 0;
@@ -827,31 +719,13 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-drawer__content,
-.things-drawer-placeholder,
-.things-drawer-message {
+.things-drawer-placeholder {
   min-height: 210px;
-}
-
-.things-drawer-message {
-  display: grid;
-  place-items: center;
-  margin: 0;
-  color: var(--things-page-muted);
-  font-size: 0.86rem;
 }
 
 .things-active-list > div + div,
 .things-done-list > .things-item-row + .things-item-row {
   border-top: 1px solid var(--things-glass-separator);
-}
-
-.things-drawer-footer,
-.things-item-form-actions {
-  display: grid;
-  gap: 10px;
-  padding: 14px var(--things-page-gutter) var(--things-safe-bottom);
-  border-top: 1px solid var(--things-glass-separator);
-  background: color-mix(in oklab, var(--things-glass-panel-strong) 92%, transparent);
 }
 
 .things-item-form__actions {
@@ -978,15 +852,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   background: transparent;
 }
 
-.things-item-row[data-completed="true"],
-.things-item-row.is-completed {
+.things-item-row[data-completed="true"] {
   grid-template-columns: 44px minmax(0, 1fr);
-}
-
-.things-item-main {
-  display: flex;
-  align-items: center;
-  padding-inline: 2px 6px;
 }
 
 .things-item-row__main {
@@ -1023,65 +890,18 @@ body .alert-dialog__dialog.things-confirm-dialog {
   font-weight: 470;
 }
 
-.things-item-row[data-completed="true"] .things-item-label,
-.things-item-row.is-completed .things-item-label,
-.things-item-label.is-completed {
+.things-item-row[data-completed="true"] .things-item-label {
   color: var(--things-page-muted);
   text-decoration: line-through;
   text-decoration-color: color-mix(in oklab, var(--things-page-muted) 70%, transparent);
   text-decoration-thickness: 1px;
 }
 
-.things-checkbox-hit {
-  display: grid;
-  min-width: 44px;
-  min-height: 44px;
-  place-items: center;
-  align-self: center;
-  cursor: pointer;
-}
-
-.things-checkbox-indicator {
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border: 1.5px solid color-mix(in oklab, var(--things-page-muted) 65%, transparent);
-  border-radius: 50%;
-  color: transparent;
-  background: transparent;
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    transform 140ms ease;
-}
-
-[data-selected="true"] > .things-checkbox-indicator,
-.things-checkbox-indicator[data-selected="true"],
-.things-checkbox-hit[aria-checked="true"] .things-checkbox-indicator {
-  border-color: var(--things-accent);
-  color: var(--things-accent-ink);
-  background: var(--things-accent);
-}
-
-.things-checkbox-hit:active .things-checkbox-indicator {
-  transform: scale(0.9);
-}
-
 /* Done disclosure */
 
-.things-done,
 .things-done-section {
   margin-top: 10px;
   border-top: 0;
-}
-
-.things-done-header {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .things-done-section__header {
@@ -1128,7 +948,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding: 0;
 }
 
-.things-clear-completed,
 .things-clear-all {
   min-height: 30px;
   padding: 0 10px;
@@ -1222,90 +1041,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   box-shadow: var(--overlay-shadow);
 }
 
-.things-field {
-  display: grid;
-  gap: 6px;
-}
-
-.things-field-label {
-  padding-inline: 3px;
-  color: var(--things-page-muted);
-  font-size: 0.76rem;
-  font-weight: 640;
-}
-
-.things-field .things-input,
-.things-form-input {
-  min-height: 48px;
-  border: 1px solid var(--things-glass-border-subtle);
-  border-radius: var(--things-radius-control);
-  background: var(--things-glass-control);
-}
-
-.things-primary-button,
-.things-danger-button,
-.things-secondary-button {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 18px;
-  border: 1px solid transparent;
-  border-radius: 14px;
-  font-weight: 680;
-  cursor: pointer;
-}
-
-.things-primary-button {
-  color: var(--things-accent-ink);
-  background: var(--things-accent);
-}
-
-.things-danger-button {
-  color: var(--things-danger);
-  border-color: color-mix(in oklab, var(--things-danger) 22%, transparent);
-  background: var(--things-danger-soft);
-}
-
-.things-secondary-button {
-  color: var(--things-page-ink);
-  border-color: var(--things-glass-border-subtle);
-  background: var(--things-glass-control);
-}
-
 /* Autocomplete, toast, empty and error states */
 
-.things-combobox-popover,
-.things-popover {
-  z-index: 90;
-  max-width: min(calc(100vw - 24px), 360px);
-  max-height: min(44svh, 320px);
-  overflow-y: auto;
-  padding: 6px;
-}
-
-.things-combobox-option,
-.things-option {
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  padding: 0 11px;
-  border-radius: 12px;
-  color: var(--things-page-ink);
-  font-size: 0.92rem;
-  cursor: pointer;
-}
-
-.things-combobox-option[data-focused="true"],
-.things-combobox-option[data-selected="true"],
-.things-option[aria-selected="true"] {
-  color: var(--things-accent-strong);
-  background: var(--things-accent-soft);
-}
-
-.things-combobox-empty,
-.things-empty-hint,
 .things-combobox__empty {
   padding: 11px;
   color: var(--things-page-muted);
@@ -1347,10 +1084,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   }
 }
 
-.things-loading,
-.things-error-state,
-.things-not-found,
-.things-empty-state,
 .things-state {
   display: grid;
   min-height: min(58svh, 520px);
@@ -1377,18 +1110,12 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding: 8px 12px;
 }
 
-.things-error-state h1,
-.things-not-found h1,
-.things-empty-state h2,
 .things-state h1 {
   margin: 0;
   font-size: 1.18rem;
   letter-spacing: -0.02em;
 }
 
-.things-error-state p,
-.things-not-found p,
-.things-empty-state p,
 .things-state > p {
   max-width: 32ch;
   margin: 0;
@@ -1413,15 +1140,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   gap: 9px;
 }
 
-.things-state__spinner {
-  width: 28px;
-  height: 28px;
-  border: 2px solid color-mix(in oklab, var(--things-accent) 20%, transparent);
-  border-top-color: var(--things-accent);
-  border-radius: 50%;
-  animation: things-spin 750ms linear infinite;
-}
-
 .things-toast-region {
   z-index: 110;
   width: min(100%, var(--things-max-width));
@@ -1443,8 +1161,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   outline-offset: 2px;
 }
 
-.things-group-main:focus-visible,
-.things-item-main:focus-visible {
+.things-group-main:focus-visible {
   border-radius: 10px;
   outline-offset: -3px;
 }
@@ -1459,23 +1176,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   cursor: progress;
 }
 
-.things-visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  border: 0 !important;
-  clip: rect(0 0 0 0) !important;
-  clip-path: inset(50%) !important;
-  white-space: nowrap !important;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .things-group-main:hover,
-  .things-item-main:hover,
-  .things-icon-button:hover,
   .things-close-button:hover,
   .things-drag-handle:hover {
     background: color-mix(in oklab, var(--things-page-ink) 4%, transparent);
@@ -1488,13 +1190,10 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (min-width: 540px) {
-  .things-shell,
-  .things-page {
+  .things-shell {
     padding-top: max(24px, env(safe-area-inset-top));
   }
 
-  .things-drawer,
-  .things-drawer-dialog,
   body .drawer__dialog {
     bottom: 0;
     border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
@@ -1502,8 +1201,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (max-width: 539px) {
-  .things-shell,
-  .things-page {
+  .things-shell {
     padding-top: calc(env(safe-area-inset-top) + var(--things-page-gutter));
   }
 
@@ -1536,17 +1234,11 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @media (forced-colors: active) {
   .things-frosted,
   .things-group-surface,
-  .things-drawer,
-  .things-drawer-dialog,
   .things-add-group,
   .things-add-item {
     border: 1px solid CanvasText;
     background: Canvas;
     box-shadow: none;
-  }
-
-  .things-checkbox-indicator {
-    border-color: CanvasText;
   }
 }
 
@@ -1554,14 +1246,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .things-frosted,
   .things-group-surface,
-  .things-control-surface,
   .things-add-group,
   .things-add-item,
-  .things-popover,
-  .things-combobox-popover,
-  .things-toast,
-  .things-drawer,
-  .things-drawer-dialog,
   body .drawer__dialog,
   body .modal__dialog,
   body .alert-dialog__dialog {

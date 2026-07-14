@@ -25,7 +25,5 @@ export default defineSchema({
     position: v.number(),
     completedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
-  })
-    .index("by_group_position", ["groupId", "position"])
-    .index("by_group_completedAt", ["groupId", "completedAt"]),
+  }).index("by_group_position", ["groupId", "position"]),
 });

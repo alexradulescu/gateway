@@ -7,8 +7,6 @@ export function cleanVisibleText(value: string) {
     .replace(/\s+/gu, " ");
 }
 
-export const cleanDisplayText = cleanVisibleText;
-
 export function normalizeGroupName(value: string) {
   return cleanVisibleText(value).toLocaleLowerCase("en");
 }
