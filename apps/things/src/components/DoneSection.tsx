@@ -6,7 +6,13 @@ import type { OpenedGroup } from "../types";
 import { ConfirmAction } from "./ConfirmAction";
 import { GroupItemRow } from "./GroupItemRow";
 
-export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
+export function DoneSection({
+  openedGroup,
+  onItemPendingChange,
+}: {
+  openedGroup: OpenedGroup;
+  onItemPendingChange: (itemId: string, pending: boolean) => void;
+}) {
   const clearCompleted = useMutation(api.things.clearCompletedGroupItems);
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -45,6 +51,7 @@ export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
                 groupId={openedGroup.group._id}
                 isCompleted
                 item={item}
+                onPendingChange={onItemPendingChange}
               />
             ))}
           </Disclosure.Body>

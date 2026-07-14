@@ -8,12 +8,24 @@ import type { OpenedGroup } from "../types";
 import { CatalogueComboBox } from "./CatalogueComboBox";
 import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
-export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
+export function AddGroupItemRow({
+  group,
+  name,
+  quantity,
+  onNameChange,
+  onPendingChange,
+  onQuantityChange,
+}: {
+  group: OpenedGroup["group"];
+  name: string;
+  quantity: string;
+  onNameChange: (name: string) => void;
+  onPendingChange: (isPending: boolean) => void;
+  onQuantityChange: (quantity: string) => void;
+}) {
   const addItem = useMutation(api.things.addGroupItem);
   const formRef = useRef<HTMLFormElement>(null);
   const pendingRef = useRef(false);
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
   const errorId = useId();
@@ -25,15 +37,17 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
     pendingRef.current = true;
     setError("");
     setIsPending(true);
+    onPendingChange(true);
     try {
       await addItem({ groupId: group._id, name, quantity });
-      setName("");
-      setQuantity("");
+      onNameChange("");
+      onQuantityChange("");
     } catch (caught) {
       setError(errorMessage(caught, "Could not add the item."));
     } finally {
       pendingRef.current = false;
       setIsPending(false);
+      onPendingChange(false);
     }
   }
 
@@ -51,7 +65,7 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
         label="Item name"
         placeholder="Item name"
         value={name}
-        onChange={setName}
+        onChange={onNameChange}
         onSubmitRequest={() => formRef.current?.requestSubmit()}
       />
       <TextField
@@ -59,7 +73,7 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
         className="things-add-item__quantity"
         isDisabled={isPending}
         value={quantity}
-        onChange={setQuantity}
+        onChange={onQuantityChange}
       >
         <Input
           aria-label="Quantity"

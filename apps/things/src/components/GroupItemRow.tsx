@@ -14,9 +14,16 @@ type GroupItemRowProps = {
   groupId: string;
   isCompleted: boolean;
   handle?: SortableHandle;
+  onPendingChange?: (itemId: string, pending: boolean) => void;
 };
 
-export function GroupItemRow({ item, groupId, isCompleted, handle }: GroupItemRowProps) {
+export function GroupItemRow({
+  item,
+  groupId,
+  isCompleted,
+  handle,
+  onPendingChange,
+}: GroupItemRowProps) {
   const navigate = useNavigate({ from: "/$groupId" });
   const setCompleted = useMutation(api.things.setGroupItemCompleted);
   const [isPending, setIsPending] = useState(false);
@@ -24,12 +31,14 @@ export function GroupItemRow({ item, groupId, isCompleted, handle }: GroupItemRo
   async function toggleCompletion(completed: boolean) {
     if (isPending) return;
     setIsPending(true);
+    onPendingChange?.(item._id, true);
     try {
       await setCompleted({ itemId: item._id, completed });
     } catch (error) {
       toast.danger(errorMessage(error, "Could not update the item."));
     } finally {
       setIsPending(false);
+      onPendingChange?.(item._id, false);
     }
   }
 

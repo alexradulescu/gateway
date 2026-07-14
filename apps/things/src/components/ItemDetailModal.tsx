@@ -11,6 +11,7 @@ import { errorMessage, useThingsData } from "../context/ThingsDataContext";
 import { useOpenedGroup } from "../context/OpenedGroupContext";
 import { useItemOverlayPortal } from "../context/ItemOverlayPortalContext";
 import { CatalogueComboBox } from "./CatalogueComboBox";
+import { DiscardChangesDialog, useDiscardGuard } from "./DiscardChangesDialog";
 import { ThingsNotFound } from "./ThingsStates";
 import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
@@ -42,7 +43,7 @@ function ItemDetailForm({
   const updateItem = useMutation(api.things.updateGroupItem);
   const deleteItem = useMutation(api.things.deleteGroupItem);
   const { showDeleteUndo } = useThingsData();
-  const overlayPortal = useItemOverlayPortal();
+  const { portal: overlayPortal, setItemOverlayOpen } = useItemOverlayPortal();
   const [name, setName] = useState(item.canonicalName);
   const [quantity, setQuantity] = useState(item.quantity);
   const [error, setError] = useState("");
@@ -53,14 +54,23 @@ function ItemDetailForm({
   const isDirty =
     cleanVisibleText(name) !== item.canonicalName || cleanVisibleText(quantity) !== item.quantity;
   const isPending = pendingAction !== null;
+  const discardGuard = useDiscardGuard({ isBlocked: isPending, isDirty });
 
   useEffect(() => {
     closeButtonRef.current?.focus();
   }, []);
 
-  function close() {
-    if (isPending) return;
+  useEffect(() => {
+    setItemOverlayOpen(true);
+    return () => setItemOverlayOpen(false);
+  }, [setItemOverlayOpen]);
+
+  function closeNow() {
     void navigate({ to: "/$groupId", params: { groupId } });
+  }
+
+  function requestClose() {
+    discardGuard.run(closeNow);
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -96,7 +106,7 @@ function ItemDetailForm({
   function handleKeyDown(event: KeyboardEvent<HTMLDialogElement>) {
     if (event.key !== "Escape") return;
     event.stopPropagation();
-    if (!event.defaultPrevented) close();
+    if (!event.defaultPrevented) requestClose();
   }
 
   if (!overlayPortal) return null;
@@ -104,97 +114,111 @@ function ItemDetailForm({
   // The parent Drawer owns the modal focus scope. A second modal would inert that parent,
   // so this route dialog stays inside the Drawer and reuses its focus and scroll locking.
   return createPortal(
-    <FocusScope contain restoreFocus>
-      <div className="things-item-overlay">
-        <dialog
-          open
-          className="things-frosted things-item-modal"
-          aria-labelledby="things-item-dialog-title"
-          aria-modal="true"
-          aria-busy={isPending || undefined}
-          onKeyDown={handleKeyDown}
+    <>
+      <FocusScope contain={!discardGuard.isOpen} restoreFocus>
+        <div
+          className="things-item-overlay"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            if (event.target === event.currentTarget) requestClose();
+          }}
         >
-          <header className="things-drawer-header">
-            <Button
-              isIconOnly
-              ref={closeButtonRef}
-              className="things-close-button"
-              size="sm"
-              type="button"
-              variant="ghost"
-              aria-label="Close item"
-              isDisabled={isPending}
-              onPress={close}
-            >
-              <X aria-hidden="true" size={22} />
-            </Button>
-            <h2 id="things-item-dialog-title">Edit item</h2>
-            <span aria-hidden="true" className="things-header-spacer" />
-          </header>
-          <form ref={formRef} onSubmit={save}>
-            <div className="things-item-form">
-              <div className="things-item-form__field">
-                <Label>Item name</Label>
-                <CatalogueComboBox
-                  errorId={error ? errorId : undefined}
-                  isDisabled={isPending}
-                  isInvalid={Boolean(error)}
-                  label="Item name"
-                  value={name}
-                  onChange={setName}
-                  onSubmitRequest={() => formRef.current?.requestSubmit()}
-                />
-              </div>
-              <TextField isDisabled={isPending} value={quantity} onChange={setQuantity}>
-                <Label>Quantity</Label>
-                <Input
-                  aria-label="Quantity"
-                  aria-describedby={error ? errorId : undefined}
-                  autoComplete="off"
-                  name="quantity"
-                  placeholder="Optional"
-                  variant="secondary"
-                  onKeyDown={(event) => {
-                    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
-                    event.preventDefault();
-                    formRef.current?.requestSubmit();
-                  }}
-                />
-              </TextField>
-              {error && (
-                <p id={errorId} className="things-field-error" role="alert">
-                  {error}
-                </p>
-              )}
-            </div>
-            <div className="things-item-form__actions">
+          <dialog
+            open
+            className="things-frosted things-item-modal"
+            aria-labelledby="things-item-dialog-title"
+            aria-modal="true"
+            aria-busy={isPending || undefined}
+            onKeyDown={handleKeyDown}
+          >
+            <header className="things-drawer-header">
               <Button
-                className="things-delete-item"
+                isIconOnly
+                ref={closeButtonRef}
+                className="things-close-button"
                 size="sm"
                 type="button"
-                variant="secondary"
+                variant="ghost"
+                aria-label="Close item"
                 isDisabled={isPending}
-                onPress={remove}
+                onPress={requestClose}
               >
-                Delete
+                <X aria-hidden="true" size={22} />
               </Button>
-              <Button
-                size="sm"
-                type="submit"
-                variant="secondary"
-                isDisabled={!isDirty || isPending}
-              >
-                Save
-              </Button>
-            </div>
-          </form>
-          <ThingsBusyOverlay
-            isBusy={isPending}
-            label={pendingAction === "delete" ? "Deleting item" : "Saving item"}
-          />
-        </dialog>
-      </div>
-    </FocusScope>,
+              <h2 id="things-item-dialog-title">Edit item</h2>
+              <span aria-hidden="true" className="things-header-spacer" />
+            </header>
+            <form ref={formRef} onSubmit={save}>
+              <div className="things-item-form">
+                <div className="things-item-form__field">
+                  <Label>Item name</Label>
+                  <CatalogueComboBox
+                    errorId={error ? errorId : undefined}
+                    isDisabled={isPending}
+                    isInvalid={Boolean(error)}
+                    label="Item name"
+                    value={name}
+                    onChange={setName}
+                    onSubmitRequest={() => formRef.current?.requestSubmit()}
+                  />
+                </div>
+                <TextField isDisabled={isPending} value={quantity} onChange={setQuantity}>
+                  <Label>Quantity</Label>
+                  <Input
+                    aria-label="Quantity"
+                    aria-describedby={error ? errorId : undefined}
+                    autoComplete="off"
+                    name="quantity"
+                    placeholder="Optional"
+                    variant="secondary"
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+                      event.preventDefault();
+                      formRef.current?.requestSubmit();
+                    }}
+                  />
+                </TextField>
+                {error && (
+                  <p id={errorId} className="things-field-error" role="alert">
+                    {error}
+                  </p>
+                )}
+              </div>
+              <div className="things-item-form__actions">
+                <Button
+                  className="things-delete-item"
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                  isDisabled={isPending}
+                  onPress={remove}
+                >
+                  Delete
+                </Button>
+                <Button
+                  size="sm"
+                  type="submit"
+                  variant="secondary"
+                  isDisabled={!isDirty || isPending}
+                >
+                  Save
+                </Button>
+              </div>
+            </form>
+            <ThingsBusyOverlay
+              isBusy={isPending}
+              label={pendingAction === "delete" ? "Deleting item" : "Saving item"}
+            />
+          </dialog>
+        </div>
+      </FocusScope>
+      <DiscardChangesDialog
+        isOpen={discardGuard.isOpen}
+        portalContainer={overlayPortal}
+        onDiscard={discardGuard.discard}
+        onKeepEditing={discardGuard.keepEditing}
+      />
+    </>,
     overlayPortal,
   );
 }

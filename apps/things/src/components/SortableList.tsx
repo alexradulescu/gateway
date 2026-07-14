@@ -31,6 +31,7 @@ type SortableListProps<Item extends { _id: string }> = {
   items: Item[];
   disabled?: boolean;
   failureMessage: string;
+  onPendingChange?: (isPending: boolean) => void;
   onReorder: (items: Item[]) => Promise<void>;
   renderItem: (item: Item, handle: SortableHandle) => React.ReactNode;
 };
@@ -39,6 +40,7 @@ export function SortableList<Item extends { _id: string }>({
   items,
   disabled = false,
   failureMessage,
+  onPendingChange,
   onReorder,
   renderItem,
 }: SortableListProps<Item>) {
@@ -49,7 +51,9 @@ export function SortableList<Item extends { _id: string }>({
     // The handle already disables scrolling, so touch drag should begin with movement instead of
     // a hidden long-press delay that cancels normal iPhone gestures.
     useSensor(TouchSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
   const displayedItems = isSaving ? orderedItems : items;
 
@@ -64,6 +68,7 @@ export function SortableList<Item extends { _id: string }>({
     const nextItems = arrayMove(previousItems, fromIndex, toIndex);
     setOrderedItems(nextItems);
     setIsSaving(true);
+    onPendingChange?.(true);
 
     try {
       await onReorder(nextItems);
@@ -72,6 +77,7 @@ export function SortableList<Item extends { _id: string }>({
       toast.danger(errorMessage(error, failureMessage));
     } finally {
       setIsSaving(false);
+      onPendingChange?.(false);
     }
   }
 
