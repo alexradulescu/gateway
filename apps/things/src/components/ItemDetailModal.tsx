@@ -170,14 +170,20 @@ function ItemDetailForm({
             <div className="things-item-form__actions">
               <Button
                 className="things-delete-item"
+                size="sm"
                 type="button"
-                variant="ghost"
+                variant="secondary"
                 isDisabled={isPending}
                 onPress={remove}
               >
                 Delete
               </Button>
-              <Button type="submit" variant="secondary" isDisabled={!isDirty || isPending}>
+              <Button
+                size="sm"
+                type="submit"
+                variant="secondary"
+                isDisabled={!isDirty || isPending}
+              >
                 Save
               </Button>
             </div>

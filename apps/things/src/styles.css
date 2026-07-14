@@ -64,11 +64,12 @@
     --things-glow-a: rgb(37 92 73 / 0.44);
     --things-glow-b: rgb(35 47 43 / 0.62);
     --things-glow-c: rgb(40 58 78 / 0.28);
-    --things-glass-panel: color-mix(in oklab, var(--surface) 76%, transparent);
-    --things-glass-panel-strong: color-mix(in oklab, var(--overlay) 86%, transparent);
+    --things-glass-panel: color-mix(in srgb, var(--surface) 68%, transparent);
+    --things-glass-panel-strong: color-mix(in srgb, var(--overlay) 70%, transparent);
     --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
+    --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
     --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
-    --things-item-group-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
+    --things-item-group-background: color-mix(in srgb, var(--surface) 72%, transparent);
   }
 }
 
@@ -684,6 +685,18 @@ body .alert-dialog__dialog.things-confirm-dialog {
   backdrop-filter: blur(2px);
 }
 
+@media (prefers-color-scheme: dark) {
+  .things-group-surface {
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+
+  body .drawer__dialog.things-group-drawer,
+  .things-item-modal,
+  body .alert-dialog__dialog.things-confirm-dialog {
+    background: color-mix(in srgb, var(--overlay) 70%, transparent);
+  }
+}
+
 .things-drawer-header {
   position: relative;
   z-index: 2;
@@ -695,6 +708,11 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding: 6px 8px;
   border-bottom: 0;
   background: transparent;
+}
+
+.things-group-drawer > .things-drawer-header {
+  min-height: 52px;
+  padding-block: 4px;
 }
 
 .things-drawer-title,
@@ -798,7 +816,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 12px max(10px, env(safe-area-inset-bottom));
+  padding: 0 12px max(10px, env(safe-area-inset-bottom));
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -833,18 +851,21 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-item-form__actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  padding: 14px var(--things-page-gutter) var(--things-safe-bottom);
+  padding: 10px var(--things-page-gutter) max(12px, env(safe-area-inset-bottom));
   border-top: 0;
   background: transparent;
 }
 
 .things-item-form__actions > button {
   width: 100%;
-  min-height: 48px;
-  border-radius: 14px;
-  font-weight: 680;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+  font-size: 0.875rem;
+  font-weight: 550;
 }
 
 .things-delete-item {
@@ -893,7 +914,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-group-switcher {
   overflow-x: auto;
   margin: 0 -12px;
-  padding: 6px 12px 10px;
+  padding: 2px 12px 10px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -1444,6 +1465,17 @@ body .alert-dialog__dialog.things-confirm-dialog {
   body .drawer__dialog {
     bottom: 0;
     border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
+  }
+}
+
+@media (max-width: 539px) {
+  .things-shell,
+  .things-page {
+    padding-top: calc(env(safe-area-inset-top) + var(--things-page-gutter));
+  }
+
+  .things-header {
+    padding: 0 0 var(--things-page-gutter);
   }
 }
 
