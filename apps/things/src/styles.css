@@ -95,7 +95,12 @@ body,
 body.things-theme {
   isolation: isolate;
   color: var(--things-page-ink);
-  background: transparent;
+  background-color: var(--things-page-base);
+  background-image:
+    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
+    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
+    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
+  background-attachment: fixed;
   overscroll-behavior-y: none;
 }
 
@@ -137,11 +142,16 @@ select {
   font: inherit;
 }
 
+body.things-theme input {
+  font-size: 16px;
+}
+
 button,
 a,
 input,
 [role="button"] {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button {
@@ -171,10 +181,10 @@ button {
 
 .things-header {
   display: grid;
-  min-height: 104px;
-  align-content: end;
+  min-height: 0;
+  align-content: start;
   justify-items: start;
-  padding: 12px 4px 18px;
+  padding: 4px 4px 14px;
 }
 
 .things-title,
@@ -222,10 +232,10 @@ button {
   overflow: clip;
   border: 1px solid var(--things-glass-border);
   border-radius: var(--things-radius-panel);
-  background: var(--things-glass-panel);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
   box-shadow: var(--things-glass-shadow);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .things-control-surface,
@@ -445,34 +455,40 @@ button {
   min-width: 0;
 }
 
-.things-combobox input,
-.things-add-item__quantity input {
+.things-add-item > .things-combobox,
+.things-add-item > .things-add-item__quantity {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  align-self: stretch;
+}
+
+.things-add-item .things-combobox__control,
+.things-add-item > .things-add-item__quantity {
+  display: flex;
   width: 100%;
   min-width: 0;
-  min-height: 46px;
-  padding-inline: 12px;
+  height: 48px;
+  min-height: 48px;
+  align-items: stretch;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: 17px;
-  color: var(--things-page-ink);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
 }
 
-.things-combobox .input-group,
-.things-combobox .input-group__wrapper,
-.things-combobox .input-group__input,
-.things-add-item__quantity .text-field__input,
-.things-add-item__quantity .input {
+.things-add-item .things-combobox__control input,
+.things-add-item > .things-add-item__quantity input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding-inline: 12px;
   border: 0;
   border-radius: 17px;
+  color: var(--things-page-ink);
   background: transparent;
   box-shadow: none;
-}
-
-.things-add-item__quantity .input {
-  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  background: var(--things-input-background);
-  box-shadow: var(--field-shadow);
 }
 
 .things-add-item > .things-separator,
@@ -660,14 +676,23 @@ body .alert-dialog__dialog.things-confirm-dialog,
   margin-inline: 12px;
 }
 
+body .drawer__dialog.things-group-drawer,
+.things-item-modal,
+body .alert-dialog__dialog.things-confirm-dialog {
+  background: color-mix(in srgb, var(--overlay) 80%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
 .things-drawer-header {
   position: relative;
   z-index: 2;
   display: grid;
-  min-height: 52px;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  min-height: 56px;
+  flex: 0 0 auto;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  padding: 4px 6px 2px;
+  padding: 6px 8px;
   border-bottom: 0;
   background: transparent;
 }
@@ -751,7 +776,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-drawer-header > span {
   display: grid;
-  width: 48px;
+  width: 44px;
   min-height: 44px;
   place-items: center;
 }
@@ -828,16 +853,25 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-close-button.button,
 .things-delete-group-button.button {
-  width: 40px;
-  min-width: 40px;
-  height: 40px;
-  min-height: 40px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
   border-radius: 999px;
   background: transparent;
 }
 
 .things-close-button.button {
   color: var(--things-page-muted);
+}
+
+.things-close-button.button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.things-close-button.button:focus-visible {
+  outline-color: color-mix(in oklab, var(--things-page-muted) 70%, transparent);
 }
 
 .things-delete-group-button.button {
@@ -1017,20 +1051,25 @@ body .alert-dialog__dialog.things-confirm-dialog,
 }
 
 .things-done-section__header {
-  position: relative;
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .things-done-section__header > span {
-  position: absolute;
-  z-index: 2;
-  top: 2px;
-  right: 0;
+  position: static;
+  align-self: center;
 }
 
 .things-done-trigger {
+  display: inline-flex;
   min-width: 0;
   min-height: 44px;
-  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
   padding: 0 4px;
   border: 0;
   color: var(--things-page-muted);
@@ -1043,7 +1082,12 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-done-section__header .things-done-trigger {
   width: 100%;
-  padding-right: 92px;
+  padding-right: 4px;
+}
+
+.things-done-trigger .disclosure__indicator {
+  flex: 0 0 auto;
+  margin-inline-start: 0;
 }
 
 .things-done-list {
@@ -1106,8 +1150,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
   box-shadow: var(--field-shadow);
 }
 
-.things-item-form .things-combobox .input-group,
-.things-item-form .things-combobox .input-group__wrapper {
+.things-item-form .things-combobox__control {
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -1273,6 +1316,13 @@ body .alert-dialog__dialog.things-confirm-dialog,
   text-align: center;
 }
 
+.things-active-list > .things-empty {
+  display: grid;
+  min-height: 56px;
+  place-items: center;
+  padding: 8px 12px;
+}
+
 .things-error-state h1,
 .things-not-found h1,
 .things-empty-state h2,
@@ -1387,10 +1437,6 @@ body .alert-dialog__dialog.things-confirm-dialog,
   .things-shell,
   .things-page {
     padding-top: max(24px, env(safe-area-inset-top));
-  }
-
-  .things-header {
-    min-height: 82px;
   }
 
   .things-drawer,

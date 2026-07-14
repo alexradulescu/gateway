@@ -17,7 +17,6 @@ export function ThingsHome() {
     <main className="things-shell">
       <header className="things-header">
         <h1>Things</h1>
-        <p>Shared lists, without the ceremony.</p>
       </header>
 
       <Surface className="things-frosted things-group-surface">
@@ -124,6 +123,8 @@ function AddGroupRow() {
           ref={inputRef}
           aria-label="Group name"
           aria-describedby={error ? errorId : undefined}
+          autoComplete="off"
+          name="groupName"
           placeholder="Group name"
           variant="secondary"
           onKeyDown={(event) => {

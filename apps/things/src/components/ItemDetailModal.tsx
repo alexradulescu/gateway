@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent 
 import { createPortal } from "react-dom";
 import { Button, Input, Label, TextField } from "@heroui/react";
 import { FocusScope } from "react-aria";
-import { Trash2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../../../../convex/_generated/api";
@@ -126,7 +126,7 @@ function ItemDetailForm({
               isDisabled={isPending}
               onPress={close}
             >
-              <X aria-hidden="true" size={19} />
+              <X aria-hidden="true" size={22} />
             </Button>
             <h2 id="things-item-dialog-title">Edit item</h2>
             <span aria-hidden="true" className="things-header-spacer" />
@@ -150,6 +150,8 @@ function ItemDetailForm({
                 <Input
                   aria-label="Quantity"
                   aria-describedby={error ? errorId : undefined}
+                  autoComplete="off"
+                  name="quantity"
                   placeholder="Optional"
                   variant="secondary"
                   onKeyDown={(event) => {
@@ -169,12 +171,11 @@ function ItemDetailForm({
               <Button
                 className="things-delete-item"
                 type="button"
-                variant="danger-soft"
+                variant="ghost"
                 isDisabled={isPending}
                 onPress={remove}
               >
-                <Trash2 aria-hidden="true" size={18} />
-                Delete item
+                Delete
               </Button>
               <Button type="submit" variant="secondary" isDisabled={!isDirty || isPending}>
                 Save

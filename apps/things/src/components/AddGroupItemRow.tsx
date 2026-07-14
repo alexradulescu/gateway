@@ -16,7 +16,6 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
   const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
-  const [focusVersion, setFocusVersion] = useState(0);
   const errorId = useId();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -30,7 +29,6 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
       await addItem({ groupId: group._id, name, quantity });
       setName("");
       setQuantity("");
-      setFocusVersion((version) => version + 1);
     } catch (caught) {
       setError(errorMessage(caught, "Could not add the item."));
     } finally {
@@ -47,8 +45,6 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
       onSubmit={submit}
     >
       <CatalogueComboBox
-        key={focusVersion}
-        shouldFocus={focusVersion > 0}
         errorId={error ? errorId : undefined}
         isDisabled={isPending}
         isInvalid={Boolean(error)}
@@ -67,6 +63,8 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
       >
         <Input
           aria-label="Quantity"
+          autoComplete="off"
+          name="quantity"
           placeholder="Qty"
           variant="secondary"
           onKeyDown={(event) => {

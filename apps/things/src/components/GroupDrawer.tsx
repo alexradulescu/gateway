@@ -58,7 +58,6 @@ export function GroupDrawer({
             className="things-frosted things-group-drawer"
             aria-busy={isLoading || undefined}
           >
-            <div ref={setOverlayPortal} className="things-item-overlay-root" />
             <GroupDrawerHeader
               key={groupId}
               actionGroupId={!isLoading ? openedGroup?.group._id : undefined}
@@ -99,7 +98,7 @@ export function GroupDrawer({
                       </div>
                     </section>
                     <AddGroupItemRow group={openedGroup.group} />
-                    <DoneSection openedGroup={openedGroup} />
+                    <DoneSection key={openedGroup.group._id} openedGroup={openedGroup} />
                   </>
                 ) : isLoading ? (
                   <div className="things-drawer-placeholder" aria-hidden="true" />
@@ -110,6 +109,7 @@ export function GroupDrawer({
               <ThingsBusyOverlay isBusy={isLoading} label={`Opening ${groupName}`} />
             </Drawer.Body>
           </Drawer.Dialog>
+          <div ref={setOverlayPortal} className="things-item-overlay-root" />
         </Drawer.Content>
       </Drawer.Backdrop>
       {children}
@@ -179,7 +179,7 @@ function GroupDrawerHeader({
         isDisabled={isSaving}
         onPress={onClose}
       >
-        <X aria-hidden="true" size={19} />
+        <X aria-hidden="true" size={22} />
       </Button>
       <div className="things-drawer-title-wrap">
         {isEditing ? (
@@ -195,6 +195,8 @@ function GroupDrawerHeader({
                 ref={renameInputRef}
                 aria-label="Group name"
                 aria-describedby={error ? errorId : undefined}
+                autoComplete="off"
+                name="groupName"
                 variant="secondary"
                 onBlur={cancelRename}
                 onKeyDown={(event) => {

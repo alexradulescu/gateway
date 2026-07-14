@@ -14,42 +14,42 @@ export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
 
   return (
     <section className="things-done-section things-item-section">
-      <div className="things-done-section__header">
-        <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
+      <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
+        <div className="things-done-section__header">
           <Disclosure.Heading>
             <Button className="things-done-trigger" slot="trigger" variant="tertiary">
-              Done ({openedGroup.completedItems.length})
               <Disclosure.Indicator />
+              <span>Done ({openedGroup.completedItems.length})</span>
             </Button>
           </Disclosure.Heading>
-          <Disclosure.Content>
-            <Disclosure.Body className="things-done-list things-item-group">
-              {openedGroup.completedItems.map((item) => (
-                <GroupItemRow
-                  key={item._id}
-                  groupId={openedGroup.group._id}
-                  isCompleted
-                  item={item}
-                />
-              ))}
-            </Disclosure.Body>
-          </Disclosure.Content>
-        </Disclosure>
-        <ConfirmAction
-          title="Clear completed items?"
-          description="Completed items will be removed from this group. This cannot be undone."
-          confirmLabel="Clear all"
-          trigger={(open) => (
-            <Button className="things-clear-all" size="sm" variant="ghost" onPress={open}>
-              Clear all
-            </Button>
-          )}
-          onConfirm={async () => {
-            await clearCompleted({ groupId: openedGroup.group._id });
-          }}
-          onError={(message) => toast.danger(message)}
-        />
-      </div>
+          <ConfirmAction
+            title="Clear completed items?"
+            description="Completed items will be removed from this group. This cannot be undone."
+            confirmLabel="Clear all"
+            trigger={(open) => (
+              <Button className="things-clear-all" size="sm" variant="ghost" onPress={open}>
+                Clear all
+              </Button>
+            )}
+            onConfirm={async () => {
+              await clearCompleted({ groupId: openedGroup.group._id });
+            }}
+            onError={(message) => toast.danger(message)}
+          />
+        </div>
+        <Disclosure.Content>
+          <Disclosure.Body className="things-done-list things-item-group">
+            {openedGroup.completedItems.map((item) => (
+              <GroupItemRow
+                key={item._id}
+                groupId={openedGroup.group._id}
+                isCompleted
+                item={item}
+              />
+            ))}
+          </Disclosure.Body>
+        </Disclosure.Content>
+      </Disclosure>
     </section>
   );
 }

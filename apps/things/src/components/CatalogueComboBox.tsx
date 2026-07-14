@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { ComboBox, Input, ListBox } from "@heroui/react";
 import { rankCatalogueMatches } from "../../../../convex/thingsDomain";
 import { useThingsData } from "../context/ThingsDataContext";
@@ -14,7 +14,6 @@ type CatalogueComboBoxProps = {
   isDisabled?: boolean;
   isInvalid?: boolean;
   errorId?: string;
-  shouldFocus?: boolean;
 };
 
 export function CatalogueComboBox({
@@ -26,7 +25,6 @@ export function CatalogueComboBox({
   isDisabled = false,
   isInvalid = false,
   errorId,
-  shouldFocus = false,
 }: CatalogueComboBoxProps) {
   const { catalogue } = useThingsData();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,10 +38,6 @@ export function CatalogueComboBox({
     [catalogue, value],
   );
 
-  useEffect(() => {
-    if (shouldFocus) inputRef.current?.focus();
-  }, [shouldFocus]);
-
   return (
     <ComboBox
       allowsCustomValue
@@ -51,6 +45,7 @@ export function CatalogueComboBox({
       aria-label={label}
       className="things-combobox"
       defaultFilter={keepPreRankedMatch}
+      fullWidth
       inputValue={value}
       isDisabled={isDisabled}
       menuTrigger="input"
@@ -64,12 +59,15 @@ export function CatalogueComboBox({
         }
       }}
     >
-      <ComboBox.InputGroup>
+      <ComboBox.InputGroup className="things-combobox__control">
         <Input
           ref={inputRef}
           aria-label={label}
           aria-describedby={errorId}
           aria-invalid={isInvalid || undefined}
+          autoComplete="off"
+          fullWidth
+          name="itemName"
           placeholder={placeholder}
           variant="secondary"
           onKeyDown={(event) => {

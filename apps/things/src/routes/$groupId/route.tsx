@@ -3,6 +3,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { GroupDrawer } from "../../components/GroupDrawer";
+import { ThingsNotFound } from "../../components/ThingsStates";
 import { useThingsData } from "../../context/ThingsDataContext";
 import { OpenedGroupProvider } from "../../context/OpenedGroupContext";
 import type { OpenedGroup } from "../../types";
@@ -26,6 +27,14 @@ function OpenedGroupRoute() {
     home.groups.find((group) => group._id === groupId)?.name ??
     displayedGroup?.group.name ??
     "Group";
+
+  if (openedGroup === null) {
+    return (
+      <div className="things-full-page-layer">
+        <ThingsNotFound message="That group does not exist." />
+      </div>
+    );
+  }
 
   return (
     <GroupDrawer
