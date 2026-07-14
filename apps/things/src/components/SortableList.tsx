@@ -46,9 +46,9 @@ export function SortableList<Item extends { _id: string }>({
   const [isSaving, setIsSaving] = useState(false);
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    // TouchSensor installs the non-passive touchmove listener required by iOS Safari.
-    // A short hold avoids accidental reorders while keeping the dedicated handle responsive.
-    useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 8 } }),
+    // The handle already disables scrolling, so touch drag should begin with movement instead of
+    // a hidden long-press delay that cancels normal iPhone gestures.
+    useSensor(TouchSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const displayedItems = isSaving ? orderedItems : items;
@@ -111,7 +111,7 @@ function SortableEntry({
   };
 
   return (
-    <div style={style} data-dragging={sortable.isDragging || undefined}>
+    <div ref={sortable.setNodeRef} style={style} data-dragging={sortable.isDragging || undefined}>
       {render({
         attributes: sortable.attributes,
         listeners: sortable.listeners,

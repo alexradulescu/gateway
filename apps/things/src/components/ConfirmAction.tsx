@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { AlertDialog, Button, Spinner } from "@heroui/react";
+import { AlertDialog, Button } from "@heroui/react";
 import { errorMessage } from "../context/ThingsDataContext";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 type ConfirmActionProps = {
   trigger: (open: () => void) => React.ReactNode;
@@ -44,7 +45,10 @@ export function ConfirmAction({
         onOpenChange={isPending ? undefined : setIsOpen}
       >
         <AlertDialog.Container>
-          <AlertDialog.Dialog className="things-frosted things-confirm-dialog">
+          <AlertDialog.Dialog
+            className="things-frosted things-confirm-dialog"
+            aria-busy={isPending || undefined}
+          >
             <AlertDialog.Header>
               <AlertDialog.Icon status="danger" />
               <AlertDialog.Heading>{title}</AlertDialog.Heading>
@@ -55,9 +59,10 @@ export function ConfirmAction({
                 Cancel
               </Button>
               <Button variant="danger" isDisabled={isPending} onPress={confirm}>
-                {isPending ? <Spinner color="current" size="sm" /> : confirmLabel}
+                {confirmLabel}
               </Button>
             </AlertDialog.Footer>
+            <ThingsBusyOverlay isBusy={isPending} label={confirmLabel} />
           </AlertDialog.Dialog>
         </AlertDialog.Container>
       </AlertDialog.Backdrop>

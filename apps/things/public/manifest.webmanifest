@@ -6,7 +6,7 @@
   "scope": "/things/",
   "display": "standalone",
   "background_color": "#edf3ed",
-  "theme_color": "#2f6f5e",
+  "theme_color": "#101a17",
   "icons": [
     {
       "src": "/things/icons/things-icon-192.png",

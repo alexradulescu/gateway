@@ -13,7 +13,7 @@ export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
   if (openedGroup.completedItems.length === 0) return null;
 
   return (
-    <section className="things-done-section">
+    <section className="things-done-section things-item-section">
       <div className="things-done-section__header">
         <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
           <Disclosure.Heading>
@@ -23,7 +23,7 @@ export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
             </Button>
           </Disclosure.Heading>
           <Disclosure.Content>
-            <Disclosure.Body className="things-done-list">
+            <Disclosure.Body className="things-done-list things-item-group">
               {openedGroup.completedItems.map((item) => (
                 <GroupItemRow
                   key={item._id}
@@ -40,7 +40,7 @@ export function DoneSection({ openedGroup }: { openedGroup: OpenedGroup }) {
           description="Completed items will be removed from this group. This cannot be undone."
           confirmLabel="Clear all"
           trigger={(open) => (
-            <Button size="sm" variant="danger-soft" onPress={open}>
+            <Button className="things-clear-all" size="sm" variant="ghost" onPress={open}>
               Clear all
             </Button>
           )}

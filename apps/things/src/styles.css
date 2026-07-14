@@ -44,6 +44,8 @@
   --things-glass-border-subtle: color-mix(in oklab, var(--border) 58%, transparent);
   --things-glass-separator: var(--separator);
   --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
+  --things-input-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
+  --things-item-group-background: color-mix(in oklab, var(--foreground) 4%, var(--surface));
 
   --things-glass-shadow: var(--surface-shadow);
   --things-glass-shadow-raised: var(--overlay-shadow);
@@ -65,18 +67,27 @@
     --things-glass-panel: color-mix(in oklab, var(--surface) 76%, transparent);
     --things-glass-panel-strong: color-mix(in oklab, var(--overlay) 86%, transparent);
     --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
+    --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
+    --things-item-group-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
   }
 }
 
 html {
   min-width: 320px;
   min-height: 100%;
-  background: var(--things-page-base);
+  min-height: 100dvh;
+  background-color: var(--things-page-base);
+  background-image:
+    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
+    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
+    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
+  background-attachment: fixed;
 }
 
 body {
   min-width: 320px;
-  min-height: 100svh;
+  min-height: 100%;
+  min-height: 100dvh;
   margin: 0;
 }
 
@@ -84,12 +95,7 @@ body,
 body.things-theme {
   isolation: isolate;
   color: var(--things-page-ink);
-  background-color: var(--things-page-base);
-  background-image:
-    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
-    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
-    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
-  background-attachment: fixed;
+  background: transparent;
   overscroll-behavior-y: none;
 }
 
@@ -114,7 +120,8 @@ body.things-theme::before {
 #root {
   position: relative;
   z-index: 1;
-  min-height: 100svh;
+  min-height: 100%;
+  min-height: 100dvh;
 }
 
 *,
@@ -152,7 +159,7 @@ button {
 .things-page,
 .things-app {
   width: 100%;
-  min-height: 100svh;
+  min-height: 100dvh;
 }
 
 .things-shell,
@@ -372,11 +379,16 @@ button {
 }
 
 .things-add-group {
+  position: relative;
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr) 44px;
-  overflow: hidden;
+  gap: 8px;
+  overflow: visible;
   margin: 8px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .things-add-group__field {
@@ -387,8 +399,7 @@ button {
   min-width: 44px;
   min-height: 44px;
   align-self: stretch;
-  border-radius: 0 calc(var(--things-radius-control) - 1px) calc(var(--things-radius-control) - 1px)
-    0;
+  border-radius: 999px;
   color: var(--things-accent-ink);
   background: var(--things-accent);
 }
@@ -405,19 +416,21 @@ button {
   display: grid;
   min-width: 0;
   min-height: 48px;
-  grid-template-columns: minmax(0, 1fr) 1px minmax(76px, 28%) 1px 48px;
+  grid-template-columns: minmax(0, 1fr) minmax(76px, 28%) 48px;
   align-items: stretch;
+  gap: 6px;
   overflow: visible;
   margin: 8px 0 10px;
-  background: var(--things-glass-popover);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .things-add-item > button {
   min-width: 48px;
   min-height: 48px;
   align-self: stretch;
-  border-radius: 0 calc(var(--things-radius-control) - 1px) calc(var(--things-radius-control) - 1px)
-    0;
+  border-radius: 999px;
   color: var(--things-accent-ink);
   background: var(--things-accent);
 }
@@ -438,9 +451,11 @@ button {
   min-width: 0;
   min-height: 46px;
   padding-inline: 12px;
-  border: 0;
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  border-radius: 17px;
   color: var(--things-page-ink);
-  background: transparent;
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
 }
 
 .things-combobox .input-group,
@@ -449,8 +464,15 @@ button {
 .things-add-item__quantity .text-field__input,
 .things-add-item__quantity .input {
   border: 0;
+  border-radius: 17px;
   background: transparent;
   box-shadow: none;
+}
+
+.things-add-item__quantity .input {
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
 }
 
 .things-add-item > .things-separator,
@@ -467,10 +489,11 @@ button {
   min-width: 0;
   min-height: 46px;
   padding: 0 13px;
-  border: 0;
-  border-radius: inherit;
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  border-radius: 17px;
   color: var(--things-page-ink);
-  background: transparent;
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
   appearance: none;
 }
 
@@ -490,8 +513,8 @@ button {
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 12px;
-  color: var(--things-accent-strong);
+  border-radius: 999px;
+  color: var(--things-page-muted);
   background: transparent;
   cursor: pointer;
 }
@@ -553,6 +576,7 @@ body .drawer__dialog {
 .things-group-drawer,
 .things-drawer--group,
 [data-things-drawer="group"] {
+  position: relative;
   display: flex;
   width: min(100%, var(--things-max-width));
   max-height: min(720px, calc(var(--visual-viewport-height, 100dvh) - 8px));
@@ -594,6 +618,7 @@ body .drawer__dialog {
 }
 
 .things-item-modal {
+  position: relative;
   display: flex;
   width: min(100%, var(--things-max-width));
   max-width: var(--things-max-width);
@@ -630,6 +655,7 @@ body .alert-dialog__dialog {
 
 body .alert-dialog__dialog.things-confirm-dialog,
 .alert-dialog__dialog.things-confirm-dialog {
+  position: relative;
   width: min(calc(100vw - 24px), 400px);
   margin-inline: 12px;
 }
@@ -642,7 +668,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
   grid-template-columns: 48px minmax(0, 1fr) 48px;
   align-items: center;
   padding: 4px 6px 2px;
-  border-bottom: 1px solid var(--things-glass-separator);
+  border-bottom: 0;
   background: transparent;
 }
 
@@ -694,6 +720,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
   display: grid;
   min-width: 0;
   align-items: center;
+  border-radius: 17px;
 }
 
 .things-drawer-title-wrap input {
@@ -701,16 +728,12 @@ body .alert-dialog__dialog.things-confirm-dialog,
   min-width: 0;
   height: 38px;
   padding: 0 30px 0 10px;
-  border: 1px solid color-mix(in oklab, var(--things-accent) 38%, transparent);
-  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  border-radius: 17px;
   color: var(--things-page-ink);
-  background: var(--things-glass-control);
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
   text-align: center;
-}
-
-.things-drawer-title-wrap .things-inline-spinner {
-  position: absolute;
-  right: 8px;
 }
 
 .things-drawer-title-wrap .things-field-error {
@@ -744,6 +767,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
 }
 
 .things-group-drawer__body {
+  position: relative;
   min-height: 0;
   flex: 0 1 auto;
   overflow-x: hidden;
@@ -752,6 +776,20 @@ body .alert-dialog__dialog.things-confirm-dialog,
   padding: 4px 12px max(10px, env(safe-area-inset-bottom));
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
+}
+
+.things-group-drawer__content,
+.things-drawer-placeholder,
+.things-drawer-message {
+  min-height: 210px;
+}
+
+.things-drawer-message {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--things-page-muted);
+  font-size: 0.86rem;
 }
 
 .things-active-list > div + div,
@@ -773,11 +811,12 @@ body .alert-dialog__dialog.things-confirm-dialog,
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   padding: 14px var(--things-page-gutter) var(--things-safe-bottom);
-  border-top: 1px solid var(--things-glass-separator);
-  background: color-mix(in oklab, var(--things-glass-panel-strong) 92%, transparent);
+  border-top: 0;
+  background: transparent;
 }
 
 .things-item-form__actions > button {
+  width: 100%;
   min-height: 48px;
   border-radius: 14px;
   font-weight: 680;
@@ -785,6 +824,34 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-delete-item {
   justify-content: center;
+}
+
+.things-close-button.button,
+.things-delete-group-button.button {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.things-close-button.button {
+  color: var(--things-page-muted);
+}
+
+.things-delete-group-button.button {
+  color: var(--things-danger);
+}
+
+.things-close-button.button[data-hovered="true"],
+.things-close-button.button[data-pressed="true"] {
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.things-delete-group-button.button[data-hovered="true"],
+.things-delete-group-button.button[data-pressed="true"] {
+  background: var(--things-danger-soft);
 }
 
 /* Group switching */
@@ -821,10 +888,31 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 /* Item list */
 
+.things-item-section {
+  margin: 2px 0 10px;
+}
+
+.things-item-section__label {
+  margin: 0;
+  padding: 0 8px 6px;
+  color: var(--things-page-muted);
+  font-size: 0.72rem;
+  font-weight: 680;
+  letter-spacing: 0.02em;
+}
+
+.things-item-group {
+  overflow: hidden;
+  border: 0;
+  border-radius: 18px;
+  background: var(--things-item-group-background);
+  box-shadow: var(--surface-shadow);
+}
+
 .things-item-row {
   position: relative;
   display: grid;
-  min-height: 48px;
+  min-height: 46px;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: stretch;
   background: transparent;
@@ -838,13 +926,13 @@ body .alert-dialog__dialog.things-confirm-dialog,
 .things-item-main {
   display: flex;
   align-items: center;
-  padding-inline: 4px 8px;
+  padding-inline: 2px 6px;
 }
 
 .things-item-row__main {
   display: flex;
   align-items: center;
-  padding-inline: 4px 8px;
+  padding-inline: 2px 6px;
 }
 
 .things-item-checkbox {
@@ -916,8 +1004,8 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-done,
 .things-done-section {
-  margin-top: 2px;
-  border-top: 1px solid var(--things-glass-separator);
+  margin-top: 10px;
+  border-top: 0;
 }
 
 .things-done-header {
@@ -937,10 +1025,6 @@ body .alert-dialog__dialog.things-confirm-dialog,
   z-index: 2;
   top: 2px;
   right: 0;
-}
-
-.things-done-section__header > span button {
-  min-height: 44px;
 }
 
 .things-done-trigger {
@@ -968,14 +1052,22 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 .things-clear-completed,
 .things-clear-all {
-  min-height: 44px;
-  padding: 0 5px 0 12px;
+  min-height: 30px;
+  padding: 0 10px;
   border: 0;
   color: var(--things-danger);
   background: transparent;
   font-size: 0.8rem;
   font-weight: 630;
   cursor: pointer;
+}
+
+.things-clear-all.button {
+  height: 30px;
+  min-height: 30px;
+  border-radius: 999px;
+  color: var(--things-danger);
+  font-size: 0.75rem;
 }
 
 /* Item form and actions */
@@ -1008,6 +1100,10 @@ body .alert-dialog__dialog.things-confirm-dialog,
   width: 100%;
   min-width: 0;
   min-height: 48px;
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  border-radius: 17px;
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
 }
 
 .things-item-form .things-combobox .input-group,
@@ -1015,6 +1111,38 @@ body .alert-dialog__dialog.things-confirm-dialog,
   border: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.things-add-group input:focus,
+.things-add-item input:focus,
+.things-item-form input:focus,
+.things-drawer-title-wrap input:focus {
+  border-color: color-mix(in oklab, var(--things-accent) 54%, var(--border));
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--things-accent) 16%, transparent);
+}
+
+.things-busy-overlay {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: color-mix(in oklab, var(--things-glass-panel-strong) 72%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  cursor: progress;
+}
+
+.things-busy-overlay__indicator {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--things-glass-popover);
+  box-shadow: var(--overlay-shadow);
 }
 
 .things-field {
@@ -1275,7 +1403,7 @@ body .alert-dialog__dialog.things-confirm-dialog,
 
 @media (max-width: 360px) {
   .things-add-item {
-    grid-template-columns: minmax(0, 1fr) 1px 78px 1px 46px;
+    grid-template-columns: minmax(0, 1fr) 76px 46px;
   }
 
   .things-group-row {

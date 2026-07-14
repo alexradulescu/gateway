@@ -1,11 +1,12 @@
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Button, Input, Separator, Spinner, TextField } from "@heroui/react";
+import { Button, Input, TextField } from "@heroui/react";
 import { Plus } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { errorMessage } from "../context/ThingsDataContext";
 import type { OpenedGroup } from "../types";
 import { CatalogueComboBox } from "./CatalogueComboBox";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
   const addItem = useMutation(api.things.addGroupItem);
@@ -39,7 +40,12 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
   }
 
   return (
-    <form ref={formRef} className="things-add-item" onSubmit={submit}>
+    <form
+      ref={formRef}
+      className="things-add-item"
+      aria-busy={isPending || undefined}
+      onSubmit={submit}
+    >
       <CatalogueComboBox
         key={focusVersion}
         shouldFocus={focusVersion > 0}
@@ -52,7 +58,6 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
         onChange={setName}
         onSubmitRequest={() => formRef.current?.requestSubmit()}
       />
-      <Separator className="things-separator" orientation="vertical" />
       <TextField
         aria-label="Quantity"
         className="things-add-item__quantity"
@@ -63,6 +68,7 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
         <Input
           aria-label="Quantity"
           placeholder="Qty"
+          variant="secondary"
           onKeyDown={(event) => {
             if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
             event.preventDefault();
@@ -70,10 +76,10 @@ export function AddGroupItemRow({ group }: { group: OpenedGroup["group"] }) {
           }}
         />
       </TextField>
-      <Separator className="things-separator" orientation="vertical" />
       <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
-        {isPending ? <Spinner color="current" size="sm" /> : <Plus aria-hidden="true" size={19} />}
+        <Plus aria-hidden="true" size={19} />
       </Button>
+      <ThingsBusyOverlay isBusy={isPending} label="Adding item" />
       {error && (
         <p id={errorId} className="things-field-error things-add-item__error" role="alert">
           {error}

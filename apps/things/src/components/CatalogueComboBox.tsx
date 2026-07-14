@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { ComboBox, Input, Label, ListBox } from "@heroui/react";
+import { ComboBox, Input, ListBox } from "@heroui/react";
 import { rankCatalogueMatches } from "../../../../convex/thingsDomain";
 import { useThingsData } from "../context/ThingsDataContext";
 
@@ -64,7 +64,6 @@ export function CatalogueComboBox({
         }
       }}
     >
-      <Label className="sr-only">{label}</Label>
       <ComboBox.InputGroup>
         <Input
           ref={inputRef}
@@ -72,6 +71,7 @@ export function CatalogueComboBox({
           aria-describedby={errorId}
           aria-invalid={isInvalid || undefined}
           placeholder={placeholder}
+          variant="secondary"
           onKeyDown={(event) => {
             if (
               event.key !== "Enter" ||

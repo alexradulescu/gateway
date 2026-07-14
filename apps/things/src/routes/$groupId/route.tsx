@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
-import { ThingsHome } from "../../components/ThingsHome";
 import { GroupDrawer } from "../../components/GroupDrawer";
-import { ThingsLoading, ThingsNotFound } from "../../components/ThingsStates";
+import { useThingsData } from "../../context/ThingsDataContext";
 import { OpenedGroupProvider } from "../../context/OpenedGroupContext";
+import type { OpenedGroup } from "../../types";
 
 export const Route = createFileRoute("/$groupId")({
   component: OpenedGroupRoute,
@@ -12,17 +13,32 @@ export const Route = createFileRoute("/$groupId")({
 
 function OpenedGroupRoute() {
   const { groupId } = Route.useParams();
+  const { home } = useThingsData();
   const openedGroup = useQuery(api.things.openedGroup, { groupId });
+  const [lastResolvedGroup, setLastResolvedGroup] = useState<OpenedGroup | null>(null);
 
-  if (openedGroup === undefined) return <ThingsLoading label="Opening group" />;
-  if (openedGroup === null) return <ThingsNotFound message="That group does not exist." />;
+  useEffect(() => {
+    if (openedGroup) setLastResolvedGroup(openedGroup);
+  }, [openedGroup]);
+
+  const displayedGroup = openedGroup === undefined ? lastResolvedGroup : openedGroup;
+  const groupName =
+    home.groups.find((group) => group._id === groupId)?.name ??
+    displayedGroup?.group.name ??
+    "Group";
 
   return (
-    <OpenedGroupProvider value={openedGroup}>
-      <ThingsHome />
-      <GroupDrawer key={openedGroup.group._id} openedGroup={openedGroup}>
-        <Outlet />
-      </GroupDrawer>
-    </OpenedGroupProvider>
+    <GroupDrawer
+      groupId={groupId}
+      groupName={groupName}
+      isLoading={openedGroup === undefined}
+      openedGroup={displayedGroup}
+    >
+      {openedGroup ? (
+        <OpenedGroupProvider value={openedGroup}>
+          <Outlet />
+        </OpenedGroupProvider>
+      ) : null}
+    </GroupDrawer>
   );
 }

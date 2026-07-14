@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Button, Input, Spinner, Surface, TextField } from "@heroui/react";
+import { Button, Input, Surface, TextField } from "@heroui/react";
 import { GripVertical, Plus } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -7,6 +7,7 @@ import { api } from "../../../../convex/_generated/api";
 import { errorMessage, useThingsData } from "../context/ThingsDataContext";
 import type { ThingsGroupSummary } from "../types";
 import { SortableList, type SortableHandle } from "./SortableList";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 export function ThingsHome() {
   const { home } = useThingsData();
@@ -53,7 +54,7 @@ function GroupRow({ group, handle }: { group: ThingsGroupSummary; handle: Sortab
         {String(order).padStart(2, "0")}
       </span>
       <button
-        className="things-row-main"
+        className="things-row-main things-group-main"
         type="button"
         onClick={() => navigate({ to: "/$groupId", params: { groupId: group._id } })}
       >
@@ -105,7 +106,12 @@ function AddGroupRow() {
   }
 
   return (
-    <form ref={formRef} className="things-add-group" onSubmit={submit}>
+    <form
+      ref={formRef}
+      className="things-add-group"
+      aria-busy={isPending || undefined}
+      onSubmit={submit}
+    >
       <TextField
         aria-label="Group name"
         className="things-add-group__field"
@@ -119,6 +125,7 @@ function AddGroupRow() {
           aria-label="Group name"
           aria-describedby={error ? errorId : undefined}
           placeholder="Group name"
+          variant="secondary"
           onKeyDown={(event) => {
             if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
             event.preventDefault();
@@ -127,8 +134,9 @@ function AddGroupRow() {
         />
       </TextField>
       <Button isIconOnly aria-label="Add group" type="submit" isDisabled={isPending}>
-        {isPending ? <Spinner color="current" size="sm" /> : <Plus aria-hidden="true" size={19} />}
+        <Plus aria-hidden="true" size={19} />
       </Button>
+      <ThingsBusyOverlay isBusy={isPending} label="Adding group" />
       {error && (
         <p id={errorId} className="things-field-error" role="alert">
           {error}

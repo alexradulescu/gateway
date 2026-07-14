@@ -4,7 +4,6 @@ import {
   Drawer,
   Input,
   ScrollShadow,
-  Spinner,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -22,13 +21,20 @@ import { ConfirmAction } from "./ConfirmAction";
 import { DoneSection } from "./DoneSection";
 import { GroupItemRow } from "./GroupItemRow";
 import { SortableList } from "./SortableList";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 export function GroupDrawer({
   children,
+  groupId,
+  groupName,
+  isLoading,
   openedGroup,
 }: {
   children: ReactNode;
-  openedGroup: OpenedGroup;
+  groupId: string;
+  groupName: string;
+  isLoading: boolean;
+  openedGroup: OpenedGroup | null;
 }) {
   const navigate = useNavigate({ from: "/$groupId" });
   const reorderItems = useMutation(api.things.reorderGroupItems);
@@ -48,37 +54,60 @@ export function GroupDrawer({
         onOpenChange={(open) => !open && close()}
       >
         <Drawer.Content placement="bottom">
-          <Drawer.Dialog className="things-frosted things-group-drawer">
+          <Drawer.Dialog
+            className="things-frosted things-group-drawer"
+            aria-busy={isLoading || undefined}
+          >
             <div ref={setOverlayPortal} className="things-item-overlay-root" />
-            <GroupDrawerHeader openedGroup={openedGroup} onClose={close} />
+            <GroupDrawerHeader
+              key={groupId}
+              actionGroupId={!isLoading ? openedGroup?.group._id : undefined}
+              groupName={groupName}
+              isDisabled={isLoading || openedGroup === null}
+              onClose={close}
+            />
             <Drawer.Body className="things-group-drawer__body">
-              <GroupSwitcher currentGroupId={openedGroup.group._id} />
-              <section aria-label="Active items" className="things-active-list">
-                {openedGroup.activeItems.length === 0 ? (
-                  <p className="things-empty">Nothing active yet.</p>
+              <div className="things-group-drawer__content" inert={isLoading || undefined}>
+                <GroupSwitcher currentGroupId={groupId} />
+                {openedGroup ? (
+                  <>
+                    <section aria-label="To do" className="things-item-section">
+                      <h3 className="things-item-section__label">To do</h3>
+                      <div className="things-item-group things-active-list">
+                        {openedGroup.activeItems.length === 0 ? (
+                          <p className="things-empty">Nothing active yet.</p>
+                        ) : (
+                          <SortableList
+                            items={openedGroup.activeItems}
+                            failureMessage="Could not save the item order."
+                            onReorder={async (items) => {
+                              await reorderItems({
+                                groupId: openedGroup.group._id,
+                                itemIds: items.map((item) => item._id),
+                              });
+                            }}
+                            renderItem={(item, handle) => (
+                              <GroupItemRow
+                                groupId={openedGroup.group._id}
+                                handle={handle}
+                                isCompleted={false}
+                                item={item}
+                              />
+                            )}
+                          />
+                        )}
+                      </div>
+                    </section>
+                    <AddGroupItemRow group={openedGroup.group} />
+                    <DoneSection openedGroup={openedGroup} />
+                  </>
+                ) : isLoading ? (
+                  <div className="things-drawer-placeholder" aria-hidden="true" />
                 ) : (
-                  <SortableList
-                    items={openedGroup.activeItems}
-                    failureMessage="Could not save the item order."
-                    onReorder={async (items) => {
-                      await reorderItems({
-                        groupId: openedGroup.group._id,
-                        itemIds: items.map((item) => item._id),
-                      });
-                    }}
-                    renderItem={(item, handle) => (
-                      <GroupItemRow
-                        groupId={openedGroup.group._id}
-                        handle={handle}
-                        isCompleted={false}
-                        item={item}
-                      />
-                    )}
-                  />
+                  <p className="things-drawer-message">That group does not exist.</p>
                 )}
-              </section>
-              <AddGroupItemRow group={openedGroup.group} />
-              <DoneSection openedGroup={openedGroup} />
+              </div>
+              <ThingsBusyOverlay isBusy={isLoading} label={`Opening ${groupName}`} />
             </Drawer.Body>
           </Drawer.Dialog>
         </Drawer.Content>
@@ -89,17 +118,21 @@ export function GroupDrawer({
 }
 
 function GroupDrawerHeader({
-  openedGroup,
+  actionGroupId,
+  groupName,
+  isDisabled,
   onClose,
 }: {
-  openedGroup: OpenedGroup;
+  actionGroupId?: OpenedGroup["group"]["_id"];
+  groupName: string;
+  isDisabled: boolean;
   onClose: () => void;
 }) {
   const navigate = useNavigate({ from: "/$groupId" });
   const renameGroup = useMutation(api.things.renameGroup);
   const deleteGroup = useMutation(api.things.deleteGroup);
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(openedGroup.group.name);
+  const [name, setName] = useState(groupName);
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const errorId = useId();
@@ -113,19 +146,19 @@ function GroupDrawerHeader({
 
   function cancelRename() {
     if (isSaving) return;
-    setName(openedGroup.group.name);
+    setName(groupName);
     setError("");
     setIsEditing(false);
   }
 
   async function submitRename(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (renamePendingRef.current) return;
+    if (renamePendingRef.current || !actionGroupId) return;
     renamePendingRef.current = true;
     setError("");
     setIsSaving(true);
     try {
-      await renameGroup({ groupId: openedGroup.group._id, name });
+      await renameGroup({ groupId: actionGroupId, name });
       setIsEditing(false);
     } catch (caught) {
       setError(errorMessage(caught, "Could not rename the group."));
@@ -137,18 +170,20 @@ function GroupDrawerHeader({
 
   return (
     <Drawer.Header className="things-drawer-header">
-      <button
+      <Button
+        isIconOnly
         className="things-close-button"
-        type="button"
+        size="sm"
+        variant="ghost"
         aria-label="Close group"
-        disabled={isSaving}
-        onClick={onClose}
+        isDisabled={isSaving}
+        onPress={onClose}
       >
         <X aria-hidden="true" size={19} />
-      </button>
+      </Button>
       <div className="things-drawer-title-wrap">
         {isEditing ? (
-          <form ref={renameFormRef} onSubmit={submitRename}>
+          <form ref={renameFormRef} aria-busy={isSaving || undefined} onSubmit={submitRename}>
             <TextField
               aria-label="Group name"
               isInvalid={Boolean(error)}
@@ -160,6 +195,7 @@ function GroupDrawerHeader({
                 ref={renameInputRef}
                 aria-label="Group name"
                 aria-describedby={error ? errorId : undefined}
+                variant="secondary"
                 onBlur={cancelRename}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
@@ -174,7 +210,7 @@ function GroupDrawerHeader({
                 }}
               />
             </TextField>
-            {isSaving && <Spinner className="things-inline-spinner" color="accent" size="sm" />}
+            <ThingsBusyOverlay isBusy={isSaving} label="Renaming group" />
             {error && (
               <p id={errorId} className="things-field-error" role="alert">
                 {error}
@@ -182,22 +218,36 @@ function GroupDrawerHeader({
             )}
           </form>
         ) : (
-          <button className="things-drawer-title" type="button" onClick={() => setIsEditing(true)}>
-            <Drawer.Heading>{openedGroup.group.name}</Drawer.Heading>
+          <button
+            className="things-drawer-title"
+            type="button"
+            disabled={isDisabled}
+            onClick={() => setIsEditing(true)}
+          >
+            <Drawer.Heading>{groupName}</Drawer.Heading>
           </button>
         )}
       </div>
       <ConfirmAction
-        title={`Delete ${openedGroup.group.name}?`}
+        title={`Delete ${groupName}?`}
         description="The group and all of its items will be removed. This cannot be undone."
         confirmLabel="Delete group"
         trigger={(open) => (
-          <Button isIconOnly aria-label="Delete group" variant="danger-soft" onPress={open}>
+          <Button
+            isIconOnly
+            aria-label="Delete group"
+            className="things-delete-group-button"
+            isDisabled={isDisabled}
+            size="sm"
+            variant="ghost"
+            onPress={open}
+          >
             <Trash2 aria-hidden="true" size={18} />
           </Button>
         )}
         onConfirm={async () => {
-          await deleteGroup({ groupId: openedGroup.group._id });
+          if (!actionGroupId) return;
+          await deleteGroup({ groupId: actionGroupId });
           await navigate({ to: "/" });
         }}
         onError={(message) => toast.danger(message)}

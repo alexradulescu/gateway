@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Checkbox, Spinner, toast } from "@heroui/react";
+import { Checkbox, toast } from "@heroui/react";
 import { GripVertical } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -7,6 +7,7 @@ import { api } from "../../../../convex/_generated/api";
 import { errorMessage } from "../context/ThingsDataContext";
 import type { ThingsGroupItem } from "../types";
 import type { SortableHandle } from "./SortableList";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 type GroupItemRowProps = {
   item: ThingsGroupItem;
@@ -37,6 +38,7 @@ export function GroupItemRow({ item, groupId, isCompleted, handle }: GroupItemRo
       className="things-item-row"
       data-completed={isCompleted || undefined}
       data-pending={isPending || undefined}
+      aria-busy={isPending || undefined}
     >
       <Checkbox
         aria-label={
@@ -49,7 +51,7 @@ export function GroupItemRow({ item, groupId, isCompleted, handle }: GroupItemRo
       >
         <Checkbox.Content>
           <Checkbox.Control>
-            {isPending ? <Spinner color="accent" size="sm" /> : <Checkbox.Indicator />}
+            <Checkbox.Indicator />
           </Checkbox.Control>
         </Checkbox.Content>
       </Checkbox>
@@ -81,6 +83,7 @@ export function GroupItemRow({ item, groupId, isCompleted, handle }: GroupItemRo
           <GripVertical aria-hidden="true" size={18} />
         </button>
       )}
+      <ThingsBusyOverlay isBusy={isPending} label="Updating item" />
     </div>
   );
 }

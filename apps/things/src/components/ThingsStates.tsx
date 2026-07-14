@@ -1,14 +1,5 @@
-import { Button, Spinner } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { useNavigate } from "@tanstack/react-router";
-
-export function ThingsLoading({ label = "Loading Things" }: { label?: string }) {
-  return (
-    <main className="things-state" aria-busy="true" aria-label={label}>
-      <Spinner color="accent" size="lg" />
-      <p>{label}…</p>
-    </main>
-  );
-}
 
 export function ThingsNotFound({ message = "That Things page no longer exists." }) {
   return (

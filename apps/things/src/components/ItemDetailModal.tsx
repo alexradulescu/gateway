@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { Button, Input, Label, Spinner, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField } from "@heroui/react";
 import { FocusScope } from "react-aria";
 import { Trash2, X } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -12,6 +12,7 @@ import { useOpenedGroup } from "../context/OpenedGroupContext";
 import { useItemOverlayPortal } from "../context/ItemOverlayPortalContext";
 import { CatalogueComboBox } from "./CatalogueComboBox";
 import { ThingsNotFound } from "./ThingsStates";
+import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 export function ItemDetailModal({ groupId, itemId }: { groupId: string; itemId: string }) {
   const openedGroup = useOpenedGroup();
@@ -110,19 +111,23 @@ function ItemDetailForm({
           className="things-frosted things-item-modal"
           aria-labelledby="things-item-dialog-title"
           aria-modal="true"
+          aria-busy={isPending || undefined}
           onKeyDown={handleKeyDown}
         >
           <header className="things-drawer-header">
-            <button
+            <Button
+              isIconOnly
               ref={closeButtonRef}
               className="things-close-button"
+              size="sm"
               type="button"
+              variant="ghost"
               aria-label="Close item"
-              disabled={isPending}
-              onClick={close}
+              isDisabled={isPending}
+              onPress={close}
             >
               <X aria-hidden="true" size={19} />
-            </button>
+            </Button>
             <h2 id="things-item-dialog-title">Edit item</h2>
             <span aria-hidden="true" className="things-header-spacer" />
           </header>
@@ -146,6 +151,7 @@ function ItemDetailForm({
                   aria-label="Quantity"
                   aria-describedby={error ? errorId : undefined}
                   placeholder="Optional"
+                  variant="secondary"
                   onKeyDown={(event) => {
                     if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
                     event.preventDefault();
@@ -163,22 +169,22 @@ function ItemDetailForm({
               <Button
                 className="things-delete-item"
                 type="button"
-                variant="danger"
+                variant="danger-soft"
                 isDisabled={isPending}
                 onPress={remove}
               >
-                {pendingAction === "delete" ? (
-                  <Spinner color="current" size="sm" />
-                ) : (
-                  <Trash2 aria-hidden="true" size={18} />
-                )}
+                <Trash2 aria-hidden="true" size={18} />
                 Delete item
               </Button>
-              <Button type="submit" variant="primary" isDisabled={!isDirty || isPending}>
-                {pendingAction === "save" ? <Spinner color="current" size="sm" /> : "Save"}
+              <Button type="submit" variant="secondary" isDisabled={!isDirty || isPending}>
+                Save
               </Button>
             </div>
           </form>
+          <ThingsBusyOverlay
+            isBusy={isPending}
+            label={pendingAction === "delete" ? "Deleting item" : "Saving item"}
+          />
         </dialog>
       </div>
     </FocusScope>,
