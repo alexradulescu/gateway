@@ -46,6 +46,9 @@
   --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
   --things-input-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
   --things-item-group-background: color-mix(in oklab, var(--foreground) 4%, var(--surface));
+  --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 32%, transparent);
+  --things-checkbox-unchecked-fill: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --things-input-radius: 999px;
 
   --things-glass-shadow: var(--surface-shadow);
   --things-glass-shadow-raised: var(--overlay-shadow);
@@ -70,6 +73,8 @@
     --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
     --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
     --things-item-group-background: color-mix(in srgb, var(--surface) 72%, transparent);
+    --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 46%, transparent);
+    --things-checkbox-unchecked-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
   }
 }
 
@@ -473,7 +478,7 @@ button {
   min-height: 48px;
   align-items: stretch;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
 }
@@ -486,7 +491,7 @@ button {
   min-height: 0;
   padding-inline: 12px;
   border: 0;
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
   color: var(--things-page-ink);
   background: transparent;
   box-shadow: none;
@@ -507,7 +512,7 @@ button {
   min-height: 46px;
   padding: 0 13px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
   color: var(--things-page-ink);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
@@ -763,7 +768,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   display: grid;
   min-width: 0;
   align-items: center;
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
 }
 
 .things-drawer-title-wrap input {
@@ -772,7 +777,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   height: 38px;
   padding: 0 30px 0 10px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
   color: var(--things-page-ink);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
@@ -1005,6 +1010,14 @@ body .alert-dialog__dialog.things-confirm-dialog {
   border-radius: 50%;
 }
 
+.things-item-checkbox.checkbox:not([aria-checked="true"]):not([data-selected="true"]):not(
+    [data-indeterminate="true"]
+  )
+  .checkbox__control {
+  border: 1.5px solid var(--things-checkbox-unchecked-border);
+  background: var(--things-checkbox-unchecked-fill);
+}
+
 .things-item-quantity {
   color: var(--things-page-muted);
   font-weight: 470;
@@ -1166,7 +1179,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   min-width: 0;
   min-height: 48px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: 17px;
+  border-radius: var(--things-input-radius);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
 }
@@ -1300,18 +1313,38 @@ body .alert-dialog__dialog.things-confirm-dialog {
   line-height: 1.35;
 }
 
-.things-toast {
-  width: min(calc(100vw - 24px), 420px);
+.things-toast-region .toast {
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px 10px 15px;
 }
 
-.things-toast-action {
-  min-width: 44px;
-  min-height: 40px;
-  border: 0;
-  color: var(--things-accent-strong);
-  background: transparent;
-  font-weight: 700;
+.things-toast-region .toast__title {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.things-toast-region .toast__action.things-toast-action {
+  width: auto;
+  height: 32px;
+  min-width: 0;
+  min-height: 32px;
+  justify-self: end;
+  padding-inline: 12px;
+  margin: 0;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .things-toast-region .toast__content:has(.toast__action) {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
 }
 
 .things-loading,

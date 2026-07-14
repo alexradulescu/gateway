@@ -60,6 +60,7 @@ export function ThingsDataProvider({ children }: { children: React.ReactNode }) 
         toast("Item deleted", {
           timeout: 10_000,
           actionProps: {
+            className: "things-toast-action",
             children: "Undo",
             onPress: async () => {
               try {
