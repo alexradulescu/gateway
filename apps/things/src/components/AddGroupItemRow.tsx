@@ -58,39 +58,43 @@ export function AddGroupItemRow({
       aria-busy={isPending || undefined}
       onSubmit={submit}
     >
-      <CatalogueComboBox
-        errorId={error ? errorId : undefined}
-        isDisabled={isPending}
-        isInvalid={Boolean(error)}
-        label="Item name"
-        placeholder="Item name"
-        value={name}
-        onChange={onNameChange}
-        onSubmitRequest={() => formRef.current?.requestSubmit()}
-      />
-      <TextField
-        aria-label="Quantity"
-        className="things-add-item__quantity"
-        isDisabled={isPending}
-        value={quantity}
-        onChange={onQuantityChange}
-      >
-        <Input
-          aria-label="Quantity"
-          autoComplete="off"
-          name="quantity"
-          placeholder="Qty"
-          variant="secondary"
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
-            event.preventDefault();
-            formRef.current?.requestSubmit();
-          }}
+      <div className="things-add-item__controls">
+        <CatalogueComboBox
+          errorId={error ? errorId : undefined}
+          isDisabled={isPending}
+          isInvalid={Boolean(error)}
+          label="Item name"
+          placeholder="Item name"
+          value={name}
+          onChange={onNameChange}
+          onSubmitRequest={() => formRef.current?.requestSubmit()}
         />
-      </TextField>
-      <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
-        <Plus aria-hidden="true" size={19} />
-      </Button>
+        <TextField
+          aria-label="Quantity"
+          className="things-add-item__quantity"
+          isDisabled={isPending}
+          value={quantity}
+          onChange={onQuantityChange}
+        >
+          <Input
+            aria-label="Quantity"
+            autoComplete="off"
+            name="quantity"
+            placeholder="Qty"
+            variant="secondary"
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              formRef.current?.requestSubmit();
+            }}
+          />
+        </TextField>
+        <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
+          <span className="things-add-action-disc">
+            <Plus aria-hidden="true" size={17} />
+          </span>
+        </Button>
+      </div>
       <ThingsBusyOverlay isBusy={isPending} label="Adding item" />
       {error && (
         <p id={errorId} className="things-field-error things-add-item__error" role="alert">

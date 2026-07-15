@@ -17,6 +17,7 @@ export default defineSchema({
   thingsCatalogueItems: defineTable({
     canonicalName: v.string(),
     normalizedKey: v.string(),
+    deletedAt: v.optional(v.number()),
   }).index("by_normalizedKey", ["normalizedKey"]),
   thingsGroupItems: defineTable({
     groupId: v.id("thingsGroups"),

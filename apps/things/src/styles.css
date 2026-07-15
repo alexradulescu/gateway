@@ -42,6 +42,9 @@
   --things-glass-border: color-mix(in oklab, var(--border) 72%, transparent);
   --things-glass-border-subtle: color-mix(in oklab, var(--border) 58%, transparent);
   --things-glass-separator: var(--separator);
+  --things-creation-border: color-mix(in oklab, var(--border) 48%, transparent);
+  --things-creation-control-radius: 20px;
+  --things-creation-inset: 8px;
   --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
   --things-input-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
   --things-item-group-background: color-mix(in oklab, var(--foreground) 4%, var(--surface));
@@ -66,8 +69,9 @@
     --things-glass-panel-strong: color-mix(in srgb, var(--overlay) 70%, transparent);
     --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
     --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
+    --things-creation-border: color-mix(in oklab, var(--foreground) 22%, transparent);
     --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
-    --things-item-group-background: color-mix(in srgb, var(--surface) 72%, transparent);
+    --things-item-group-background: color-mix(in srgb, var(--surface) 94%, var(--foreground) 6%);
     --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 46%, transparent);
     --things-checkbox-unchecked-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
   }
@@ -185,6 +189,39 @@ button {
   padding: 4px 4px 14px;
 }
 
+.things-home-header {
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+}
+
+.things-settings-header {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  justify-items: stretch;
+}
+
+.things-header.things-settings-header h1 {
+  justify-self: center;
+  font-size: clamp(1.35rem, 6vw, 1.7rem);
+  letter-spacing: -0.035em;
+}
+
+.things-page-icon-button.button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+  color: var(--things-page-muted);
+  background: transparent;
+}
+
+.things-page-icon-button.button[data-hovered="true"],
+.things-page-icon-button.button[data-pressed="true"] {
+  color: var(--things-page-ink);
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
 .things-header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 8vw, 2.15rem);
@@ -220,14 +257,6 @@ button {
   backdrop-filter: blur(2px);
 }
 
-.things-add-group,
-.things-add-item {
-  border: 1px solid var(--things-glass-border-subtle);
-  border-radius: var(--things-radius-control);
-  background: var(--things-glass-control);
-  box-shadow: var(--field-shadow);
-}
-
 /* Group list */
 
 .things-group-row {
@@ -240,9 +269,118 @@ button {
 }
 
 .things-group-row + .things-group-row,
-.things-item-row + .things-item-row,
-.things-group-row + .things-add-group {
+.things-item-row + .things-item-row {
   border-top: 1px solid var(--things-glass-separator);
+}
+
+.things-home-groups {
+  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
+}
+
+/* Catalogue settings */
+
+.things-catalogue-section + .things-catalogue-section {
+  margin-top: 24px;
+}
+
+.things-catalogue-section > h2 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0 8px 7px;
+  color: var(--things-page-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.things-catalogue-section > h2 span {
+  color: var(--things-page-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.things-catalogue-surface > .things-empty {
+  margin: 0;
+  padding: 18px 16px;
+}
+
+.things-catalogue-row-wrap {
+  position: relative;
+}
+
+.things-catalogue-row-wrap + .things-catalogue-row-wrap {
+  border-top: 1px solid var(--things-glass-separator);
+}
+
+.things-catalogue-row {
+  position: relative;
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  align-items: stretch;
+}
+
+.things-catalogue-name {
+  display: flex;
+  align-items: center;
+  padding-inline: 16px 6px;
+}
+
+.things-catalogue-visibility {
+  display: grid;
+  width: 52px;
+  min-width: 52px;
+  min-height: 44px;
+  place-items: center;
+  align-self: center;
+  padding: 0;
+}
+
+.things-catalogue-visibility .checkbox__control {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+}
+
+.things-catalogue-row--editing {
+  grid-template-columns: minmax(0, 1fr) 88px;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+}
+
+.things-catalogue-row--editing > .text-field {
+  min-width: 0;
+}
+
+.things-catalogue-row--editing input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
+  border-radius: var(--things-input-radius);
+  color: var(--things-page-ink);
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
+}
+
+.things-catalogue-edit-actions {
+  width: 88px;
+  min-width: 88px;
+}
+
+.things-catalogue-edit-actions .button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.things-catalogue-row-error {
+  padding: 0 12px 10px;
 }
 
 /* Sortable entries are deliberately unstyled wrappers. */
@@ -338,13 +476,12 @@ button {
 
 .things-add-group {
   position: relative;
-  display: grid;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) 44px;
-  gap: 8px;
   overflow: visible;
-  margin: 8px;
+  margin: 0;
+  padding: var(--things-creation-inset);
   border: 0;
+  border-top: 1px solid var(--things-glass-separator);
   background: transparent;
   box-shadow: none;
 }
@@ -353,48 +490,72 @@ button {
   min-width: 0;
 }
 
-.things-add-group > button {
-  min-width: 44px;
-  min-height: 44px;
-  align-self: stretch;
-  border-radius: 999px;
-  color: var(--things-accent-ink);
-  background: var(--things-accent);
-}
-
 .things-add-group > .things-field-error {
-  grid-column: 1 / -1;
   padding: 0 5px 7px;
 }
 
 .things-add-item {
-  position: sticky;
+  position: relative;
   z-index: 3;
-  bottom: 0;
-  display: grid;
   min-width: 0;
-  min-height: 48px;
-  grid-template-columns: minmax(0, 1fr) minmax(76px, 28%) 48px;
-  align-items: stretch;
-  gap: 6px;
   overflow: visible;
-  margin: 8px 0 10px;
+  margin: 0;
+  padding: var(--things-creation-inset);
   border: 0;
+  border-top: 1px solid var(--things-glass-separator);
   background: transparent;
   box-shadow: none;
 }
 
-.things-add-item > button {
-  min-width: 48px;
-  min-height: 48px;
-  align-self: stretch;
+.things-add-group__controls,
+.things-add-item__controls {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  height: 40px;
+  align-items: stretch;
+  overflow: visible;
+  border: 1px solid var(--things-creation-border);
+  border-radius: var(--things-creation-control-radius);
+  background: var(--things-input-background);
+  box-shadow: var(--field-shadow);
+}
+
+.things-add-group__controls {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.things-add-item__controls {
+  grid-template-columns: minmax(0, 1fr) minmax(104px, 34%);
+}
+
+.things-add-group__controls > button,
+.things-add-item__controls > button {
+  position: absolute;
+  inset-block: -1px;
+  inset-inline-end: -1px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  max-width: 40px;
+  max-height: 40px;
+  padding: 0;
   border-radius: 999px;
   color: var(--things-accent-ink);
+  background: transparent;
+}
+
+.things-add-action-disc {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 999px;
   background: var(--things-accent);
 }
 
 .things-add-item__error {
-  grid-column: 1 / -1;
   padding: 0 8px 8px;
 }
 
@@ -403,40 +564,71 @@ button {
   min-width: 0;
 }
 
-.things-add-item > .things-combobox,
-.things-add-item > .things-add-item__quantity {
+.things-add-group__controls > .things-add-group__field {
   width: 100%;
-  height: 48px;
-  min-height: 48px;
+  height: 38px;
+  min-height: 38px;
+}
+
+.things-add-item__controls > .things-combobox,
+.things-add-item__controls > .things-add-item__quantity {
+  width: 100%;
+  height: 38px;
+  min-height: 38px;
   align-self: stretch;
 }
 
 .things-add-item .things-combobox__control,
-.things-add-item > .things-add-item__quantity {
+.things-add-item__controls > .things-add-item__quantity {
   display: flex;
   width: 100%;
   min-width: 0;
-  height: 48px;
-  min-height: 48px;
+  height: 38px;
+  min-height: 38px;
   align-items: stretch;
-  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: var(--things-input-radius);
-  background: var(--things-input-background);
-  box-shadow: var(--field-shadow);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.things-add-item .things-combobox__control {
+  border-radius: 999px 0 0 999px;
+}
+
+.things-add-item__controls > .things-add-item__quantity {
+  border-left: 1px solid var(--things-creation-border);
+}
+
+.things-add-group__controls > .things-add-group__field input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding-inline: 12px 46px;
+  border: 0;
+  border-radius: var(--things-creation-control-radius);
+  color: var(--things-page-ink);
+  background: transparent;
+  box-shadow: none;
 }
 
 .things-add-item .things-combobox__control input,
-.things-add-item > .things-add-item__quantity input {
+.things-add-item__controls > .things-add-item__quantity input {
   width: 100%;
   min-width: 0;
   height: 100%;
   min-height: 0;
   padding-inline: 12px;
   border: 0;
-  border-radius: var(--things-input-radius);
+  border-radius: inherit;
   color: var(--things-page-ink);
   background: transparent;
   box-shadow: none;
+}
+
+.things-add-item__controls > .things-add-item__quantity input {
+  padding-inline: 12px 46px;
 }
 
 .things-add-group input,
@@ -796,8 +988,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-group-switcher {
   overflow-x: auto;
-  margin: 0 -12px;
-  padding: 2px 12px 10px;
+  margin: 0 -12px 28px;
+  padding: 2px 12px 0;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -842,7 +1034,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-item-group {
   overflow: hidden;
   border: 0;
-  border-radius: 18px;
+  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
   background: var(--things-item-group-background);
   box-shadow: var(--surface-shadow);
 }
@@ -904,7 +1096,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 /* Done disclosure */
 
 .things-done-section {
-  margin-top: 10px;
+  margin-top: 28px;
   border-top: 0;
 }
 
@@ -1020,6 +1212,20 @@ body .alert-dialog__dialog.things-confirm-dialog {
   border-color: color-mix(in oklab, var(--things-accent) 54%, var(--border));
   outline: 0;
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--things-accent) 16%, transparent);
+}
+
+.things-add-group__controls:focus-within,
+.things-add-item__controls:focus-within {
+  border-color: color-mix(in oklab, var(--things-accent) 44%, var(--border));
+  box-shadow:
+    var(--field-shadow),
+    0 0 0 3px color-mix(in oklab, var(--things-accent) 14%, transparent);
+}
+
+.things-add-group__controls input:focus,
+.things-add-item__controls input:focus {
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .things-busy-overlay {
@@ -1215,8 +1421,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (max-width: 360px) {
-  .things-add-item {
-    grid-template-columns: minmax(0, 1fr) 76px 46px;
+  .things-add-item__controls {
+    grid-template-columns: minmax(0, 1fr) 104px;
   }
 
   .things-group-row {
@@ -1238,8 +1444,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @media (forced-colors: active) {
   .things-frosted,
   .things-group-surface,
-  .things-add-group,
-  .things-add-item {
+  .things-add-group__controls,
+  .things-add-item__controls {
     border: 1px solid CanvasText;
     background: Canvas;
     box-shadow: none;
@@ -1250,8 +1456,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .things-frosted,
   .things-group-surface,
-  .things-add-group,
-  .things-add-item,
+  .things-add-group__controls,
+  .things-add-item__controls,
   body .drawer__dialog,
   body .modal__dialog,
   body .alert-dialog__dialog {

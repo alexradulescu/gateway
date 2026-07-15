@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as GroupIdRouteRouteImport } from './routes/$groupId/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupIdItemIdRouteImport } from './routes/$groupId/$itemId'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GroupIdRouteRoute = GroupIdRouteRouteImport.update({
   id: '/$groupId',
   path: '/$groupId',
@@ -32,34 +38,45 @@ const GroupIdItemIdRoute = GroupIdItemIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$groupId': typeof GroupIdRouteRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/$groupId/$itemId': typeof GroupIdItemIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$groupId': typeof GroupIdRouteRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/$groupId/$itemId': typeof GroupIdItemIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$groupId': typeof GroupIdRouteRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/$groupId/$itemId': typeof GroupIdItemIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$groupId' | '/$groupId/$itemId'
+  fullPaths: '/' | '/$groupId' | '/settings' | '/$groupId/$itemId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$groupId' | '/$groupId/$itemId'
-  id: '__root__' | '/' | '/$groupId' | '/$groupId/$itemId'
+  to: '/' | '/$groupId' | '/settings' | '/$groupId/$itemId'
+  id: '__root__' | '/' | '/$groupId' | '/settings' | '/$groupId/$itemId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GroupIdRouteRoute: typeof GroupIdRouteRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$groupId': {
       id: '/$groupId'
       path: '/$groupId'
@@ -99,6 +116,7 @@ const GroupIdRouteRouteWithChildren = GroupIdRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GroupIdRouteRoute: GroupIdRouteRouteWithChildren,
+  SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
