@@ -22,6 +22,13 @@ async function activeGroups(db: DatabaseReader) {
   return groups.filter((group) => group.deletedAt === undefined);
 }
 
+async function catalogueItems(db: DatabaseReader) {
+  const items = await db.query("thingsCatalogueItems").collect();
+  return items.sort((left, right) =>
+    left.canonicalName.localeCompare(right.canonicalName, undefined, { sensitivity: "base" }),
+  );
+}
+
 async function groupItems(db: DatabaseReader, groupId: Id<"thingsGroups">) {
   return await db
     .query("thingsGroupItems")
@@ -65,7 +72,11 @@ async function assertUniqueGroupName(
   }
 }
 
-async function resolveCatalogueItem(ctx: MutationCtx, inputName: string) {
+async function resolveCatalogueItem(
+  ctx: MutationCtx,
+  inputName: string,
+  preserveHiddenItemId?: Id<"thingsCatalogueItems">,
+) {
   const canonicalName = requiredText(inputName, "Item name");
   const normalizedKey = normalizeCatalogueKey(canonicalName);
   const existing = await ctx.db
@@ -73,7 +84,13 @@ async function resolveCatalogueItem(ctx: MutationCtx, inputName: string) {
     .withIndex("by_normalizedKey", (index) => index.eq("normalizedKey", normalizedKey))
     .first();
 
-  if (existing) return existing;
+  if (existing) {
+    if (existing.deletedAt !== undefined && existing._id !== preserveHiddenItemId) {
+      await ctx.db.patch(existing._id, { deletedAt: undefined });
+      return { ...existing, deletedAt: undefined };
+    }
+    return existing;
+  }
 
   const catalogueItemId = await ctx.db.insert("thingsCatalogueItems", {
     canonicalName,
@@ -152,12 +169,53 @@ export const openedGroup = query({
 export const catalogue = query({
   args: {},
   handler: async (ctx) => {
-    const items = await ctx.db.query("thingsCatalogueItems").collect();
-    return items
-      .map(({ _id, canonicalName, normalizedKey }) => ({ _id, canonicalName, normalizedKey }))
-      .sort((left, right) =>
-        left.canonicalName.localeCompare(right.canonicalName, undefined, { sensitivity: "base" }),
-      );
+    return (await catalogueItems(ctx.db))
+      .filter((item) => item.deletedAt === undefined)
+      .map(({ _id, canonicalName, normalizedKey }) => ({ _id, canonicalName, normalizedKey }));
+  },
+});
+
+export const catalogueSettings = query({
+  args: {},
+  handler: async (ctx) => {
+    return (await catalogueItems(ctx.db)).map(({ _id, canonicalName, deletedAt }) => ({
+      _id,
+      canonicalName,
+      isVisible: deletedAt === undefined,
+    }));
+  },
+});
+
+export const renameCatalogueItem = mutation({
+  args: { catalogueItemId: v.id("thingsCatalogueItems"), name: v.string() },
+  handler: async (ctx, args) => {
+    const catalogueItem = await ctx.db.get(args.catalogueItemId);
+    if (!catalogueItem) throw new Error("Catalogue item not found.");
+
+    const canonicalName = requiredText(args.name, "Item name");
+    const normalizedKey = normalizeCatalogueKey(canonicalName);
+    const matches = await ctx.db
+      .query("thingsCatalogueItems")
+      .withIndex("by_normalizedKey", (index) => index.eq("normalizedKey", normalizedKey))
+      .collect();
+    if (matches.some((match) => match._id !== args.catalogueItemId)) {
+      throw new Error("Another catalogue item already uses that name.");
+    }
+
+    await ctx.db.patch(args.catalogueItemId, { canonicalName, normalizedKey });
+  },
+});
+
+export const setCatalogueItemVisible = mutation({
+  args: { catalogueItemId: v.id("thingsCatalogueItems"), visible: v.boolean() },
+  handler: async (ctx, args) => {
+    const catalogueItem = await ctx.db.get(args.catalogueItemId);
+    if (!catalogueItem) throw new Error("Catalogue item not found.");
+    if ((catalogueItem.deletedAt === undefined) === args.visible) return;
+
+    await ctx.db.patch(args.catalogueItemId, {
+      deletedAt: args.visible ? undefined : Date.now(),
+    });
   },
 });
 
@@ -234,8 +292,8 @@ export const addGroupItem = mutation({
 export const updateGroupItem = mutation({
   args: { itemId: v.id("thingsGroupItems"), name: v.string(), quantity: v.string() },
   handler: async (ctx, args) => {
-    await requireActiveItem(ctx.db, args.itemId);
-    const catalogueItem = await resolveCatalogueItem(ctx, args.name);
+    const item = await requireActiveItem(ctx.db, args.itemId);
+    const catalogueItem = await resolveCatalogueItem(ctx, args.name, item.catalogueItemId);
     await ctx.db.patch(args.itemId, {
       catalogueItemId: catalogueItem._id,
       quantity: cleanVisibleText(args.quantity),
