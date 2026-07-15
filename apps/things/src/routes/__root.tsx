@@ -1,4 +1,4 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { ThingsDataProvider } from "../context/ThingsDataContext";
 import { ThingsErrorState, ThingsNotFound } from "../components/ThingsStates";
 import { ThingsHome } from "../components/ThingsHome";
@@ -10,9 +10,12 @@ export const Route = createRootRoute({
 });
 
 function ThingsRoot() {
+  const matchRoute = useMatchRoute();
+  const isSettingsPage = Boolean(matchRoute({ to: "/settings" }));
+
   return (
     <ThingsDataProvider>
-      <ThingsHome />
+      {!isSettingsPage && <ThingsHome />}
       <Outlet />
     </ThingsDataProvider>
   );
