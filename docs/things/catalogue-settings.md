@@ -16,8 +16,10 @@
 
 ## Related drawer changes
 
-- Major drawer zones use 24px vertical separation while rows within a zone stay compact.
-- At phone widths, the group drawer uses
-  `calc(100dvh - 48px - env(safe-area-inset-top))` with no 720px cap.
-- Wider screens retain the existing 720px cap.
+- Major drawer zones use 28px vertical separation while rows within a zone stay compact.
+- The Add Item form sits inside the To do grouped surface after the active rows.
+- Add Item inputs use the compact 44px control size.
+- The phone-only fixed `dvh` height experiment is reverted.
+- The group drawer returns to its responsive, capped maximum-height behavior.
+- Dark mode uses a more visible, opaque item-group surface while light mode remains unchanged.
 - The nested item-edit modal is unchanged.

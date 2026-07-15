@@ -145,16 +145,16 @@ export function GroupDrawer({
                             )}
                           />
                         )}
+                        <AddGroupItemRow
+                          group={openedGroup.group}
+                          name={addItemName}
+                          quantity={addItemQuantity}
+                          onNameChange={setAddItemName}
+                          onPendingChange={setAddItemPending}
+                          onQuantityChange={setAddItemQuantity}
+                        />
                       </div>
                     </section>
-                    <AddGroupItemRow
-                      group={openedGroup.group}
-                      name={addItemName}
-                      quantity={addItemQuantity}
-                      onNameChange={setAddItemName}
-                      onPendingChange={setAddItemPending}
-                      onQuantityChange={setAddItemQuantity}
-                    />
                     <DoneSection
                       key={openedGroup.group._id}
                       openedGroup={openedGroup}

@@ -89,7 +89,7 @@ export function AddGroupItemRow({
         />
       </TextField>
       <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
-        <Plus aria-hidden="true" size={19} />
+        <Plus aria-hidden="true" size={18} />
       </Button>
       <ThingsBusyOverlay isBusy={isPending} label="Adding item" />
       {error && (
