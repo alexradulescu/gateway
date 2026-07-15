@@ -30,7 +30,7 @@ export function ThingsHome() {
         </Button>
       </header>
 
-      <Surface className="things-frosted things-group-surface">
+      <Surface className="things-frosted things-group-surface things-home-groups">
         {home.groups.length === 0 ? (
           <p className="things-empty">Add your first household list below.</p>
         ) : (
@@ -122,32 +122,36 @@ function AddGroupRow() {
       aria-busy={isPending || undefined}
       onSubmit={submit}
     >
-      <TextField
-        aria-label="Group name"
-        className="things-add-group__field"
-        isInvalid={Boolean(error)}
-        isDisabled={isPending}
-        value={name}
-        onChange={setName}
-      >
-        <Input
-          ref={inputRef}
+      <div className="things-add-group__controls">
+        <TextField
           aria-label="Group name"
-          aria-describedby={error ? errorId : undefined}
-          autoComplete="off"
-          name="groupName"
-          placeholder="Group name"
-          variant="secondary"
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
-            event.preventDefault();
-            formRef.current?.requestSubmit();
-          }}
-        />
-      </TextField>
-      <Button isIconOnly aria-label="Add group" type="submit" isDisabled={isPending}>
-        <Plus aria-hidden="true" size={19} />
-      </Button>
+          className="things-add-group__field"
+          isInvalid={Boolean(error)}
+          isDisabled={isPending}
+          value={name}
+          onChange={setName}
+        >
+          <Input
+            ref={inputRef}
+            aria-label="Group name"
+            aria-describedby={error ? errorId : undefined}
+            autoComplete="off"
+            name="groupName"
+            placeholder="Group name"
+            variant="secondary"
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              formRef.current?.requestSubmit();
+            }}
+          />
+        </TextField>
+        <Button isIconOnly aria-label="Add group" type="submit" isDisabled={isPending}>
+          <span className="things-add-action-disc">
+            <Plus aria-hidden="true" size={17} />
+          </span>
+        </Button>
+      </div>
       <ThingsBusyOverlay isBusy={isPending} label="Adding group" />
       {error && (
         <p id={errorId} className="things-field-error" role="alert">

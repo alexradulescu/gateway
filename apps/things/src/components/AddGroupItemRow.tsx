@@ -90,7 +90,7 @@ export function AddGroupItemRow({
           />
         </TextField>
         <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
-          <span className="things-add-item__add-disc">
+          <span className="things-add-action-disc">
             <Plus aria-hidden="true" size={17} />
           </span>
         </Button>

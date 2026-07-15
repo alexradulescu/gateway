@@ -42,6 +42,9 @@
   --things-glass-border: color-mix(in oklab, var(--border) 72%, transparent);
   --things-glass-border-subtle: color-mix(in oklab, var(--border) 58%, transparent);
   --things-glass-separator: var(--separator);
+  --things-creation-border: color-mix(in oklab, var(--border) 48%, transparent);
+  --things-creation-control-radius: 20px;
+  --things-creation-inset: 8px;
   --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
   --things-input-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
   --things-item-group-background: color-mix(in oklab, var(--foreground) 4%, var(--surface));
@@ -66,6 +69,7 @@
     --things-glass-panel-strong: color-mix(in srgb, var(--overlay) 70%, transparent);
     --things-glass-control: color-mix(in oklab, var(--field-background) 76%, transparent);
     --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
+    --things-creation-border: color-mix(in oklab, var(--foreground) 22%, transparent);
     --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
     --things-item-group-background: color-mix(in srgb, var(--surface) 94%, var(--foreground) 6%);
     --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 46%, transparent);
@@ -253,14 +257,6 @@ button {
   backdrop-filter: blur(2px);
 }
 
-.things-add-group,
-.things-add-item {
-  border: 1px solid var(--things-glass-border-subtle);
-  border-radius: var(--things-radius-control);
-  background: var(--things-glass-control);
-  box-shadow: var(--field-shadow);
-}
-
 /* Group list */
 
 .things-group-row {
@@ -273,9 +269,12 @@ button {
 }
 
 .things-group-row + .things-group-row,
-.things-item-row + .things-item-row,
-.things-group-row + .things-add-group {
+.things-item-row + .things-item-row {
   border-top: 1px solid var(--things-glass-separator);
+}
+
+.things-home-groups {
+  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
 }
 
 /* Catalogue settings */
@@ -477,13 +476,12 @@ button {
 
 .things-add-group {
   position: relative;
-  display: grid;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) 44px;
-  gap: 8px;
   overflow: visible;
-  margin: 8px;
+  margin: 0;
+  padding: var(--things-creation-inset);
   border: 0;
+  border-top: 1px solid var(--things-glass-separator);
   background: transparent;
   box-shadow: none;
 }
@@ -492,17 +490,7 @@ button {
   min-width: 0;
 }
 
-.things-add-group > button {
-  min-width: 44px;
-  min-height: 44px;
-  align-self: stretch;
-  border-radius: 999px;
-  color: var(--things-accent-ink);
-  background: var(--things-accent);
-}
-
 .things-add-group > .things-field-error {
-  grid-column: 1 / -1;
   padding: 0 5px 7px;
 }
 
@@ -512,29 +500,36 @@ button {
   min-width: 0;
   overflow: visible;
   margin: 0;
-  padding: 8px;
+  padding: var(--things-creation-inset);
   border: 0;
   border-top: 1px solid var(--things-glass-separator);
   background: transparent;
   box-shadow: none;
 }
 
+.things-add-group__controls,
 .things-add-item__controls {
-  --things-add-item-border: color-mix(in oklab, var(--border) 48%, transparent);
-
   position: relative;
   display: grid;
   min-width: 0;
   height: 40px;
-  grid-template-columns: minmax(0, 1fr) minmax(104px, 34%);
   align-items: stretch;
   overflow: visible;
-  border: 1px solid var(--things-add-item-border);
-  border-radius: 999px;
+  border: 1px solid var(--things-creation-border);
+  border-radius: var(--things-creation-control-radius);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
 }
 
+.things-add-group__controls {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.things-add-item__controls {
+  grid-template-columns: minmax(0, 1fr) minmax(104px, 34%);
+}
+
+.things-add-group__controls > button,
 .things-add-item__controls > button {
   position: absolute;
   inset-block: -1px;
@@ -551,7 +546,7 @@ button {
   background: transparent;
 }
 
-.things-add-item__add-disc {
+.things-add-action-disc {
   display: grid;
   width: 32px;
   height: 32px;
@@ -567,6 +562,12 @@ button {
 .things-add-item__quantity,
 .things-combobox {
   min-width: 0;
+}
+
+.things-add-group__controls > .things-add-group__field {
+  width: 100%;
+  height: 38px;
+  min-height: 38px;
 }
 
 .things-add-item__controls > .things-combobox,
@@ -596,7 +597,20 @@ button {
 }
 
 .things-add-item__controls > .things-add-item__quantity {
-  border-left: 1px solid var(--things-add-item-border);
+  border-left: 1px solid var(--things-creation-border);
+}
+
+.things-add-group__controls > .things-add-group__field input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding-inline: 12px 46px;
+  border: 0;
+  border-radius: var(--things-creation-control-radius);
+  color: var(--things-page-ink);
+  background: transparent;
+  box-shadow: none;
 }
 
 .things-add-item .things-combobox__control input,
@@ -1020,7 +1034,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-item-group {
   overflow: hidden;
   border: 0;
-  border-radius: 18px;
+  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
   background: var(--things-item-group-background);
   box-shadow: var(--surface-shadow);
 }
@@ -1200,6 +1214,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--things-accent) 16%, transparent);
 }
 
+.things-add-group__controls:focus-within,
 .things-add-item__controls:focus-within {
   border-color: color-mix(in oklab, var(--things-accent) 44%, var(--border));
   box-shadow:
@@ -1207,6 +1222,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
     0 0 0 3px color-mix(in oklab, var(--things-accent) 14%, transparent);
 }
 
+.things-add-group__controls input:focus,
 .things-add-item__controls input:focus {
   border-color: transparent;
   box-shadow: none;
@@ -1428,7 +1444,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @media (forced-colors: active) {
   .things-frosted,
   .things-group-surface,
-  .things-add-group,
+  .things-add-group__controls,
   .things-add-item__controls {
     border: 1px solid CanvasText;
     background: Canvas;
@@ -1440,8 +1456,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .things-frosted,
   .things-group-surface,
-  .things-add-group,
-  .things-add-item,
+  .things-add-group__controls,
+  .things-add-item__controls,
   body .drawer__dialog,
   body .modal__dialog,
   body .alert-dialog__dialog {
