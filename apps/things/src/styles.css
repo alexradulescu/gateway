@@ -511,10 +511,10 @@ button {
   z-index: 3;
   display: grid;
   min-width: 0;
-  min-height: 44px;
-  grid-template-columns: minmax(0, 1fr) minmax(68px, 26%) 44px;
+  min-height: 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(64px, 25%) 40px;
   align-items: stretch;
-  gap: 6px;
+  gap: 0;
   overflow: visible;
   margin: 0;
   padding: 8px;
@@ -525,10 +525,10 @@ button {
 }
 
 .things-add-item > button {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 40px;
+  min-height: 40px;
   align-self: stretch;
-  border-radius: 999px;
+  border-radius: 0 999px 999px 0;
   color: var(--things-accent-ink);
   background: var(--things-accent);
 }
@@ -546,8 +546,8 @@ button {
 .things-add-item > .things-combobox,
 .things-add-item > .things-add-item__quantity {
   width: 100%;
-  height: 44px;
-  min-height: 44px;
+  height: 40px;
+  min-height: 40px;
   align-self: stretch;
 }
 
@@ -556,13 +556,22 @@ button {
   display: flex;
   width: 100%;
   min-width: 0;
-  height: 44px;
-  min-height: 44px;
+  height: 40px;
+  min-height: 40px;
   align-items: stretch;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: var(--things-input-radius);
   background: var(--things-input-background);
   box-shadow: var(--field-shadow);
+}
+
+.things-add-item .things-combobox__control {
+  border-radius: 999px 0 0 999px;
+}
+
+.things-add-item > .things-add-item__quantity {
+  border-left: 0;
+  border-radius: 0;
 }
 
 .things-add-item .things-combobox__control input,
@@ -573,7 +582,7 @@ button {
   min-height: 0;
   padding-inline: 12px;
   border: 0;
-  border-radius: var(--things-input-radius);
+  border-radius: inherit;
   color: var(--things-page-ink);
   background: transparent;
   box-shadow: none;
@@ -1356,7 +1365,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 @media (max-width: 360px) {
   .things-add-item {
-    grid-template-columns: minmax(0, 1fr) 68px 44px;
+    grid-template-columns: minmax(0, 1fr) 64px 40px;
   }
 
   .things-group-row {

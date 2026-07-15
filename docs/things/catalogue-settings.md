@@ -18,7 +18,8 @@
 
 - Major drawer zones use 28px vertical separation while rows within a zone stay compact.
 - The Add Item form sits inside the To do grouped surface after the active rows.
-- Add Item inputs use the compact 44px control size.
+- Add Item inputs and action use a compact 40px control size.
+- The name, quantity, and Add controls form one connected control with no inner corner radius or gaps.
 - The phone-only fixed `dvh` height experiment is reverted.
 - The group drawer returns to its responsive, capped maximum-height behavior.
 - Dark mode uses a more visible, opaque item-group surface while light mode remains unchanged.
