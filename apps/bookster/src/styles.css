@@ -94,6 +94,8 @@ body.bookster-theme {
 
 body.bookster-theme :where(.button, .input, .textarea, .select__trigger, .tabs__indicator) {
   box-shadow: none !important;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-settings *,
@@ -243,6 +245,8 @@ a {
   width: min(100%, var(--bookster-max-width));
   transform: translateX(-50%);
   pointer-events: none;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-floating-header {
@@ -395,6 +399,8 @@ a {
   border: 1px solid var(--bookster-glass-border);
   border-radius: 12px;
   background: var(--bookster-glass-strong);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   font-family:
     ui-sans-serif,
     -apple-system,
@@ -434,6 +440,8 @@ a {
   gap: 13px;
   padding: 12px 16px;
   border-bottom: 1px solid color-mix(in srgb, var(--bookster-glass-border) 70%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   transition:
     background 150ms ease,
     transform 150ms ease;
@@ -509,6 +517,8 @@ a {
   letter-spacing: 0.055em;
   line-height: 1;
   text-transform: uppercase;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-badge--category {
@@ -584,6 +594,8 @@ a {
   border-radius: 8px 18px 18px 8px;
   color: var(--bookster-green);
   background: var(--bookster-glass);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   font-size: 2.2rem;
   font-weight: 700;
 }
@@ -634,6 +646,11 @@ a {
 .bookster-settings-tabs__container {
   border-radius: 999px !important;
   background: color-mix(in srgb, var(--bookster-glass-strong) 74%, transparent) !important;
+}
+
+.bookster-tabs-container {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-form,
@@ -698,6 +715,8 @@ a {
   border: 1px solid color-mix(in srgb, var(--bookster-green) 24%, transparent);
   border-radius: 18px;
   background: var(--bookster-green-soft);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-csv-note span {
@@ -784,6 +803,8 @@ a {
     transparent
   );
   transform: translateX(-50%);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-settings-title {
@@ -820,6 +841,8 @@ a {
   border: 0;
   border-radius: 22px;
   background: color-mix(in srgb, var(--bookster-glass-strong) 68%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-label-list__heading,
@@ -882,6 +905,8 @@ a {
   border: 0;
   border-radius: 22px;
   background: color-mix(in srgb, var(--bookster-glass-strong) 68%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .bookster-duplicate-group > header {
