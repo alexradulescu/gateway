@@ -31,6 +31,9 @@
   --bookster-glass: rgb(250 247 240 / 0.66);
   --bookster-glass-strong: rgb(250 247 240 / 0.9);
   --bookster-glass-border: rgb(87 82 72 / 0.18);
+  --bookster-field: rgb(255 253 248 / 0.72);
+  --bookster-field-border: rgb(87 82 72 / 0.28);
+  --bookster-field-focus: rgb(79 131 89 / 0.68);
   --bookster-row-even: rgb(255 255 255 / 0.42);
   --bookster-pattern-line: rgb(84 125 91 / 0.06);
   --bookster-pattern-accent: rgb(154 115 56 / 0.045);
@@ -62,6 +65,9 @@
   --bookster-glass: rgb(39 39 36 / 0.62);
   --bookster-glass-strong: rgb(37 37 34 / 0.9);
   --bookster-glass-border: rgb(235 229 220 / 0.15);
+  --bookster-field: rgb(65 64 59 / 0.82);
+  --bookster-field-border: rgb(235 229 220 / 0.25);
+  --bookster-field-focus: rgb(117 174 124 / 0.72);
   --bookster-row-even: rgb(58 56 51 / 0.52);
   --bookster-pattern-line: rgb(145 186 151 / 0.045);
   --bookster-pattern-accent: rgb(209 173 112 / 0.035);
@@ -88,6 +94,13 @@ body.bookster-theme {
 
 body.bookster-theme :where(.button, .input, .textarea, .select__trigger, .tabs__indicator) {
   box-shadow: none !important;
+}
+
+.bookster-settings *,
+.bookster-settings *::before,
+.bookster-settings *::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
 }
 
 body.bookster-theme::before {
@@ -288,6 +301,8 @@ a {
 }
 
 .bookster-category-strip {
+  position: relative;
+  z-index: 1;
   display: flex;
   gap: 7px;
   padding: 9px 3px 1px;
@@ -635,17 +650,28 @@ a {
 .bookster-settings textarea,
 .bookster-form .select__trigger,
 .bookster-settings .select__trigger {
-  border-color: var(--bookster-glass-border) !important;
-  background: color-mix(in srgb, var(--bookster-glass-strong) 54%, transparent) !important;
+  border: 1px solid var(--bookster-field-border) !important;
+  background: var(--bookster-field) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.bookster-form :is(.input, .textarea):focus,
+.bookster-settings :is(.input, .textarea):focus,
+.bookster-form .select__trigger:is([data-focus-visible="true"], [data-open="true"]),
+.bookster-settings .select__trigger:is([data-focus-visible="true"], [data-open="true"]) {
+  border-color: var(--bookster-field-focus) !important;
+  background: color-mix(in srgb, var(--bookster-field) 90%, var(--bookster-green) 10%) !important;
+  outline: none !important;
 }
 
 .bookster-settings :is(.input, .textarea, .select__trigger) {
   min-height: 40px !important;
-  border: 0 !important;
   border-radius: 12px !important;
-  background: color-mix(in srgb, var(--bookster-glass) 52%, transparent) !important;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
 }
 
 .bookster-sample-switch small {
@@ -724,6 +750,7 @@ a {
 .bookster-confirm-dialog {
   border: 1px solid var(--bookster-glass-border) !important;
   background: var(--bookster-glass-strong) !important;
+  box-shadow: none !important;
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
@@ -766,6 +793,7 @@ a {
 }
 .bookster-settings-tabs__container {
   overflow: hidden;
+  border: 0 !important;
 }
 .bookster-settings-content {
   padding-top: 18px;
@@ -782,9 +810,9 @@ a {
 
 .bookster-label-list {
   overflow: hidden;
-  border: 1px solid var(--bookster-glass-border);
+  border: 0;
   border-radius: 22px;
-  background: color-mix(in srgb, var(--bookster-glass-strong) 56%, transparent);
+  background: color-mix(in srgb, var(--bookster-glass-strong) 68%, transparent);
 }
 
 .bookster-label-list__heading,
@@ -844,9 +872,9 @@ a {
 }
 .bookster-duplicate-group {
   overflow: hidden;
-  border: 1px solid var(--bookster-glass-border);
+  border: 0;
   border-radius: 22px;
-  background: color-mix(in srgb, var(--bookster-glass-strong) 58%, transparent);
+  background: color-mix(in srgb, var(--bookster-glass-strong) 68%, transparent);
 }
 
 .bookster-duplicate-group > header {
