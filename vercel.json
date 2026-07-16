@@ -5,16 +5,12 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/counter/:path*",
-      "destination": "/counter/index.html"
-    },
-    {
-      "source": "/notes/:path*",
-      "destination": "/notes/index.html"
-    },
-    {
       "source": "/things/:path*",
       "destination": "/things/index.html"
+    },
+    {
+      "source": "/bookster/:path*",
+      "destination": "/bookster/index.html"
     }
   ]
 }

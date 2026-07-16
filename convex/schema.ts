@@ -27,4 +27,35 @@ export default defineSchema({
     completedAt: v.optional(v.number()),
     deletedAt: v.optional(v.number()),
   }).index("by_group_position", ["groupId", "position"]),
+  booksterBooks: defineTable({
+    title: v.string(),
+    author: v.string(),
+    categoryIds: v.array(v.id("booksterCategories")),
+    locationIds: v.array(v.id("booksterLocations")),
+    isSample: v.boolean(),
+    dateAdded: v.number(),
+    lastUpdated: v.number(),
+  })
+    .index("by_title", ["title"])
+    .index("by_author", ["author"])
+    .index("by_dateAdded", ["dateAdded"]),
+  booksterCategories: defineTable({
+    label: v.string(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_deletedAt", ["deletedAt"]),
+  booksterLocations: defineTable({
+    label: v.string(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_deletedAt", ["deletedAt"]),
+  booksterSettings: defineTable({
+    userId: v.string(),
+    defaultSortOrder: v.union(
+      v.literal("dateAdded"),
+      v.literal("title"),
+      v.literal("author"),
+      v.literal("category"),
+      v.literal("location"),
+    ),
+    theme: v.union(v.literal("system"), v.literal("light"), v.literal("dark")),
+  }).index("by_userId", ["userId"]),
 });
