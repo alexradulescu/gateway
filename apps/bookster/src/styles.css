@@ -421,7 +421,7 @@ a {
 .bookster-book-row {
   display: flex;
   min-height: 86px;
-  align-items: flex-start;
+  align-items: center;
   gap: 13px;
   padding: 12px 16px;
   border: 0;
