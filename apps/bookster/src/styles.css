@@ -523,15 +523,15 @@ a {
 
 .bookster-cover {
   display: block;
-  width: 62px;
-  min-width: 62px;
-  height: 74px;
+  width: 52px;
+  min-width: 52px;
+  height: 78px;
 }
 
 .bookster-cover--large {
-  width: 118px;
-  min-width: 118px;
-  height: 142px;
+  width: 96px;
+  min-width: 96px;
+  height: 144px;
 }
 
 .bookster-cover svg {
@@ -539,25 +539,40 @@ a {
   width: 100%;
   height: 100%;
   overflow: visible;
+  filter: drop-shadow(0 5px 4px rgb(12 18 14 / 0.24));
 }
 
 .bookster-cover__pattern {
-  color: #3d5549;
+  color: #53675b;
   fill: none;
-  opacity: 0.17;
+  opacity: 0.24;
   stroke: currentColor;
-  stroke-width: 0.8;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-width: 0.75;
 }
 
 .bookster-cover__pattern circle {
-  fill: currentColor;
+  fill: none;
 }
 
-.bookster-cover__page-lines {
+.bookster-cover__label rect {
+  fill: rgb(255 252 245 / 0.86);
+}
+
+.bookster-cover__label path {
   fill: none;
-  stroke: rgb(99 89 75 / 0.38);
-  stroke-linecap: round;
-  stroke-width: 0.55;
+  stroke: rgb(93 72 38 / 0.34);
+  stroke-width: 0.6;
+}
+
+.bookster-cover__label text {
+  fill: #2f4037;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 8.6px;
+  font-weight: 700;
+  letter-spacing: 0.55px;
+  text-anchor: middle;
 }
 
 .bookster-empty-library {
