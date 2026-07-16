@@ -130,9 +130,9 @@ export function AddBookSheet() {
 
   return (
     <>
-      <BookSheetFrame title="Add Book" isBusy={isBusy} onRequestClose={close}>
+      <BookSheetFrame title="Add Book" hideTitle isBusy={isBusy} onRequestClose={close}>
         <Tabs selectedKey={tab} onSelectionChange={(key) => setTab(String(key))}>
-          <Tabs.ListContainer className="bookster-tabs-container">
+          <Tabs.ListContainer className="bookster-tabs-container bookster-add-header-tabs">
             <Tabs.List aria-label="Add book method">
               <Tabs.Tab id="single">
                 Single Book

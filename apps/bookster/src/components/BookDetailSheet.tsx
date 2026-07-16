@@ -8,7 +8,7 @@ import { useBookster } from "../context/useBookster";
 import { booksterErrorMessage } from "../errors";
 import type { BooksterCategoryId, BooksterLocationId } from "../types";
 import { BookCover } from "./BookCover";
-import { BookFields, type BookFormValue } from "./BookFields";
+import { BookIdentityFields, BookMetadataFields, type BookFormValue } from "./BookFields";
 import { BookSheetFrame } from "./BookSheetFrame";
 import { DiscardDialog } from "./DiscardDialog";
 
@@ -122,18 +122,14 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
 
   return (
     <>
-      <BookSheetFrame title="Book Details" isBusy={isBusy} onRequestClose={close}>
+      <BookSheetFrame title={selected.title} isBusy={isBusy} onRequestClose={close}>
         <form className="bookster-form" onSubmit={submit}>
           <div className="bookster-detail-lead">
             <BookCover large title={book.title || selected.title} />
-            <div>
-              <p className="bookster-eyebrow">In your library</p>
-              <strong>{selected.title}</strong>
-            </div>
+            <BookIdentityFields errors={errors} onChange={setBook} value={book} />
           </div>
-          <BookFields
+          <BookMetadataFields
             categories={library.categories}
-            errors={errors}
             locations={library.locations}
             onChange={setBook}
             value={book}

@@ -630,11 +630,36 @@ a {
 }
 
 .bookster-sheet .modal__header {
-  padding: 12px 10px 2px;
+  min-height: 44px;
+  padding: 12px 52px 2px 10px;
 }
 .bookster-sheet .modal__heading {
+  overflow: hidden;
   font-family: Georgia, "Palatino Linotype", serif;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bookster-sheet .modal__close-trigger {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+}
+.bookster-sheet .modal__close-trigger svg {
+  width: 20px;
+  height: 20px;
+}
+.bookster-sheet .bookster-sheet-header--custom {
+  padding-block: 12px 2px;
+}
+.bookster-add-header-tabs {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  right: 52px;
+  left: 10px;
+  min-height: 36px;
 }
 .bookster-sheet .modal__body {
   padding: 8px 9px calc(18px + env(safe-area-inset-bottom));
@@ -751,10 +776,9 @@ a {
   padding: 0 4px 4px;
 }
 
-.bookster-detail-lead strong {
-  display: block;
-  max-width: 320px;
-  font-size: 1.05rem;
+.bookster-detail-lead > .bookster-form-grid {
+  min-width: 0;
+  flex: 1;
 }
 .bookster-dates {
   display: flex;

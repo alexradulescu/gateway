@@ -18,21 +18,21 @@ export type BookFormValue = {
   isSample: boolean;
 };
 
-export function BookFields({
-  value,
-  onChange,
-  categories,
-  locations,
-  errors,
-  titleInputRef,
-}: {
+type BookFieldProps = {
   value: BookFormValue;
   onChange: (value: BookFormValue) => void;
   categories: BooksterCategory[];
   locations: BooksterLocation[];
   errors: Partial<Record<"title" | "author", string>>;
   titleInputRef?: React.RefObject<HTMLInputElement | null>;
-}) {
+};
+
+export function BookIdentityFields({
+  value,
+  onChange,
+  errors,
+  titleInputRef,
+}: Pick<BookFieldProps, "value" | "onChange" | "errors" | "titleInputRef">) {
   return (
     <div className="bookster-form-grid">
       <TextField
@@ -57,6 +57,18 @@ export function BookFields({
         <Input placeholder="Enter author name" variant="secondary" />
         {errors.author ? <FieldError>{errors.author}</FieldError> : null}
       </TextField>
+    </div>
+  );
+}
+
+export function BookMetadataFields({
+  value,
+  onChange,
+  categories,
+  locations,
+}: Pick<BookFieldProps, "value" | "onChange" | "categories" | "locations">) {
+  return (
+    <div className="bookster-form-grid">
       <BookMultiSelect
         label="Categories"
         placeholder="Select categories"
@@ -84,6 +96,15 @@ export function BookFields({
           <Switch.Thumb />
         </Switch.Control>
       </Switch>
+    </div>
+  );
+}
+
+export function BookFields(props: BookFieldProps) {
+  return (
+    <div className="bookster-form-grid">
+      <BookIdentityFields {...props} />
+      <BookMetadataFields {...props} />
     </div>
   );
 }
