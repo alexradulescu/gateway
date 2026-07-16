@@ -78,7 +78,7 @@ export function LibraryPage() {
             to="/settings/$tab"
             params={{ tab: "config" }}
           >
-            <Settings aria-hidden="true" size={20} />
+            <Settings aria-hidden="true" size={18} />
           </Link>
         </div>
 
@@ -155,7 +155,7 @@ export function LibraryPage() {
           </SearchField.Group>
         </SearchField>
         <Link aria-label="Add book" className="bookster-add-button bookster-add-link" to="/add">
-          <Plus aria-hidden="true" size={24} />
+          <Plus aria-hidden="true" size={20} />
         </Link>
       </footer>
     </main>

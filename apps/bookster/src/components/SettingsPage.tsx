@@ -44,12 +44,9 @@ export function SettingsPage({ tab }: { tab: BooksterSettingsTab }) {
       <header className="bookster-settings-header">
         <div className="bookster-glass bookster-settings-title">
           <Link aria-label="Back to books" className="bookster-icon-link" to="/">
-            <ArrowLeft aria-hidden="true" size={20} />
+            <ArrowLeft aria-hidden="true" size={18} />
           </Link>
-          <div>
-            <p className="bookster-eyebrow">Bookster</p>
-            <h1>Settings</h1>
-          </div>
+          <h1>Settings</h1>
         </div>
         <Tabs
           className="bookster-settings-tabs"
