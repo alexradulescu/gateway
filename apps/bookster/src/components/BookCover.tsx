@@ -11,9 +11,12 @@ export function BookCover({ title, large = false }: { title: string; large?: boo
       className={`bookster-cover ${large ? "bookster-cover--large" : ""} bookster-cover--pattern-${getBookPatternIndex(title)}`}
       style={style}
     >
-      <span className="bookster-cover__spine" />
-      <span className="bookster-cover__initials">{getBookInitials(title)}</span>
+      <span className="bookster-cover__shadow" />
       <span className="bookster-cover__pages" />
+      <span className="bookster-cover__front">
+        <span className="bookster-cover__spine" />
+        <span className="bookster-cover__initials">{getBookInitials(title)}</span>
+      </span>
     </span>
   );
 }

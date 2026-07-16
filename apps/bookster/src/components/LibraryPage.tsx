@@ -71,10 +71,7 @@ export function LibraryPage() {
     <main className="bookster-library">
       <header className="bookster-floating-header">
         <div className="bookster-glass bookster-title-bar">
-          <div>
-            <p className="bookster-eyebrow">Family library</p>
-            <h1>Bookster</h1>
-          </div>
+          <h1>Bookster</h1>
           <Link
             aria-label="Open settings"
             className="bookster-icon-link"
