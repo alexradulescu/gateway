@@ -82,30 +82,32 @@ export function LibraryPage() {
           </Link>
         </div>
 
-        {library.categories.length > 0 ? (
-          <div className="bookster-category-strip" aria-label="Category filters">
-            {hasCategoryFilter ? (
-              <Button className="bookster-filter-pill" onPress={resetCategories} size="sm">
-                All
+        <div className="bookster-category-strip" aria-label="Category filters">
+          <Button
+            aria-pressed={!hasCategoryFilter}
+            className="bookster-filter-pill"
+            onPress={resetCategories}
+            size="sm"
+            variant={hasCategoryFilter ? "outline" : "primary"}
+          >
+            All
+          </Button>
+          {library.categories.map((category) => {
+            const selected = !deselectedCategoryIds.has(category._id);
+            return (
+              <Button
+                key={category._id}
+                aria-pressed={selected}
+                className="bookster-filter-pill"
+                onPress={() => toggleCategory(category._id as BooksterCategoryId)}
+                size="sm"
+                variant={selected ? "primary" : "outline"}
+              >
+                {category.label}
               </Button>
-            ) : null}
-            {library.categories.map((category) => {
-              const selected = !deselectedCategoryIds.has(category._id);
-              return (
-                <Button
-                  key={category._id}
-                  aria-pressed={selected}
-                  className="bookster-filter-pill"
-                  onPress={() => toggleCategory(category._id as BooksterCategoryId)}
-                  size="sm"
-                  variant={selected ? "primary" : "outline"}
-                >
-                  {category.label}
-                </Button>
-              );
-            })}
-          </div>
-        ) : null}
+            );
+          })}
+        </div>
       </header>
 
       <div ref={scrollRef} className="bookster-library-scroll" id="bookster-library-scroll">
