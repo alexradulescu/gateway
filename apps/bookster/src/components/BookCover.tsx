@@ -2,68 +2,115 @@ import { useId } from "react";
 import { getBookColor, getBookInitials, getBookPatternIndex } from "../bookCover";
 
 export function BookCover({ title, large = false }: { title: string; large?: boolean }) {
-  const clipId = `book-cover-${useId().replaceAll(":", "")}`;
+  const instanceId = useId().replaceAll(":", "");
+  const clipId = `book-cover-${instanceId}`;
+  const pageGradientId = `book-pages-${instanceId}`;
+  const sheenGradientId = `book-sheen-${instanceId}`;
   const pattern = getBookPatternIndex(title);
+  const coverColor = getBookColor(title);
 
   return (
     <span aria-hidden="true" className={`bookster-cover ${large ? "bookster-cover--large" : ""}`}>
-      <svg viewBox="0 0 68 92" role="presentation">
-        <ellipse cx="34" cy="84" rx="25" ry="4" fill="rgb(0 0 0 / 0.14)" />
-        <g transform="rotate(-2 34 46)">
+      <svg viewBox="0 0 82 104" role="presentation">
+        <defs>
+          <clipPath id={clipId}>
+            <path d="M9 14 59 6 59 87 9 96Z" />
+          </clipPath>
+          <linearGradient id={pageGradientId} x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stopColor="#f8f3e9" />
+            <stop offset="0.7" stopColor="#e9e1d4" />
+            <stop offset="1" stopColor="#c9bead" />
+          </linearGradient>
+          <linearGradient id={sheenGradientId} x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stopColor="white" stopOpacity="0.34" />
+            <stop offset="0.42" stopColor="white" stopOpacity="0.04" />
+            <stop offset="1" stopColor="#18231d" stopOpacity="0.2" />
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="42" cy="98" rx="31" ry="4.5" fill="rgb(0 0 0 / 0.2)" />
+        <g transform="rotate(-2 41 52)">
+          {/* The back cover is the front plane translated along one depth vector. */}
           <path
-            d="M13 10 49 13 58 18 58 74 49 82 13 78Z"
-            fill="#d8d1c5"
-            stroke="rgb(64 60 53 / 0.28)"
+            d="M20 19 70 11 70 92 20 101Z"
+            fill={coverColor}
+            stroke="rgb(35 45 39 / 0.52)"
+            strokeLinejoin="round"
+            strokeWidth="1.1"
+          />
+          <path d="M20 19 70 11 70 92 20 101Z" fill="rgb(20 29 24 / 0.28)" />
+
+          {/* A single parallelogram makes the page block read as real thickness. */}
+          <path
+            d="M59 9 69 14 69 89 59 84Z"
+            fill={`url(#${pageGradientId})`}
+            stroke="rgb(81 73 63 / 0.42)"
+            strokeLinejoin="round"
             strokeWidth="0.8"
           />
-          <path d="M13 10 49 13 58 18 22 15Z" fill="#f7f2e9" />
-          <path d="M49 13 58 18 58 74 49 82Z" fill="#e8e1d6" />
-          <path d="M13 73 49 77 58 70 58 74 49 82 13 78Z" fill="#c9c1b5" />
-          <g stroke="rgb(90 82 70 / 0.27)" strokeWidth="0.65">
-            <path d="m51 28 5 2" />
-            <path d="m51 40 5 2" />
-            <path d="m51 52 5 2" />
-            <path d="m51 64 5 2" />
+          <g className="bookster-cover__page-lines">
+            <path d="m60.5 19 7 3.5" />
+            <path d="m60.5 28.5 7 3.5" />
+            <path d="m60.5 38 7 3.5" />
+            <path d="m60.5 47.5 7 3.5" />
+            <path d="m60.5 57 7 3.5" />
+            <path d="m60.5 66.5 7 3.5" />
+            <path d="m60.5 76 7 3.5" />
           </g>
 
-          <clipPath id={clipId}>
-            <path d="M8 7 51 11 51 79 8 75Z" />
-          </clipPath>
+          {/* Front cover: one uninterrupted plane, tilted about nine degrees. */}
           <path
-            d="M8 7 51 11 51 79 8 75Z"
-            fill={getBookColor(title)}
-            stroke="rgb(48 61 53 / 0.42)"
-            strokeWidth="0.9"
+            d="M9 14 59 6 59 87 9 96Z"
+            fill={coverColor}
+            stroke="rgb(35 49 41 / 0.58)"
+            strokeLinejoin="round"
+            strokeWidth="1.15"
           />
           <g clipPath={`url(#${clipId})`} className="bookster-cover__pattern">
             <CoverPattern index={pattern} />
           </g>
-          <path d="M8 7 14 8 14 76 8 75Z" fill="rgb(45 65 54 / 0.2)" />
-          <path d="M15 9 15 76" stroke="rgb(45 65 54 / 0.32)" strokeWidth="0.8" />
-          <path d="M9 8 50 12" stroke="rgb(255 255 255 / 0.5)" strokeWidth="0.8" />
-          <rect x="21" y="36" width="20" height="16" rx="1.5" fill="rgb(250 247 240 / 0.68)" />
-          <rect
-            x="23"
-            y="38"
-            width="16"
-            height="12"
-            rx="0.8"
-            fill="none"
-            stroke="rgb(47 64 55 / 0.25)"
-            strokeWidth="0.7"
-          />
-          <text
-            x="31"
-            y="47.5"
-            fill="#293a34"
-            fontFamily="Georgia, serif"
-            fontSize="8.5"
-            fontWeight="700"
-            letterSpacing="0.6"
-            textAnchor="middle"
-          >
-            {getBookInitials(title)}
-          </text>
+          <path d="M9 14 59 6 59 87 9 96Z" fill={`url(#${sheenGradientId})`} />
+          <path d="M9 14 16 13 16 95 9 96Z" fill="rgb(26 42 33 / 0.24)" />
+          <path d="M17.5 13 17.5 94.5" stroke="rgb(25 45 34 / 0.3)" strokeWidth="0.9" />
+          <path d="M10 14.3 58.5 6.6" stroke="rgb(255 255 255 / 0.55)" strokeWidth="0.8" />
+
+          <g transform="rotate(-9 35 52)">
+            <rect
+              x="20.5"
+              y="24"
+              width="32"
+              height="55"
+              rx="1.2"
+              fill="none"
+              stroke="rgb(91 72 38 / 0.38)"
+              strokeWidth="0.85"
+            />
+            <path d="M24 29h25M24 74h25" stroke="rgb(91 72 38 / 0.34)" strokeWidth="0.7" />
+            <path d="m36.5 30 3.2 3.2-3.2 3.2-3.2-3.2Z" fill="rgb(91 72 38 / 0.38)" />
+            <rect x="23" y="42" width="27" height="19" rx="1.5" fill="rgb(250 247 240 / 0.82)" />
+            <rect
+              x="25"
+              y="44"
+              width="23"
+              height="15"
+              rx="0.8"
+              fill="none"
+              stroke="rgb(47 64 55 / 0.28)"
+              strokeWidth="0.7"
+            />
+            <text
+              x="36.5"
+              y="55.2"
+              fill="#273931"
+              fontFamily="Georgia, serif"
+              fontSize="9.5"
+              fontWeight="700"
+              letterSpacing="0.65"
+              textAnchor="middle"
+            >
+              {getBookInitials(title)}
+            </text>
+          </g>
         </g>
       </svg>
     </span>
@@ -74,39 +121,39 @@ function CoverPattern({ index }: { index: number }) {
   if (index === 1) {
     return (
       <>
-        <path d="M8 24 51 28M8 58 51 62" />
-        <path d="M27 8 27 77" />
+        <path d="m7 29 55-9M7 80l55-9" />
+        <path d="m32 8 1 87" />
       </>
     );
   }
   if (index === 2) {
     return (
       <>
-        <circle cx="30" cy="44" r="24" />
-        <circle cx="30" cy="44" r="18" />
+        <circle cx="34" cy="51" r="27" />
+        <circle cx="34" cy="51" r="20" />
       </>
     );
   }
   if (index === 3) {
     return (
       <>
-        <path d="m4 28 24-20 27 24M4 54l24 22 27-18" />
-        <path d="m4 40 24-20 27 24M4 66l24 22 27-18" />
+        <path d="m4 32 28-25 31 22M4 65l29 31 31-26" />
+        <path d="m4 44 28-25 31 22M4 77l29 31 31-26" />
       </>
     );
   }
   if (index === 4) {
     return (
       <>
-        <circle cx="22" cy="25" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="37" cy="28" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="19" cy="61" r="1.2" fill="currentColor" stroke="none" />
-        <circle cx="41" cy="66" r="1.2" fill="currentColor" stroke="none" />
+        <circle cx="23" cy="27" r="1.25" fill="currentColor" stroke="none" />
+        <circle cx="45" cy="25" r="1.25" fill="currentColor" stroke="none" />
+        <circle cx="22" cy="74" r="1.25" fill="currentColor" stroke="none" />
+        <circle cx="48" cy="70" r="1.25" fill="currentColor" stroke="none" />
       </>
     );
   }
   if (index === 5) {
-    return <path d="M8 22h43M8 66h43M21 8v69M39 10v69" />;
+    return <path d="m5 31 58-9M5 75l58-9M24 10l1 87M45 7l1 87" />;
   }
-  return <path d="M4 18 54 68M4 32l43 43M17 8l38 38" />;
+  return <path d="m2 22 65 58M2 39l52 47M18 8l49 43" />;
 }

@@ -528,15 +528,15 @@ a {
 
 .bookster-cover {
   display: block;
-  width: 55px;
-  min-width: 55px;
-  height: 68px;
+  width: 62px;
+  min-width: 62px;
+  height: 74px;
 }
 
 .bookster-cover--large {
-  width: 92px;
-  min-width: 92px;
-  height: 120px;
+  width: 118px;
+  min-width: 118px;
+  height: 142px;
 }
 
 .bookster-cover svg {
@@ -556,6 +556,13 @@ a {
 
 .bookster-cover__pattern circle {
   fill: currentColor;
+}
+
+.bookster-cover__page-lines {
+  fill: none;
+  stroke: rgb(99 89 75 / 0.38);
+  stroke-linecap: round;
+  stroke-width: 0.55;
 }
 
 .bookster-empty-library {
