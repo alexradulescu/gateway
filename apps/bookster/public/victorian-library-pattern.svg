@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 780">
+  <defs>
+    <g id="books-a" fill="none" stroke="black" stroke-linejoin="round">
+      <path d="M0 0v-59h11V0M14 0v-68h13V0M30 0v-53h10V0M43 0l-5-61 12-1 6 62M59 0v-72h14V0M76 0v-57h9V0" />
+      <path d="M3-48h5M17-56h7M61-59h9M78-46h5" opacity=".72" />
+    </g>
+    <g id="books-b" fill="none" stroke="black" stroke-linejoin="round">
+      <path d="M0 0v-67h13V0M16 0v-51h9V0M28 0v-72h14V0M45 0l7-60 11 2-7 58M59 0v-55h12V0M74 0v-69h10V0" />
+      <path d="M3-55h7M31-60h8M62-44h6M77-57h5" opacity=".72" />
+    </g>
+    <g id="books-c" fill="none" stroke="black" stroke-linejoin="round">
+      <path d="M0 0v-55h10V0M13 0l4-68 12 1-4 67M29 0v-61h12V0M44 0v-73h13V0M60 0v-50h9V0M72 0l-5-65 12-1 6 66" />
+      <path d="M3-44h5M31-49h7M47-61h7M72-53h7" opacity=".72" />
+    </g>
+  </defs>
+
+  <g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Arched Victorian casework -->
+    <path stroke-width="2.2" d="M23 760V205C23 105 92 48 195 48s172 57 172 157v555" />
+    <path stroke-width="1.1" d="M31 760V207c0-94 65-151 164-151s164 57 164 151v553" />
+    <path stroke-width="1.6" d="M18 205h354M14 214h362" />
+    <path stroke-width="1.1" d="M44 187c19-73 73-111 151-111s132 38 151 111" />
+    <path stroke-width="1.2" d="M195 48v-25m-14 17 14-17 14 17" />
+    <path stroke-width="1" d="M163 66c7-18 18-27 32-27s25 9 32 27M173 69c5-11 12-17 22-17s17 6 22 17" />
+    <path stroke-width="1" d="M72 171c18-18 33-22 52-13m194 13c-18-18-33-22-52-13" opacity=".75" />
+
+    <!-- Pilasters and carved capitals -->
+    <path stroke-width="1.6" d="M24 225h18v535H24m324-535h18v535h-18M126 216h12v544h-12m126-544h12v544h-12" />
+    <path stroke-width="1" d="M20 225h26m-26 12h26m76-12h20m-20 12h20m106-12h20m-20 12h20m76-12h26m-26 12h26" />
+    <path stroke-width="1" d="M28 245h10m92 0h4m122 0h4m92 0h10M28 742h10m92 0h4m122 0h4m92 0h10" opacity=".72" />
+
+    <!-- Shelves -->
+    <g stroke-width="2.4">
+      <path d="M42 274h84m12 0h114m12 0h84" />
+      <path d="M42 394h84m12 0h114m12 0h84" />
+      <path d="M42 514h84m12 0h114m12 0h84" />
+      <path d="M42 634h84m12 0h114m12 0h84" />
+      <path d="M42 754h84m12 0h114m12 0h84" />
+    </g>
+    <g stroke-width=".8" opacity=".75">
+      <path d="M42 279h84m12 0h114m12 0h84" />
+      <path d="M42 399h84m12 0h114m12 0h84" />
+      <path d="M42 519h84m12 0h114m12 0h84" />
+      <path d="M42 639h84m12 0h114m12 0h84" />
+    </g>
+
+    <!-- Full, irregular shelves of books -->
+    <g stroke-width="1.15" opacity=".9">
+      <use href="#books-a" transform="translate(40 273)" />
+      <use href="#books-c" transform="translate(150 273)" />
+      <use href="#books-b" transform="translate(270 273)" />
+
+      <use href="#books-c" transform="translate(39 393)" />
+      <use href="#books-b" transform="translate(149 393)" />
+      <use href="#books-a" transform="translate(268 393)" />
+
+      <use href="#books-b" transform="translate(40 513)" />
+      <use href="#books-a" transform="translate(150 513)" />
+      <use href="#books-c" transform="translate(269 513)" />
+
+      <use href="#books-a" transform="translate(39 633)" />
+      <use href="#books-c" transform="translate(149 633)" />
+      <use href="#books-b" transform="translate(269 633)" />
+
+      <use href="#books-c" transform="translate(40 753)" />
+      <use href="#books-b" transform="translate(149 753)" />
+      <use href="#books-a" transform="translate(269 753)" />
+    </g>
+
+    <!-- Restrained carved details -->
+    <g stroke-width=".9" opacity=".68">
+      <path d="M23 319c10-7 16-7 19 0m-19 14c10-7 16-7 19 0M348 319c10-7 16-7 19 0m-19 14c10-7 16-7 19 0" />
+      <path d="M23 559c10-7 16-7 19 0m-19 14c10-7 16-7 19 0M348 559c10-7 16-7 19 0m-19 14c10-7 16-7 19 0" />
+      <path d="m130 316 4-6 4 6-4 6Zm122 0 4-6 4 6-4 6Zm-122 240 4-6 4 6-4 6Zm122 0 4-6 4 6-4 6Z" />
+    </g>
+  </g>
+</svg>

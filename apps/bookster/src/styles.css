@@ -34,9 +34,9 @@
   --bookster-field: rgb(255 253 248 / 0.72);
   --bookster-field-border: rgb(87 82 72 / 0.28);
   --bookster-field-focus: rgb(79 131 89 / 0.68);
-  --bookster-row-even: rgb(255 255 255 / 0.42);
-  --bookster-pattern-line: rgb(84 125 91 / 0.06);
-  --bookster-pattern-accent: rgb(154 115 56 / 0.045);
+  --bookster-row-even: rgb(255 255 255 / 0.38);
+  --bookster-row-odd: rgb(226 218 205 / 0.28);
+  --bookster-library-line: rgb(58 85 65 / 0.13);
   --bookster-safe-top: max(12px, env(safe-area-inset-top));
   --bookster-safe-bottom: max(12px, env(safe-area-inset-bottom));
 }
@@ -68,9 +68,9 @@
   --bookster-field: rgb(65 64 59 / 0.82);
   --bookster-field-border: rgb(235 229 220 / 0.25);
   --bookster-field-focus: rgb(117 174 124 / 0.72);
-  --bookster-row-even: rgb(58 56 51 / 0.52);
-  --bookster-pattern-line: rgb(145 186 151 / 0.045);
-  --bookster-pattern-accent: rgb(209 173 112 / 0.035);
+  --bookster-row-even: rgb(59 57 52 / 0.44);
+  --bookster-row-odd: rgb(39 39 36 / 0.36);
+  --bookster-library-line: rgb(155 185 157 / 0.105);
 }
 
 html,
@@ -111,42 +111,8 @@ body.bookster-theme::before {
   inset: 0;
   background:
     radial-gradient(circle at 50% -8rem, var(--bookster-green-soft), transparent 31rem),
-    radial-gradient(circle at 88% 92%, var(--bookster-rose-soft), transparent 27rem),
-    linear-gradient(
-      135deg,
-      transparent 49.25%,
-      var(--bookster-pattern-line) 49.5%,
-      var(--bookster-pattern-line) 50.5%,
-      transparent 50.75%
-    ),
-    linear-gradient(
-      45deg,
-      transparent 49.25%,
-      var(--bookster-pattern-line) 49.5%,
-      var(--bookster-pattern-line) 50.5%,
-      transparent 50.75%
-    ),
-    radial-gradient(
-      ellipse at 50% -4rem,
-      transparent 0 12rem,
-      var(--bookster-pattern-accent) 12.1rem 12.25rem,
-      transparent 12.35rem 18rem,
-      var(--bookster-pattern-accent) 18.1rem 18.25rem,
-      transparent 18.35rem
-    );
-  background-position:
-    center,
-    center,
-    center,
-    center,
-    center top;
-  background-size:
-    auto,
-    auto,
-    180px 180px,
-    180px 180px,
-    100% 34rem;
-  background-repeat: no-repeat, no-repeat, repeat, repeat, no-repeat;
+    radial-gradient(circle at 88% 92%, var(--bookster-rose-soft), transparent 27rem);
+  background-repeat: no-repeat;
   content: "";
   pointer-events: none;
 }
@@ -231,10 +197,27 @@ a {
 /* Library chrome */
 
 .bookster-library {
+  position: relative;
   width: min(100%, var(--bookster-max-width));
   height: 100dvh;
   margin-inline: auto;
   overflow: hidden;
+}
+
+.bookster-library::before {
+  position: fixed;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, var(--bookster-max-width));
+  background: var(--bookster-library-line);
+  content: "";
+  pointer-events: none;
+  transform: translateX(-50%);
+  -webkit-mask: url("/bookster/victorian-library-pattern.svg") center top / min(100%, 520px) auto
+    repeat-y;
+  mask: url("/bookster/victorian-library-pattern.svg") center top / min(100%, 520px) auto repeat-y;
 }
 
 .bookster-floating-header,
@@ -413,9 +396,11 @@ a {
 /* Virtualized library */
 
 .bookster-library-scroll {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  padding: calc(var(--bookster-safe-top) + 126px) 0 calc(var(--bookster-safe-bottom) + 72px);
+  padding: calc(var(--bookster-safe-top) + 104px) 0 calc(var(--bookster-safe-bottom) + 72px);
   overflow: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
@@ -439,7 +424,7 @@ a {
   align-items: flex-start;
   gap: 13px;
   padding: 12px 16px;
-  border-bottom: 1px solid color-mix(in srgb, var(--bookster-glass-border) 70%, transparent);
+  border: 0;
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   transition:
@@ -448,11 +433,11 @@ a {
 }
 
 .bookster-book-row[data-stripe="even"] {
-  background: color-mix(in srgb, var(--bookster-row-even) 54%, transparent);
+  background: var(--bookster-row-even);
 }
 
 .bookster-book-row[data-stripe="odd"] {
-  background: color-mix(in srgb, var(--bookster-row-even) 54%, transparent);
+  background: var(--bookster-row-odd);
 }
 
 .bookster-book-row:hover,
