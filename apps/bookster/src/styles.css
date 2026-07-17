@@ -45,6 +45,7 @@
   --bookster-row-odd: rgb(226 218 205 / 0.28);
   --bookster-library-line: rgb(58 85 65 / 0.13);
   --bookster-shadow: 0 2px 8px rgb(58 51 40 / 0.1);
+  --bookster-chrome-inset: 10px;
   --bookster-safe-top: max(12px, env(safe-area-inset-top));
   --bookster-safe-bottom: max(12px, env(safe-area-inset-bottom));
 }
@@ -245,7 +246,7 @@ a {
 
 .bookster-floating-header {
   top: 0;
-  padding: var(--bookster-safe-top) 10px 9px;
+  padding: var(--bookster-safe-top) var(--bookster-chrome-inset) 9px;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--bookster-page) 72%, transparent),
@@ -356,7 +357,7 @@ a {
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 9px 10px var(--bookster-safe-bottom);
+  padding: 9px var(--bookster-chrome-inset) var(--bookster-safe-bottom);
   background: linear-gradient(
     to top,
     color-mix(in srgb, var(--bookster-page) 72%, transparent),
@@ -446,7 +447,7 @@ a {
 /* Experimental bookshelf */
 
 .bookster-library-scroll--shelf {
-  padding-inline: 0;
+  padding-inline: var(--bookster-chrome-inset);
 }
 
 .bookster-shelf-space {
@@ -459,13 +460,13 @@ a {
   top: 0;
   left: calc(var(--bookster-shelf-lane) * 34%);
   width: 32%;
-  height: calc(min(48vw, 288px) + 52px);
+  height: calc(min(48vw, 288px) + 60px);
   padding: 4px 0;
 }
 
 .bookster-shelf-book {
   display: flex;
-  height: calc(min(48vw, 288px) + 44px);
+  height: calc(min(48vw, 288px) + 52px);
   align-items: stretch;
   flex-direction: column;
   padding: 0;
@@ -485,7 +486,7 @@ a {
   position: relative;
   display: block;
   width: 100%;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .bookster-shelf-book .bookster-cover--large {
@@ -495,35 +496,41 @@ a {
   aspect-ratio: 2 / 3;
 }
 
-.bookster-shelf-book__copy {
-  display: grid;
-  min-width: 0;
-  justify-items: center;
-  gap: 4px;
-  padding-inline: 6px;
-}
-
 .bookster-shelf-book__author {
-  width: 100%;
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
   overflow: hidden;
-  color: var(--bookster-muted);
-  font-size: 0.72rem;
+  color: #2f4037;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bookster-shelf-book__badges {
   display: flex;
+  width: 100%;
   max-width: 100%;
   justify-content: center;
-  gap: 3px;
-  overflow: hidden;
+  flex-wrap: wrap;
+  gap: 4px;
+  overflow: visible;
 }
 
 .bookster-shelf-book__badges .bookster-badge {
-  min-height: 20px;
-  padding-inline: 6px;
-  font-size: 0.6875rem;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 16px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  padding-inline: 4px;
+  font-size: 0.5625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bookster-book-row {
@@ -693,24 +700,25 @@ a {
 .bookster-cover__title {
   position: absolute;
   z-index: 1;
-  top: 50%;
-  left: 50%;
+  top: 45%;
+  right: 8px;
+  left: 8px;
   display: grid;
-  width: 80%;
-  min-height: 32%;
-  max-height: 72%;
+  width: auto;
+  min-height: 0;
+  max-height: 58%;
   place-items: center;
-  padding: 6px 5px;
-  border-block: 1px solid rgb(93 72 38 / 0.22);
+  padding: 2px 0;
+  border: 0;
   color: #2f4037;
-  background: rgb(255 252 245 / 0.9);
+  background: transparent;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.08;
   overflow-wrap: anywhere;
   text-align: center;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
 }
 
 .bookster-cover__title[data-title-size="medium"] {

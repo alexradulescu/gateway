@@ -55,7 +55,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     count: visibleBooks.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () =>
-      view === "shelf" ? Math.round(Math.min(window.innerWidth, 600) * 0.48 + 52) : 92,
+      view === "shelf" ? Math.round(Math.min(window.innerWidth, 600) * 0.48 + 60) : 92,
     overscan: 8,
     lanes: view === "shelf" ? 3 : 1,
     getItemKey: (index) => visibleBooks[index]._id,
@@ -224,27 +224,25 @@ function BookshelfBook({
     >
       <span className="bookster-shelf-book__cover">
         <BookCover large showTitle title={book.title} />
-      </span>
-      <span className="bookster-shelf-book__copy">
         <span className="bookster-shelf-book__author">{book.author}</span>
-        {book.isSample || categories.length > 0 || locations.length > 0 ? (
-          <span className="bookster-shelf-book__badges">
-            {book.isSample ? (
-              <span className="bookster-badge bookster-badge--sample">Sample</span>
-            ) : null}
-            {locations.map((label) => (
-              <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
-                {label}
-              </span>
-            ))}
-            {categories.map((label) => (
-              <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
-                {label}
-              </span>
-            ))}
-          </span>
-        ) : null}
       </span>
+      {book.isSample || categories.length > 0 || locations.length > 0 ? (
+        <span className="bookster-shelf-book__badges">
+          {book.isSample ? (
+            <span className="bookster-badge bookster-badge--sample">Sample</span>
+          ) : null}
+          {locations.map((label) => (
+            <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
+              {label}
+            </span>
+          ))}
+          {categories.map((label) => (
+            <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
+              {label}
+            </span>
+          ))}
+        </span>
+      ) : null}
     </Link>
   );
 }
