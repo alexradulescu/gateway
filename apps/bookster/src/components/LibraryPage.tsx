@@ -54,7 +54,8 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
   const virtualizer = useVirtualizer({
     count: visibleBooks.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => (view === "shelf" ? 220 : 92),
+    estimateSize: () =>
+      view === "shelf" ? Math.round(Math.min(window.innerWidth, 600) * 0.48 + 52) : 92,
     overscan: 8,
     lanes: view === "shelf" ? 3 : 1,
     getItemKey: (index) => visibleBooks[index]._id,
@@ -147,7 +148,11 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
                       } as React.CSSProperties
                     }
                   >
-                    <BookshelfBook book={book} locationLabels={locationLabels} />
+                    <BookshelfBook
+                      book={book}
+                      categoryLabels={categoryLabels}
+                      locationLabels={locationLabels}
+                    />
                   </div>
                 );
               }
@@ -200,12 +205,15 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
 
 function BookshelfBook({
   book,
+  categoryLabels,
   locationLabels,
 }: {
   book: BooksterBook;
+  categoryLabels: ReadonlyMap<string, string>;
   locationLabels: ReadonlyMap<string, string>;
 }) {
-  const location = book.locationIds.flatMap((id) => locationLabels.get(id) ?? [])[0];
+  const categories = book.categoryIds.flatMap((id) => categoryLabels.get(id) ?? []);
+  const locations = book.locationIds.flatMap((id) => locationLabels.get(id) ?? []);
   return (
     <Link
       aria-label={`${book.title} by ${book.author}`}
@@ -215,12 +223,28 @@ function BookshelfBook({
       to="/shelf/books/$bookId"
     >
       <span className="bookster-shelf-book__cover">
-        <BookCover large title={book.title} />
-        {book.isSample ? <span className="bookster-shelf-book__sample">Sample</span> : null}
+        <BookCover large showTitle title={book.title} />
       </span>
-      <strong>{book.title}</strong>
-      <span className="bookster-shelf-book__author">{book.author}</span>
-      {location ? <span className="bookster-shelf-book__location">{location}</span> : null}
+      <span className="bookster-shelf-book__copy">
+        <span className="bookster-shelf-book__author">{book.author}</span>
+        {book.isSample || categories.length > 0 || locations.length > 0 ? (
+          <span className="bookster-shelf-book__badges">
+            {book.isSample ? (
+              <span className="bookster-badge bookster-badge--sample">Sample</span>
+            ) : null}
+            {locations.map((label) => (
+              <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
+                {label}
+              </span>
+            ))}
+            {categories.map((label) => (
+              <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
+                {label}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </span>
     </Link>
   );
 }
