@@ -10,7 +10,7 @@ export function DiscardDialog({
   onDiscard: () => void;
 }) {
   return (
-    <AlertDialog.Backdrop isOpen={isOpen} variant="blur">
+    <AlertDialog.Backdrop className="bookster-modal-backdrop" isOpen={isOpen} variant="transparent">
       <AlertDialog.Container>
         <AlertDialog.Dialog className="bookster-confirm-dialog">
           <AlertDialog.Header>

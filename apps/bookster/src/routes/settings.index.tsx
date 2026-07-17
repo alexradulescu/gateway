@@ -1,5 +1,6 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { SettingsOverviewPage } from "../components/SettingsPage";
 
 export const Route = createFileRoute("/settings/")({
-  component: () => <Navigate replace to="/settings/$tab" params={{ tab: "config" }} />,
+  component: SettingsOverviewPage,
 });

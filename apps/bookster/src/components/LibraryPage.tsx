@@ -13,7 +13,7 @@ export function LibraryPage() {
     library,
     searchValue,
     setSearchValue,
-    deselectedCategoryIds,
+    selectedCategoryIds,
     toggleCategory,
     resetCategories,
   } = useBookster();
@@ -33,10 +33,6 @@ export function LibraryPage() {
     () => new Map(library.locations.map((location) => [location._id, location.label])),
     [library.locations],
   );
-  const activeCategoryIds = useMemo(
-    () => new Set(library.categories.map((category) => category._id)),
-    [library.categories],
-  );
   const visibleBooks = useMemo(() => {
     const sorted = sortBooks(
       library.books,
@@ -45,15 +41,14 @@ export function LibraryPage() {
       locationLabels,
     );
     const searched = searchBooks(sorted, debouncedSearch);
-    return filterBooksByCategories(searched, deselectedCategoryIds, activeCategoryIds);
+    return filterBooksByCategories(searched, selectedCategoryIds);
   }, [
     library.books,
     library.settings.defaultSortOrder,
     categoryLabels,
     locationLabels,
     debouncedSearch,
-    deselectedCategoryIds,
-    activeCategoryIds,
+    selectedCategoryIds,
   ]);
 
   const virtualizer = useVirtualizer({
@@ -64,50 +59,50 @@ export function LibraryPage() {
     getItemKey: (index) => visibleBooks[index]._id,
   });
 
-  const hasCategoryFilter = deselectedCategoryIds.size > 0;
-  const isSearching = debouncedSearch.trim().length >= 3;
+  const hasCategoryFilter = selectedCategoryIds.size > 0;
+  const isSearching = debouncedSearch.trim().length >= 2;
 
   return (
     <main className="bookster-library">
       <header className="bookster-floating-header">
         <div className="bookster-glass bookster-title-bar">
-          <h1>Bookster</h1>
-          <Link
-            aria-label="Open settings"
-            className="bookster-icon-link"
-            to="/settings/$tab"
-            params={{ tab: "config" }}
-          >
-            <Settings aria-hidden="true" size={18} />
+          <div>
+            <p className="bookster-eyebrow">Family library</p>
+            <h1>Bookster</h1>
+          </div>
+          <Link aria-label="Open settings" className="bookster-icon-link" to="/settings">
+            <Settings aria-hidden="true" size={20} />
           </Link>
         </div>
 
-        <div className="bookster-category-strip" aria-label="Category filters">
-          <Button
-            aria-pressed={!hasCategoryFilter}
-            className="bookster-filter-pill"
-            onPress={resetCategories}
-            size="sm"
-            variant={hasCategoryFilter ? "outline" : "primary"}
-          >
-            All
-          </Button>
-          {library.categories.map((category) => {
-            const selected = !deselectedCategoryIds.has(category._id);
-            return (
-              <Button
-                key={category._id}
-                aria-pressed={selected}
-                className="bookster-filter-pill"
-                onPress={() => toggleCategory(category._id as BooksterCategoryId)}
-                size="sm"
-                variant={selected ? "primary" : "outline"}
-              >
-                {category.label}
-              </Button>
-            );
-          })}
-        </div>
+        {library.categories.length > 0 ? (
+          <div className="bookster-category-strip" aria-label="Category filters">
+            <Button
+              aria-pressed={!hasCategoryFilter}
+              className="bookster-filter-pill"
+              onPress={resetCategories}
+              size="sm"
+              variant={!hasCategoryFilter ? "primary" : "outline"}
+            >
+              All
+            </Button>
+            {library.categories.map((category) => {
+              const selected = selectedCategoryIds.has(category._id);
+              return (
+                <Button
+                  key={category._id}
+                  aria-pressed={selected}
+                  className="bookster-filter-pill"
+                  onPress={() => toggleCategory(category._id as BooksterCategoryId)}
+                  size="sm"
+                  variant={selected ? "primary" : "outline"}
+                >
+                  {category.label}
+                </Button>
+              );
+            })}
+          </div>
+        ) : null}
       </header>
 
       <div ref={scrollRef} className="bookster-library-scroll" id="bookster-library-scroll">
@@ -195,13 +190,13 @@ function BookRow({
             {book.isSample ? (
               <span className="bookster-badge bookster-badge--sample">Sample</span>
             ) : null}
-            {categories.map((label) => (
-              <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
+            {locations.map((label) => (
+              <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
                 {label}
               </span>
             ))}
-            {locations.map((label) => (
-              <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
+            {categories.map((label) => (
+              <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
                 {label}
               </span>
             ))}

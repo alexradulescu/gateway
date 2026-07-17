@@ -31,14 +31,14 @@ const emptyBook = (title = ""): BookFormValue => ({
   isSample: false,
 });
 
-export function AddBookSheet() {
+export function AddBookSheet({ initialTab = "single" }: { initialTab?: "single" | "bulk" }) {
   const { library, searchValue, setSearchValue } = useBookster();
   const capturedTitle = useRef(searchValue);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [book, setBook] = useState(() => emptyBook(capturedTitle.current));
   const [singleBaseline, setSingleBaseline] = useState(() => JSON.stringify(emptyBook()));
   const [errors, setErrors] = useState<Partial<Record<"title" | "author", string>>>({});
-  const [tab, setTab] = useState("single");
+  const [tab, setTab] = useState(initialTab);
   const [csvContent, setCsvContent] = useState("");
   const [bulkLocationId, setBulkLocationId] = useState<string | null>(null);
   const [previewed, setPreviewed] = useState(false);
@@ -131,7 +131,10 @@ export function AddBookSheet() {
   return (
     <>
       <BookSheetFrame title="Add Book" hideTitle isBusy={isBusy} onRequestClose={close}>
-        <Tabs selectedKey={tab} onSelectionChange={(key) => setTab(String(key))}>
+        <Tabs
+          selectedKey={tab}
+          onSelectionChange={(key) => setTab(String(key) === "bulk" ? "bulk" : "single")}
+        >
           <Tabs.ListContainer className="bookster-tabs-container bookster-add-header-tabs">
             <Tabs.List aria-label="Add book method">
               <Tabs.Tab id="single">

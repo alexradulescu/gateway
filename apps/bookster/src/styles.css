@@ -3,7 +3,13 @@
 
 :root {
   color-scheme: light dark;
-  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "Segoe UI",
+    sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 
@@ -28,8 +34,9 @@
   --bookster-rose: #9a5965;
   --bookster-rose-soft: rgb(154 89 101 / 0.14);
   --bookster-gold: #9a7338;
-  --bookster-glass: rgb(250 247 240 / 0.66);
-  --bookster-glass-strong: rgb(250 247 240 / 0.9);
+  --bookster-glass: rgb(250 247 240 / 0.76);
+  --bookster-glass-strong: rgb(250 247 240 / 0.92);
+  --bookster-glass-active: rgb(255 253 248 / 0.97);
   --bookster-glass-border: rgb(87 82 72 / 0.18);
   --bookster-field: rgb(255 253 248 / 0.72);
   --bookster-field-border: rgb(87 82 72 / 0.28);
@@ -37,6 +44,7 @@
   --bookster-row-even: rgb(255 255 255 / 0.38);
   --bookster-row-odd: rgb(226 218 205 / 0.28);
   --bookster-library-line: rgb(58 85 65 / 0.13);
+  --bookster-shadow: 0 10px 28px rgb(58 51 40 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.7);
   --bookster-safe-top: max(12px, env(safe-area-inset-top));
   --bookster-safe-bottom: max(12px, env(safe-area-inset-bottom));
 }
@@ -62,8 +70,9 @@
   --bookster-rose: #d08b96;
   --bookster-rose-soft: rgb(183 101 115 / 0.2);
   --bookster-gold: #d1ad70;
-  --bookster-glass: rgb(39 39 36 / 0.62);
-  --bookster-glass-strong: rgb(37 37 34 / 0.9);
+  --bookster-glass: rgb(39 39 36 / 0.76);
+  --bookster-glass-strong: rgb(37 37 34 / 0.92);
+  --bookster-glass-active: rgb(48 48 44 / 0.97);
   --bookster-glass-border: rgb(235 229 220 / 0.15);
   --bookster-field: rgb(65 64 59 / 0.82);
   --bookster-field-border: rgb(235 229 220 / 0.25);
@@ -71,6 +80,7 @@
   --bookster-row-even: rgb(59 57 52 / 0.44);
   --bookster-row-odd: rgb(39 39 36 / 0.36);
   --bookster-library-line: rgb(155 185 157 / 0.105);
+  --bookster-shadow: 0 14px 36px rgb(0 0 0 / 0.34), inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
 html,
@@ -184,8 +194,9 @@ a {
 .bookster-glass {
   border: 1px solid var(--bookster-glass-border);
   background: var(--bookster-glass);
-  -webkit-backdrop-filter: blur(18px) saturate(1.25);
-  backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow: var(--bookster-shadow);
+  -webkit-backdrop-filter: blur(3px) saturate(1.08);
+  backdrop-filter: blur(3px) saturate(1.08);
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
@@ -255,7 +266,8 @@ a {
 .bookster-title-bar h1,
 .bookster-settings-title h1 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.55rem;
+  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.035em;
@@ -264,20 +276,24 @@ a {
 .bookster-icon-button,
 .bookster-icon-link {
   display: inline-grid;
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   place-items: center;
   flex: 0 0 auto;
   border: 0 !important;
   border-radius: 999px !important;
-  background: transparent !important;
   transition: background 150ms ease;
+  background: var(--bookster-glass-active) !important;
 }
 
 .bookster-icon-button:hover,
 .bookster-icon-link:hover {
-  background: var(--bookster-green-soft) !important;
+  background: color-mix(
+    in srgb,
+    var(--bookster-green) 14%,
+    var(--bookster-glass-active)
+  ) !important;
 }
 
 .bookster-icon-link:focus-visible,
@@ -303,14 +319,15 @@ a {
 }
 
 .bookster-filter-pill {
-  height: 28px !important;
+  height: 36px !important;
   min-width: max-content !important;
-  min-height: 28px !important;
   padding-inline: 10px !important;
+  min-height: 36px !important;
   border-color: var(--bookster-glass-border) !important;
   border-radius: 999px !important;
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.08);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   font-family:
     ui-sans-serif,
     -apple-system,
@@ -465,6 +482,7 @@ a {
 .bookster-book-row__copy > strong {
   overflow: hidden;
   font-size: 1rem;
+  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
   font-weight: 650;
   line-height: 1.3;
   text-overflow: ellipsis;
@@ -509,12 +527,13 @@ a {
 }
 
 .bookster-badge--category {
-  color: var(--bookster-green);
-  background: var(--bookster-green-soft);
-}
-.bookster-badge--location {
   color: var(--bookster-rose);
   background: var(--bookster-rose-soft);
+}
+.bookster-badge--location {
+  color: var(--bookster-green);
+  background: var(--bookster-green-soft);
+  font-weight: 800;
 }
 .bookster-badge--sample {
   color: var(--bookster-gold);
@@ -605,6 +624,7 @@ a {
 .bookster-empty-library h2 {
   margin: 0 0 8px;
   font-size: 1.25rem;
+  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 .bookster-empty-library p {
   max-width: 320px;
@@ -614,19 +634,25 @@ a {
 
 /* Sheets and forms */
 
+.bookster-modal-backdrop {
+  background: rgb(31 29 25 / 0.34) !important;
+  -webkit-backdrop-filter: blur(3px) !important;
+  backdrop-filter: blur(3px) !important;
+}
+
 .bookster-sheet-container {
-  padding: 0 !important;
+  padding: 2px !important;
 }
 .bookster-sheet {
   width: min(100%, var(--bookster-modal-width)) !important;
   max-width: var(--bookster-modal-width) !important;
-  max-height: min(92dvh, 780px) !important;
+  max-height: min(calc(100dvh - 4px), 820px) !important;
   border: 1px solid var(--bookster-glass-border) !important;
-  border-radius: 28px 28px 0 0 !important;
+  border-radius: 28px !important;
   background: var(--bookster-glass-strong) !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: blur(24px) saturate(1.3);
-  backdrop-filter: blur(24px) saturate(1.3);
+  box-shadow: 0 18px 54px rgb(0 0 0 / 0.26) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(1.08);
+  backdrop-filter: blur(3px) saturate(1.08);
 }
 
 .bookster-sheet .modal__header {
@@ -680,6 +706,11 @@ a {
   backdrop-filter: blur(2px);
 }
 
+.bookster-tabs-container .tabs__indicator {
+  background: var(--bookster-glass-active) !important;
+  box-shadow: 0 2px 8px rgb(45 41 34 / 0.1) !important;
+}
+
 .bookster-form,
 .bookster-form-grid,
 .bookster-settings-stack {
@@ -724,6 +755,38 @@ a {
 .bookster-settings :is(.input, .select__trigger) {
   min-height: 40px !important;
   border-radius: 999px !important;
+}
+
+.bookster-form input,
+.bookster-settings input,
+.bookster-form .select__trigger,
+.bookster-settings .select__trigger {
+  min-height: 46px;
+}
+
+.bookster-form label,
+.bookster-settings label {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.bookster-sample-switch {
+  display: grid !important;
+  min-height: 44px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookster-sample-switch .switch__content {
+  display: grid !important;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bookster-sample-switch .switch__control {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .bookster-sample-switch small {
@@ -804,8 +867,9 @@ a {
   border: 1px solid var(--bookster-glass-border) !important;
   background: var(--bookster-glass-strong) !important;
   box-shadow: none !important;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  border-radius: 24px !important;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 
 /* Settings */
@@ -814,7 +878,7 @@ a {
   width: min(100%, var(--bookster-max-width));
   min-height: 100dvh;
   margin-inline: auto;
-  padding: calc(var(--bookster-safe-top) + 103px) 16px calc(36px + var(--bookster-safe-bottom));
+  padding: calc(var(--bookster-safe-top) + 76px) 16px calc(36px + var(--bookster-safe-bottom));
 }
 
 .bookster-settings-header {
@@ -843,15 +907,8 @@ a {
   border-radius: 22px;
 }
 
-.bookster-settings-tabs {
-  margin-top: 7px;
-}
-.bookster-settings-tabs__container {
-  overflow: hidden;
-  border: 0 !important;
-}
 .bookster-settings-content {
-  padding-top: 18px;
+  padding-top: 22px;
 }
 .bookster-settings-intro {
   margin: 0;
@@ -861,6 +918,84 @@ a {
   margin: 6px 3px 0;
   color: var(--bookster-muted);
   font-size: 0.78rem;
+}
+
+.bookster-settings-group {
+  display: grid;
+  gap: 7px;
+}
+
+.bookster-settings-group > h2 {
+  margin: 0 4px;
+  color: var(--bookster-muted);
+  font-size: 0.7rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bookster-settings-card {
+  overflow: hidden;
+  border: 1px solid var(--bookster-glass-border);
+  border-radius: 20px;
+  background: var(--bookster-glass);
+  box-shadow: var(--bookster-shadow);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.bookster-settings-card > .bookster-setting-field {
+  padding: 14px;
+}
+
+.bookster-settings-row {
+  display: grid;
+  min-height: 62px;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--bookster-glass-border);
+}
+
+.bookster-settings-row:last-child {
+  border-bottom: 0;
+}
+
+.bookster-settings-row:active {
+  background: var(--bookster-glass-active);
+}
+
+.bookster-settings-row__icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--bookster-green);
+  background: var(--bookster-green-soft);
+}
+
+.bookster-settings-row__copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bookster-settings-row__copy strong {
+  font-size: 0.92rem;
+}
+
+.bookster-settings-row__copy small {
+  overflow: hidden;
+  color: var(--bookster-muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookster-settings-row__chevron {
+  color: var(--bookster-muted);
 }
 
 .bookster-label-list {

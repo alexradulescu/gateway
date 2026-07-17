@@ -19,7 +19,7 @@ export function BooksterProvider({ children }: { children: React.ReactNode }) {
   const library = useBooksterLibraryQuery();
   const initialize = useMutation(api.bookster.initialize);
   const [searchValue, setSearchValue] = useState("");
-  const [deselectedCategoryIds, setDeselectedCategoryIds] = useState<Set<BooksterCategoryId>>(
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<BooksterCategoryId>>(
     () => new Set(),
   );
   const [theme, setThemeState] = useState<BooksterTheme>(storedTheme);
@@ -47,9 +47,9 @@ export function BooksterProvider({ children }: { children: React.ReactNode }) {
       library,
       searchValue,
       setSearchValue,
-      deselectedCategoryIds,
+      selectedCategoryIds,
       toggleCategory(id) {
-        setDeselectedCategoryIds((current) => {
+        setSelectedCategoryIds((current) => {
           const next = new Set(current);
           if (next.has(id)) next.delete(id);
           else next.add(id);
@@ -57,7 +57,7 @@ export function BooksterProvider({ children }: { children: React.ReactNode }) {
         });
       },
       resetCategories() {
-        setDeselectedCategoryIds(new Set());
+        setSelectedCategoryIds(new Set());
       },
       theme,
       setTheme(nextTheme) {
@@ -65,7 +65,7 @@ export function BooksterProvider({ children }: { children: React.ReactNode }) {
         setThemeState(nextTheme);
       },
     };
-  }, [library, searchValue, deselectedCategoryIds, theme]);
+  }, [library, searchValue, selectedCategoryIds, theme]);
 
   if (value === null) {
     return (

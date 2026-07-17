@@ -1,7 +1,7 @@
-import { Button, toast } from "@heroui/react";
+import { AlertDialog, Button, toast } from "@heroui/react";
 import { useBlocker, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
 import { cleanBooksterText } from "../domain";
 import { useBookster } from "../context/useBookster";
@@ -38,8 +38,7 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
   const [savedBook, setSavedBook] = useState<BookFormValue | null>(initial);
   const [errors, setErrors] = useState<Partial<Record<"title" | "author", string>>>({});
   const [isBusy, setIsBusy] = useState(false);
-  const [deleteArmed, setDeleteArmed] = useState(false);
-  const deleteTimer = useRef<number | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const updateBook = useMutation(api.bookster.updateBook);
   const removeBook = useMutation(api.bookster.removeBook);
   const navigate = useNavigate({ from: "/books/$bookId" });
@@ -49,13 +48,6 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
     withResolver: true,
     enableBeforeUnload: isDirty,
   });
-
-  useEffect(
-    () => () => {
-      if (deleteTimer.current !== null) window.clearTimeout(deleteTimer.current);
-    },
-    [],
-  );
 
   const close = () => void navigate({ to: "/", resetScroll: false });
   if (!selected || !book) {
@@ -103,20 +95,15 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
   };
 
   const deleteBook = async () => {
-    if (!deleteArmed) {
-      setDeleteArmed(true);
-      deleteTimer.current = window.setTimeout(() => setDeleteArmed(false), 10_000);
-      return;
-    }
     setIsBusy(true);
     try {
       await removeBook({ id: selected._id });
       toast("Book deleted");
+      setIsDeleteDialogOpen(false);
       close();
     } catch (error) {
       toast.danger(booksterErrorMessage(error, "Could not delete the book."));
       setIsBusy(false);
-      setDeleteArmed(false);
     }
   };
 
@@ -144,10 +131,10 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
             </Button>
             <Button
               isPending={isBusy}
-              onPress={deleteBook}
-              variant={deleteArmed ? "danger" : "outline"}
+              onPress={() => setIsDeleteDialogOpen(true)}
+              variant="outline"
             >
-              {deleteArmed ? "Are you sure?" : "Delete"}
+              Delete
             </Button>
           </div>
         </form>
@@ -157,6 +144,35 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
         onCancel={() => blocker.reset?.()}
         onDiscard={() => blocker.proceed?.()}
       />
+      <AlertDialog.Backdrop
+        className="bookster-modal-backdrop"
+        isOpen={isDeleteDialogOpen}
+        variant="transparent"
+      >
+        <AlertDialog.Container>
+          <AlertDialog.Dialog className="bookster-confirm-dialog">
+            <AlertDialog.Header>
+              <AlertDialog.Icon status="danger" />
+              <AlertDialog.Heading>Delete “{selected.title}”?</AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body>
+              <p>This book will be permanently removed from your library.</p>
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button
+                isDisabled={isBusy}
+                onPress={() => setIsDeleteDialogOpen(false)}
+                variant="tertiary"
+              >
+                Cancel
+              </Button>
+              <Button isPending={isBusy} onPress={deleteBook} variant="danger">
+                Delete Book
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
     </>
   );
 }

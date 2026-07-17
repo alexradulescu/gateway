@@ -19,23 +19,74 @@ export function normalizeBooksterText(value: string) {
   return cleanBooksterText(value).toLowerCase();
 }
 
+function normalizeSearchText(value: string) {
+  return normalizeBooksterText(value)
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
+function isWithinEditDistance(left: string, right: string, maximumDistance: number) {
+  if (Math.abs(left.length - right.length) > maximumDistance) return false;
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+
+  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
+    const current = [leftIndex];
+    let rowMinimum = current[0];
+    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
+      const substitutionCost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
+      const distance = Math.min(
+        current[rightIndex - 1] + 1,
+        previous[rightIndex] + 1,
+        previous[rightIndex - 1] + substitutionCost,
+      );
+      current.push(distance);
+      rowMinimum = Math.min(rowMinimum, distance);
+    }
+    if (rowMinimum > maximumDistance) return false;
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[right.length] <= maximumDistance;
+}
+
+function fuzzyTextMatch(value: string, term: string) {
+  if (value.includes(term)) return true;
+  const queryWords = term.split(" ");
+  const valueWords = value.split(/[^\p{Letter}\p{Number}]+/u).filter(Boolean);
+  return queryWords.every((queryWord) => {
+    if (queryWord.length < 4) return valueWords.some((word) => word.startsWith(queryWord));
+    const maximumDistance = queryWord.length >= 8 ? 2 : 1;
+    return valueWords.some(
+      (word) => word.includes(queryWord) || isWithinEditDistance(word, queryWord, maximumDistance),
+    );
+  });
+}
+
 export function searchBooks<T extends BooksterBookLike>(books: T[], rawTerm: string) {
-  const term = normalizeBooksterText(rawTerm);
-  if (term.length < 3) return books;
+  const term = normalizeSearchText(rawTerm);
+  if (term.length < 2) return books;
 
   return books
     .filter((book) => {
-      const title = normalizeBooksterText(book.title);
-      const author = normalizeBooksterText(book.author);
-      return title.includes(term) || author.includes(term);
+      const title = normalizeSearchText(book.title);
+      const author = normalizeSearchText(book.author);
+      return fuzzyTextMatch(title, term) || fuzzyTextMatch(author, term);
     })
     .sort((left, right) => {
-      const leftTitle = normalizeBooksterText(left.title);
-      const rightTitle = normalizeBooksterText(right.title);
-      const leftRank = leftTitle.startsWith(term) ? 0 : leftTitle.includes(term) ? 1 : 2;
-      const rightRank = rightTitle.startsWith(term) ? 0 : rightTitle.includes(term) ? 1 : 2;
+      const leftTitle = normalizeSearchText(left.title);
+      const rightTitle = normalizeSearchText(right.title);
+      const rank = (book: T) => {
+        const title = normalizeSearchText(book.title);
+        const author = normalizeSearchText(book.author);
+        if (title.startsWith(term)) return 0;
+        if (title.includes(term)) return 1;
+        if (fuzzyTextMatch(title, term)) return 2;
+        if (author.startsWith(term)) return 3;
+        if (author.includes(term)) return 4;
+        return 5;
+      };
       return (
-        leftRank - rightRank ||
+        rank(left) - rank(right) ||
         leftTitle.localeCompare(rightTitle) ||
         left._id.localeCompare(right._id)
       );
@@ -44,16 +95,11 @@ export function searchBooks<T extends BooksterBookLike>(books: T[], rawTerm: str
 
 export function filterBooksByCategories<T extends BooksterBookLike>(
   books: T[],
-  deselectedCategoryIds: ReadonlySet<string>,
-  activeCategoryIds?: ReadonlySet<string>,
+  selectedCategoryIds: ReadonlySet<string>,
 ) {
-  if (deselectedCategoryIds.size === 0) return books;
+  if (selectedCategoryIds.size === 0) return books;
   return books.filter((book) =>
-    book.categoryIds.some(
-      (categoryId) =>
-        (activeCategoryIds === undefined || activeCategoryIds.has(categoryId)) &&
-        !deselectedCategoryIds.has(categoryId),
-    ),
+    book.categoryIds.some((categoryId) => selectedCategoryIds.has(categoryId)),
   );
 }
 
