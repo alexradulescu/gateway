@@ -775,9 +775,13 @@ a {
   white-space: nowrap;
 }
 .bookster-sheet .modal__close-trigger {
-  width: 32px;
-  height: 32px;
-  padding: 6px;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border: 1px solid var(--bookster-glass-border);
+  background: var(--bookster-glass);
 }
 .bookster-sheet .modal__close-trigger svg {
   width: 20px;
@@ -789,10 +793,14 @@ a {
 .bookster-add-header-tabs {
   position: absolute;
   z-index: 1;
-  top: 14px;
-  right: 52px;
+  top: 10px;
+  right: 58px;
   left: 10px;
-  min-height: 36px;
+  height: 44px;
+  min-height: 44px;
+  padding: 3px;
+  border: 1px solid var(--bookster-field-border) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 .bookster-sheet .modal__body {
   padding: 8px 9px calc(18px + env(safe-area-inset-bottom));
@@ -814,8 +822,9 @@ a {
 }
 
 .bookster-tabs-container .tabs__indicator {
+  border: 1px solid var(--bookster-glass-border);
   background: var(--bookster-glass-active) !important;
-  box-shadow: 0 2px 8px rgb(45 41 34 / 0.1) !important;
+  box-shadow: 0 2px 8px rgb(45 41 34 / 0.16) !important;
 }
 
 .bookster-form,
