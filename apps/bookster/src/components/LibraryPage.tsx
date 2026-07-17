@@ -67,10 +67,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     <main className="bookster-library">
       <header className="bookster-floating-header">
         <div className="bookster-glass bookster-title-bar">
-          <div>
-            <p className="bookster-eyebrow">Family library</p>
-            <h1>Bookster</h1>
-          </div>
+          <h1>Bookster</h1>
           <div className="bookster-title-actions">
             <Link
               aria-label={view === "shelf" ? "Show book list" : "Show bookshelf"}

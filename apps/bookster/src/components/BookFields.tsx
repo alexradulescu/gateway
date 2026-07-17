@@ -66,7 +66,10 @@ export function BookMetadataFields({
   onChange,
   categories,
   locations,
-}: Pick<BookFieldProps, "value" | "onChange" | "categories" | "locations">) {
+  showSampleDescription = true,
+}: Pick<BookFieldProps, "value" | "onChange" | "categories" | "locations"> & {
+  showSampleDescription?: boolean;
+}) {
   return (
     <div className="bookster-form-grid">
       <BookMultiSelect
@@ -90,7 +93,7 @@ export function BookMetadataFields({
       >
         <Switch.Content>
           <span>Is Sample</span>
-          <small>Mark this book as a sample or preview.</small>
+          {showSampleDescription ? <small>Mark this book as a sample or preview.</small> : null}
         </Switch.Content>
         <Switch.Control>
           <Switch.Thumb />

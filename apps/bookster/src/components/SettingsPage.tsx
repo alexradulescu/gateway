@@ -164,10 +164,7 @@ function SettingsHeader({
         >
           <ArrowLeft aria-hidden="true" size={20} />
         </Link>
-        <div>
-          <p className="bookster-eyebrow">Bookster</p>
-          <h1>{title}</h1>
-        </div>
+        <h1>{title}</h1>
       </div>
     </header>
   );

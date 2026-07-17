@@ -116,7 +116,7 @@ export function BookDetailSheet({
   return (
     <>
       <BookSheetFrame title={selected.title} isBusy={isBusy} onRequestClose={close}>
-        <form className="bookster-form" onSubmit={submit}>
+        <form className="bookster-form bookster-detail-form" onSubmit={submit}>
           <div className="bookster-detail-lead">
             <BookCover large title={book.title || selected.title} />
             <BookIdentityFields errors={errors} onChange={setBook} value={book} />
@@ -125,12 +125,14 @@ export function BookDetailSheet({
             categories={library.categories}
             locations={library.locations}
             onChange={setBook}
+            showSampleDescription={false}
             value={book}
           />
-          <div className="bookster-dates">
-            <span>Date Added: {booksterDateFormatter.format(selected.dateAdded)}</span>
-            <span>Last Updated: {booksterDateFormatter.format(selected.lastUpdated)}</span>
-          </div>
+          <p className="bookster-dates">
+            <span>Added {booksterDateFormatter.format(selected.dateAdded)}</span>
+            <span aria-hidden="true">|</span>
+            <span>Updated {booksterDateFormatter.format(selected.lastUpdated)}</span>
+          </p>
           <div className="bookster-detail-actions">
             <Button fullWidth isPending={isBusy} type="submit">
               Save
