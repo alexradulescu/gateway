@@ -5,19 +5,31 @@ import {
   Label,
   ListBox,
   Select,
-  Tabs,
   TextField,
   toast,
   type Key,
 } from "@heroui/react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { ArrowLeft, Check, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  CloudUpload,
+  MapPin,
+  Pencil,
+  Plus,
+  Search,
+  Tags,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
 import { findDuplicateGroups } from "../domain";
 import { useBookster } from "../context/useBookster";
 import { booksterErrorMessage } from "../errors";
+import { CsvImportSettings } from "./CsvImportSettings";
 import type {
   BooksterBook,
   BooksterCategory,
@@ -29,51 +41,174 @@ import type {
   BooksterTheme,
 } from "../types";
 
-const tabLabels: Record<BooksterSettingsTab, string> = {
-  config: "Config",
+const pageLabels: Record<BooksterSettingsTab, string> = {
+  config: "Settings",
   categories: "Categories",
   locations: "Locations",
-  duplicates: "Duplicates",
+  duplicates: "Duplicate Books",
+  import: "Import CSV",
 };
 const duplicateDateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
-export function SettingsPage({ tab }: { tab: BooksterSettingsTab }) {
-  const navigate = useNavigate({ from: "/settings/$tab" });
+export function SettingsOverviewPage() {
+  const { library, theme, setTheme } = useBookster();
+  const updateSortOrder = useMutation(api.bookster.updateSortOrder);
+  const setSort = async (value: Key | Key[] | null) => {
+    if (value === null || Array.isArray(value)) return;
+    try {
+      await updateSortOrder({ defaultSortOrder: String(value) as BooksterSortOrder });
+      toast("Default sort order saved");
+    } catch (error) {
+      toast.danger(booksterErrorMessage(error, "Could not save the sort order."));
+    }
+  };
+
   return (
     <main className="bookster-settings">
-      <header className="bookster-settings-header">
-        <div className="bookster-glass bookster-settings-title">
-          <Link aria-label="Back to books" className="bookster-icon-link" to="/">
-            <ArrowLeft aria-hidden="true" size={18} />
-          </Link>
-          <h1>Settings</h1>
-        </div>
-        <Tabs
-          className="bookster-settings-tabs"
-          selectedKey={tab}
-          onSelectionChange={(key) =>
-            void navigate({ to: "/settings/$tab", params: { tab: String(key) }, replace: true })
-          }
-        >
-          <Tabs.ListContainer className="bookster-glass bookster-settings-tabs__container">
-            <Tabs.List aria-label="Bookster settings">
-              {(Object.keys(tabLabels) as BooksterSettingsTab[]).map((key) => (
-                <Tabs.Tab key={key} id={key}>
-                  {tabLabels[key]}
-                  <Tabs.Indicator />
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs.ListContainer>
-        </Tabs>
-      </header>
+      <SettingsHeader title="Settings" />
       <section className="bookster-settings-content">
-        {tab === "config" ? <ConfigSettings /> : null}
+        <div className="bookster-settings-stack">
+          <SettingsGroup title="Library">
+            <SettingSelect
+              description="How books are ordered when you open Bookster."
+              label="Default Sort Order"
+              onChange={setSort}
+              options={SORT_OPTIONS}
+              value={library.settings.defaultSortOrder}
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Organization">
+            <SettingsLinkRow
+              description={`${library.categories.length} ${library.categories.length === 1 ? "category" : "categories"}`}
+              icon={<Tags aria-hidden="true" size={18} />}
+              label="Categories"
+              tab="categories"
+            />
+            <SettingsLinkRow
+              description={`${library.locations.length} ${library.locations.length === 1 ? "location" : "locations"}`}
+              icon={<MapPin aria-hidden="true" size={18} />}
+              label="Locations"
+              tab="locations"
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Maintenance">
+            <SettingsLinkRow
+              description="Find repeated titles"
+              icon={<Search aria-hidden="true" size={18} />}
+              label="Duplicate Books"
+              tab="duplicates"
+            />
+            <SettingsLinkRow
+              description="Import books in bulk"
+              icon={<CloudUpload aria-hidden="true" size={18} />}
+              label="Import CSV"
+              tab="import"
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Appearance">
+            <SettingSelect
+              description="Stored on this device, so each family member keeps their preference."
+              label="Theme"
+              onChange={(value) => {
+                if (value !== null && !Array.isArray(value)) {
+                  setTheme(String(value) as BooksterTheme);
+                }
+              }}
+              options={THEME_OPTIONS}
+              value={theme}
+            />
+          </SettingsGroup>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export function SettingsPage({ tab }: { tab: BooksterSettingsTab }) {
+  const [isImportBusy, setIsImportBusy] = useState(false);
+  if (tab === "config") return <SettingsOverviewPage />;
+  return (
+    <main className="bookster-settings">
+      <SettingsHeader backToSettings isBackDisabled={isImportBusy} title={pageLabels[tab]} />
+      <section className="bookster-settings-content">
         {tab === "categories" ? <LabelSettings key="category" kind="category" /> : null}
         {tab === "locations" ? <LabelSettings key="location" kind="location" /> : null}
         {tab === "duplicates" ? <DuplicateSettings /> : null}
+        {tab === "import" ? <CsvImportSettings onBusyChange={setIsImportBusy} /> : null}
       </section>
     </main>
+  );
+}
+
+function SettingsHeader({
+  title,
+  backToSettings = false,
+  isBackDisabled = false,
+}: {
+  title: string;
+  backToSettings?: boolean;
+  isBackDisabled?: boolean;
+}) {
+  return (
+    <header className="bookster-settings-header">
+      <div className="bookster-glass bookster-settings-title">
+        {isBackDisabled ? (
+          <Button
+            aria-label="Import in progress"
+            className="bookster-icon-button"
+            isDisabled
+            isIconOnly
+            variant="tertiary"
+          >
+            <ArrowLeft aria-hidden="true" size={20} />
+          </Button>
+        ) : (
+          <Link
+            aria-label={backToSettings ? "Back to settings" : "Back to books"}
+            className="bookster-icon-link"
+            to={backToSettings ? "/settings" : "/"}
+          >
+            <ArrowLeft aria-hidden="true" size={20} />
+          </Link>
+        )}
+        <h1>{title}</h1>
+      </div>
+    </header>
+  );
+}
+
+function SettingsGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="bookster-settings-group">
+      <h2>{title}</h2>
+      <div className="bookster-settings-card">{children}</div>
+    </section>
+  );
+}
+
+function SettingsLinkRow({
+  label,
+  description,
+  icon,
+  tab,
+}: {
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  tab: Exclude<BooksterSettingsTab, "config">;
+}) {
+  return (
+    <Link className="bookster-settings-row" params={{ tab }} to="/settings/$tab">
+      <span className="bookster-settings-row__icon">{icon}</span>
+      <span className="bookster-settings-row__copy">
+        <strong>{label}</strong>
+        <small>{description}</small>
+      </span>
+      <ChevronRight aria-hidden="true" className="bookster-settings-row__chevron" size={18} />
+    </Link>
   );
 }
 
@@ -89,40 +224,6 @@ const THEME_OPTIONS: Array<{ id: BooksterTheme; label: string }> = [
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },
 ];
-
-function ConfigSettings() {
-  const { library, theme, setTheme } = useBookster();
-  const updateSortOrder = useMutation(api.bookster.updateSortOrder);
-  const setSort = async (value: Key | Key[] | null) => {
-    if (value === null || Array.isArray(value)) return;
-    try {
-      await updateSortOrder({ defaultSortOrder: String(value) as BooksterSortOrder });
-      toast("Default sort order saved");
-    } catch (error) {
-      toast.danger(booksterErrorMessage(error, "Could not save the sort order."));
-    }
-  };
-  return (
-    <div className="bookster-settings-stack">
-      <SettingSelect
-        description="How books are sorted when you open the app."
-        label="Default Sort Order"
-        onChange={setSort}
-        options={SORT_OPTIONS}
-        value={library.settings.defaultSortOrder}
-      />
-      <SettingSelect
-        description="Stored on this device, so another family member keeps their preference."
-        label="Theme"
-        onChange={(value) => {
-          if (value !== null && !Array.isArray(value)) setTheme(String(value) as BooksterTheme);
-        }}
-        options={THEME_OPTIONS}
-        value={theme}
-      />
-    </div>
-  );
-}
 
 function SettingSelect({
   label,
@@ -176,8 +277,8 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
     kind === "category" ? api.bookster.removeCategory : api.bookster.removeLocation,
   );
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [value, setValue] = useState("");
-  const [isAdding, setIsAdding] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const [newValue, setNewValue] = useState("");
   const [pendingDelete, setPendingDelete] = useState<ManagedLabel | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const singular = kind === "category" ? "Category" : "Location";
@@ -188,22 +289,30 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
         : book.locationIds.includes(id as BooksterLocationId),
     ).length;
 
-  const save = async () => {
-    if (!value.trim()) return;
+  const saveEdit = async () => {
+    if (!editingId || !editValue.trim()) return;
     setIsBusy(true);
     try {
-      if (editingId) {
-        if (kind === "category")
-          await update({ id: editingId as BooksterCategoryId, label: value });
-        else await update({ id: editingId as BooksterLocationId, label: value });
-        toast(`${singular} updated`);
-      } else {
-        await create({ label: value });
-        toast(`${singular} added`);
-      }
+      if (kind === "category")
+        await update({ id: editingId as BooksterCategoryId, label: editValue });
+      else await update({ id: editingId as BooksterLocationId, label: editValue });
+      toast(`${singular} updated`);
       setEditingId(null);
-      setValue("");
-      setIsAdding(false);
+      setEditValue("");
+    } catch (error) {
+      toast.danger(booksterErrorMessage(error, `Could not save the ${kind}.`));
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const addLabel = async () => {
+    if (!newValue.trim()) return;
+    setIsBusy(true);
+    try {
+      await create({ label: newValue });
+      toast(`${singular} added`);
+      setNewValue("");
     } catch (error) {
       toast.danger(booksterErrorMessage(error, `Could not save the ${kind}.`));
     } finally {
@@ -228,15 +337,15 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
 
   return (
     <div className="bookster-settings-stack">
-      <div className="bookster-label-list">
-        <div className="bookster-label-list__heading">
-          <strong>Label</strong>
-          <strong>Actions</strong>
-        </div>
+      <div className="bookster-settings-card bookster-label-list">
         {items.map((item) => (
           <div key={item._id} className="bookster-label-row">
             {editingId === item._id ? (
-              <TextField className="bookster-inline-input" value={value} onChange={setValue}>
+              <TextField
+                className="bookster-inline-input"
+                value={editValue}
+                onChange={setEditValue}
+              >
                 <Label className="sr-only">Edit {kind}</Label>
                 <Input variant="secondary" />
               </TextField>
@@ -248,10 +357,10 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
                 <>
                   <Button
                     aria-label={`Save ${item.label}`}
-                    isDisabled={!value.trim()}
+                    isDisabled={!editValue.trim()}
                     isIconOnly
                     isPending={isBusy}
-                    onPress={save}
+                    onPress={saveEdit}
                     size="sm"
                   >
                     <Check size={16} />
@@ -261,7 +370,7 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
                     isIconOnly
                     onPress={() => {
                       setEditingId(null);
-                      setValue("");
+                      setEditValue("");
                     }}
                     size="sm"
                     variant="tertiary"
@@ -276,8 +385,7 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
                     isIconOnly
                     onPress={() => {
                       setEditingId(item._id);
-                      setValue(item.label);
-                      setIsAdding(false);
+                      setEditValue(item.label);
                     }}
                     size="sm"
                     variant="tertiary"
@@ -298,49 +406,33 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
             </div>
           </div>
         ))}
-      </div>
-      {isAdding ? (
-        <div className="bookster-new-label">
-          <TextField value={value} onChange={setValue}>
+        <form
+          className="bookster-label-row bookster-new-label"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void addLabel();
+          }}
+        >
+          <TextField className="bookster-inline-input" value={newValue} onChange={setNewValue}>
             <Label className="sr-only">New {kind} name</Label>
-            <Input placeholder={`New ${kind} name`} variant="secondary" />
+            <Input placeholder={`Add ${kind}`} variant="secondary" />
           </TextField>
           <Button
-            aria-label={`Save new ${kind}`}
-            isDisabled={!value.trim()}
+            aria-label={`Add ${kind}`}
+            isDisabled={!newValue.trim()}
             isIconOnly
             isPending={isBusy}
-            onPress={save}
+            type="submit"
           >
-            <Check size={17} />
+            <Plus size={17} />
           </Button>
-          <Button
-            aria-label="Cancel"
-            isIconOnly
-            onPress={() => {
-              setIsAdding(false);
-              setValue("");
-            }}
-            variant="tertiary"
-          >
-            <X size={17} />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          fullWidth
-          onPress={() => {
-            setIsAdding(true);
-            setEditingId(null);
-            setValue("");
-          }}
-          variant="secondary"
-        >
-          <Plus size={17} />
-          Add {singular}
-        </Button>
-      )}
-      <AlertDialog.Backdrop isOpen={pendingDelete !== null} variant="blur">
+        </form>
+      </div>
+      <AlertDialog.Backdrop
+        className="bookster-modal-backdrop"
+        isOpen={pendingDelete !== null}
+        variant="transparent"
+      >
         <AlertDialog.Container>
           <AlertDialog.Dialog className="bookster-confirm-dialog">
             <AlertDialog.Header>
@@ -452,7 +544,11 @@ function DuplicateSettings() {
           ))}
         </div>
       ) : null}
-      <AlertDialog.Backdrop isOpen={pendingDelete !== null} variant="blur">
+      <AlertDialog.Backdrop
+        className="bookster-modal-backdrop"
+        isOpen={pendingDelete !== null}
+        variant="transparent"
+      >
         <AlertDialog.Container>
           <AlertDialog.Dialog className="bookster-confirm-dialog">
             <AlertDialog.Header>

@@ -16,7 +16,7 @@ describe("Bookster text cleanup", () => {
 });
 
 describe("Bookster search", () => {
-  test("ranks title prefixes before title substrings and author substrings", () => {
+  test("ranks title prefixes before title substrings and author matches", () => {
     const books = [
       book("1", "Empire of Silence", "Christopher Ruocchio"),
       book("2", "A Memory Called Empire", "Arkady Martine"),
@@ -25,12 +25,24 @@ describe("Bookster search", () => {
     ];
 
     expect(searchBooks(books, "emp").map((candidate) => candidate._id)).toEqual(["1", "2", "3"]);
-    expect(searchBooks(books, "em")).toEqual(books);
+    expect(searchBooks(books, "e")).toEqual(books);
+  });
+
+  test("finds small typos, accents, and authors written in a different order", () => {
+    const books = [
+      book("1", "A Desolation Called Peace", "Arkady Martine"),
+      book("2", "L'Étranger", "Albert Camus"),
+      book("3", "Ancillary Justice", "Ann Leckie"),
+    ];
+
+    expect(searchBooks(books, "desolaton").map((candidate) => candidate._id)).toEqual(["1"]);
+    expect(searchBooks(books, "etranger").map((candidate) => candidate._id)).toEqual(["2"]);
+    expect(searchBooks(books, "Martine Arkady").map((candidate) => candidate._id)).toEqual(["1"]);
   });
 });
 
 describe("Bookster category filters", () => {
-  test("shows everything initially and requires an enabled category after one is disabled", () => {
+  test("shows everything initially and includes books from any selected category", () => {
     const uncategorized = book("1", "No category", "Author");
     const scienceFiction = { ...book("2", "Dune", "Frank Herbert"), categoryIds: ["sci-fi"] };
     const shared = {
@@ -42,20 +54,12 @@ describe("Bookster category filters", () => {
     expect(filterBooksByCategories(books, new Set())).toEqual(books);
     expect(
       filterBooksByCategories(books, new Set(["sci-fi"])).map((candidate) => candidate._id),
-    ).toEqual(["3"]);
-  });
-
-  test("ignores associations to soft-deleted categories when a filter is active", () => {
-    const activeCategoryIds = new Set(["sci-fi", "history"]);
-    const active = { ...book("1", "Dune", "Frank Herbert"), categoryIds: ["sci-fi"] };
-    const deleted = {
-      ...book("2", "Old taxonomy", "Author"),
-      categoryIds: ["deleted-category"],
-    };
-
+    ).toEqual(["2", "3"]);
     expect(
-      filterBooksByCategories([active, deleted], new Set(["history"]), activeCategoryIds),
-    ).toEqual([active]);
+      filterBooksByCategories(books, new Set(["sci-fi", "soft-cover"])).map(
+        (candidate) => candidate._id,
+      ),
+    ).toEqual(["2", "3"]);
   });
 });
 

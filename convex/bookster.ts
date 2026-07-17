@@ -67,7 +67,7 @@ export const initialize = mutation({
     if (!(await getSettings(ctx))) {
       await ctx.db.insert("booksterSettings", {
         userId: DEFAULT_USER_ID,
-        defaultSortOrder: "dateAdded",
+        defaultSortOrder: "title",
         theme: "system",
       });
     }
@@ -97,7 +97,7 @@ export const library = query({
       allLocations,
       settings: settings ?? {
         userId: DEFAULT_USER_ID,
-        defaultSortOrder: "dateAdded" as const,
+        defaultSortOrder: "title" as const,
         theme: "system" as const,
       },
     };

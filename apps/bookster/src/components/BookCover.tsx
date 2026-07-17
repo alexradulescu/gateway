@@ -1,28 +1,43 @@
 import { useId } from "react";
 import { getBookColor, getBookInitials, getBookPatternIndex } from "../bookCover";
 
-export function BookCover({ title, large = false }: { title: string; large?: boolean }) {
+export function BookCover({
+  title,
+  large = false,
+  showTitle = false,
+}: {
+  title: string;
+  large?: boolean;
+  showTitle?: boolean;
+}) {
   const instanceId = useId().replaceAll(":", "");
   const clipId = `book-cover-${instanceId}`;
   const pattern = getBookPatternIndex(title);
+  const titleSize = title.length > 36 ? "long" : title.length > 22 ? "medium" : "short";
+  const frame = showTitle
+    ? { height: 90, width: 60, x: 0, y: 0 }
+    : { height: 84, width: 54, x: 3, y: 3 };
 
   return (
-    <span aria-hidden="true" className={`bookster-cover ${large ? "bookster-cover--large" : ""}`}>
+    <span
+      aria-hidden="true"
+      className={`bookster-cover${large ? " bookster-cover--large" : ""}${showTitle ? " bookster-cover--titled" : ""}`}
+    >
       <svg viewBox="0 0 60 90" role="presentation">
         <defs>
           <clipPath id={clipId}>
-            <rect height="84" rx="2.75" width="54" x="3" y="3" />
+            <rect {...frame} rx="2.75" />
           </clipPath>
         </defs>
 
         <rect
           className="bookster-cover__face"
           fill={getBookColor(title)}
-          height="84"
+          height={frame.height}
           rx="2.75"
-          width="54"
-          x="3"
-          y="3"
+          width={frame.width}
+          x={frame.x}
+          y={frame.y}
         />
         <g clipPath={`url(#${clipId})`} className="bookster-cover__pattern">
           <CoverPattern index={pattern} />
@@ -35,6 +50,11 @@ export function BookCover({ title, large = false }: { title: string; large?: boo
           </text>
         </g>
       </svg>
+      {showTitle ? (
+        <span className="bookster-cover__title" data-title-size={titleSize}>
+          {title}
+        </span>
+      ) : null}
     </span>
   );
 }

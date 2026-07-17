@@ -10,13 +10,14 @@ export type BooksterLocationId = Id<"booksterLocations">;
 export type { BooksterSortOrder };
 
 export type BooksterTheme = "system" | "light" | "dark";
-export type BooksterSettingsTab = "config" | "categories" | "locations" | "duplicates";
+export type BooksterSettingsTab = "config" | "categories" | "locations" | "duplicates" | "import";
 
 export const BOOKSTER_SETTINGS_TABS: BooksterSettingsTab[] = [
   "config",
   "categories",
   "locations",
   "duplicates",
+  "import",
 ];
 
 export function isBooksterSettingsTab(value: string): value is BooksterSettingsTab {

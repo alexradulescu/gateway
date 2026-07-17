@@ -22,7 +22,7 @@ export type BooksterContextValue = {
   };
   searchValue: string;
   setSearchValue: (value: string) => void;
-  deselectedCategoryIds: ReadonlySet<BooksterCategoryId>;
+  selectedCategoryIds: ReadonlySet<BooksterCategoryId>;
   toggleCategory: (id: BooksterCategoryId) => void;
   resetCategories: () => void;
   theme: BooksterTheme;
