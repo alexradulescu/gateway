@@ -1,14 +1,14 @@
 import { Button, SearchField } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Plus, Settings } from "lucide-react";
+import { LayoutGrid, List as ListIcon, Plus, Settings } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filterBooksByCategories, searchBooks, sortBooks } from "../domain";
 import { useBookster } from "../context/useBookster";
 import type { BooksterBook, BooksterCategoryId } from "../types";
 import { BookCover } from "./BookCover";
 
-export function LibraryPage() {
+export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
   const {
     library,
     searchValue,
@@ -54,8 +54,9 @@ export function LibraryPage() {
   const virtualizer = useVirtualizer({
     count: visibleBooks.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => 92,
+    estimateSize: () => (view === "shelf" ? 220 : 92),
     overscan: 8,
+    lanes: view === "shelf" ? 3 : 1,
     getItemKey: (index) => visibleBooks[index]._id,
   });
 
@@ -70,9 +71,22 @@ export function LibraryPage() {
             <p className="bookster-eyebrow">Family library</p>
             <h1>Bookster</h1>
           </div>
-          <Link aria-label="Open settings" className="bookster-icon-link" to="/settings">
-            <Settings aria-hidden="true" size={20} />
-          </Link>
+          <div className="bookster-title-actions">
+            <Link
+              aria-label={view === "shelf" ? "Show book list" : "Show bookshelf"}
+              className="bookster-icon-link"
+              to={view === "shelf" ? "/" : "/shelf"}
+            >
+              {view === "shelf" ? (
+                <ListIcon aria-hidden="true" size={20} />
+              ) : (
+                <LayoutGrid aria-hidden="true" size={19} />
+              )}
+            </Link>
+            <Link aria-label="Open settings" className="bookster-icon-link" to="/settings">
+              <Settings aria-hidden="true" size={20} />
+            </Link>
+          </div>
         </div>
 
         {library.categories.length > 0 ? (
@@ -105,7 +119,11 @@ export function LibraryPage() {
         ) : null}
       </header>
 
-      <div ref={scrollRef} className="bookster-library-scroll" id="bookster-library-scroll">
+      <div
+        ref={scrollRef}
+        className={`bookster-library-scroll${view === "shelf" ? " bookster-library-scroll--shelf" : ""}`}
+        id="bookster-library-scroll"
+      >
         {visibleBooks.length === 0 ? (
           <LibraryEmptyState
             hasCategoryFilter={hasCategoryFilter}
@@ -113,9 +131,29 @@ export function LibraryPage() {
             isSearching={isSearching}
           />
         ) : (
-          <div className="bookster-virtual-space" style={{ height: virtualizer.getTotalSize() }}>
+          <div
+            className={view === "shelf" ? "bookster-shelf-space" : "bookster-virtual-space"}
+            style={{ height: virtualizer.getTotalSize() }}
+          >
             {virtualizer.getVirtualItems().map((virtualRow) => {
               const book = visibleBooks[virtualRow.index];
+              if (view === "shelf") {
+                return (
+                  <div
+                    key={book._id}
+                    className="bookster-shelf-item"
+                    data-index={virtualRow.index}
+                    style={
+                      {
+                        "--bookster-shelf-lane": virtualRow.lane,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <BookshelfBook book={book} locationLabels={locationLabels} />
+                  </div>
+                );
+              }
               return (
                 <div
                   key={book._id}
@@ -151,11 +189,42 @@ export function LibraryPage() {
             <SearchField.ClearButton />
           </SearchField.Group>
         </SearchField>
-        <Link aria-label="Add book" className="bookster-add-button bookster-add-link" to="/add">
+        <Link
+          aria-label="Add book"
+          className="bookster-add-button bookster-add-link"
+          to={view === "shelf" ? "/shelf/add" : "/add"}
+        >
           <Plus aria-hidden="true" size={20} />
         </Link>
       </footer>
     </main>
+  );
+}
+
+function BookshelfBook({
+  book,
+  locationLabels,
+}: {
+  book: BooksterBook;
+  locationLabels: ReadonlyMap<string, string>;
+}) {
+  const location = book.locationIds.flatMap((id) => locationLabels.get(id) ?? [])[0];
+  return (
+    <Link
+      aria-label={`${book.title} by ${book.author}`}
+      className="bookster-shelf-book"
+      params={{ bookId: book._id }}
+      resetScroll={false}
+      to="/shelf/books/$bookId"
+    >
+      <span className="bookster-shelf-book__cover">
+        <BookCover large title={book.title} />
+        {book.isSample ? <span className="bookster-shelf-book__sample">Sample</span> : null}
+      </span>
+      <strong>{book.title}</strong>
+      <span className="bookster-shelf-book__author">{book.author}</span>
+      {location ? <span className="bookster-shelf-book__location">{location}</span> : null}
+    </Link>
   );
 }
 

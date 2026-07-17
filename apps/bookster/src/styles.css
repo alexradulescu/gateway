@@ -263,6 +263,12 @@ a {
   pointer-events: auto;
 }
 
+.bookster-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .bookster-title-bar h1,
 .bookster-settings-title h1 {
   margin: 0;
@@ -435,6 +441,107 @@ a {
   top: 0;
   left: 0;
   width: 100%;
+}
+
+/* Experimental bookshelf */
+
+.bookster-library-scroll--shelf {
+  padding-inline: 8px;
+}
+
+.bookster-shelf-space {
+  position: relative;
+  width: 100%;
+}
+
+.bookster-shelf-item {
+  position: absolute;
+  top: 0;
+  left: calc(var(--bookster-shelf-lane) * 33.333333%);
+  width: 33.333333%;
+  height: 220px;
+  padding: 4px;
+}
+
+.bookster-shelf-book {
+  display: flex;
+  height: 212px;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.bookster-shelf-book:focus-visible,
+.bookster-shelf-book:active {
+  border-color: var(--bookster-glass-border);
+  outline: none;
+  background: var(--bookster-glass-active);
+}
+
+.bookster-shelf-book__cover {
+  position: relative;
+  display: block;
+  margin-bottom: 9px;
+}
+
+.bookster-shelf-book .bookster-cover--large {
+  width: 84px;
+  min-width: 84px;
+  height: 126px;
+}
+
+.bookster-shelf-book__sample {
+  position: absolute;
+  right: -11px;
+  bottom: -5px;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--bookster-gold) 30%, transparent);
+  border-radius: 999px;
+  color: var(--bookster-gold);
+  background: var(--bookster-glass-active);
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bookster-shelf-book > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 2.25em;
+  font-family: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 0.78rem;
+  line-height: 1.12;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.bookster-shelf-book__author {
+  width: 100%;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--bookster-muted);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookster-shelf-book__location {
+  max-width: 100%;
+  margin-top: 4px;
+  overflow: hidden;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--bookster-green);
+  background: var(--bookster-green-soft);
+  font-size: 0.52rem;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .bookster-book-row {

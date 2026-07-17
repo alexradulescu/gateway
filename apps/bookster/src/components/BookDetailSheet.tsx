@@ -18,7 +18,13 @@ const booksterDateFormatter = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
-export function BookDetailSheet({ bookId }: { bookId: string }) {
+export function BookDetailSheet({
+  bookId,
+  returnTo = "/",
+}: {
+  bookId: string;
+  returnTo?: "/" | "/shelf";
+}) {
   const { library } = useBookster();
   const selected = library.books.find((book) => book._id === bookId);
   const initial = useMemo<BookFormValue | null>(
@@ -41,7 +47,7 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const updateBook = useMutation(api.bookster.updateBook);
   const removeBook = useMutation(api.bookster.removeBook);
-  const navigate = useNavigate({ from: "/books/$bookId" });
+  const navigate = useNavigate();
   const isDirty = Boolean(book && savedBook && JSON.stringify(book) !== JSON.stringify(savedBook));
   const blocker = useBlocker({
     shouldBlockFn: () => isDirty && !isBusy,
@@ -49,7 +55,7 @@ export function BookDetailSheet({ bookId }: { bookId: string }) {
     enableBeforeUnload: isDirty,
   });
 
-  const close = () => void navigate({ to: "/", resetScroll: false });
+  const close = () => void navigate({ to: returnTo, resetScroll: false });
   if (!selected || !book) {
     return (
       <BookSheetFrame title="Book not found" isBusy={false} onRequestClose={close}>

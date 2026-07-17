@@ -31,7 +31,13 @@ const emptyBook = (title = ""): BookFormValue => ({
   isSample: false,
 });
 
-export function AddBookSheet({ initialTab = "single" }: { initialTab?: "single" | "bulk" }) {
+export function AddBookSheet({
+  initialTab = "single",
+  returnTo = "/",
+}: {
+  initialTab?: "single" | "bulk";
+  returnTo?: "/" | "/shelf";
+}) {
   const { library, searchValue, setSearchValue } = useBookster();
   const capturedTitle = useRef(searchValue);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -46,7 +52,7 @@ export function AddBookSheet({ initialTab = "single" }: { initialTab?: "single" 
   const [isBusy, setIsBusy] = useState(false);
   const addBook = useMutation(api.bookster.addBook);
   const addBookBatch = useMutation(api.bookster.addBookBatch);
-  const navigate = useNavigate({ from: "/add" });
+  const navigate = useNavigate();
   const isDirty =
     JSON.stringify(book) !== singleBaseline || csvContent !== "" || bulkLocationId !== null;
   const blocker = useBlocker({
@@ -61,7 +67,7 @@ export function AddBookSheet({ initialTab = "single" }: { initialTab?: "single" 
   const parsed = useMemo(() => parseBookCsv(csvContent), [csvContent]);
   const preview = useMemo(() => previewBookCsv(parsed, library.books), [parsed, library.books]);
 
-  const close = () => void navigate({ to: "/", resetScroll: false });
+  const close = () => void navigate({ to: returnTo, resetScroll: false });
   const validate = () => {
     const next = {
       title: cleanBooksterText(book.title) ? undefined : "Title is required.",

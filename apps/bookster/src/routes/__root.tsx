@@ -12,9 +12,12 @@ export const Route = createRootRoute({
 function BooksterRoot() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const inSettings = pathname.startsWith("/settings");
+  const inShelf = pathname === "/shelf" || pathname.startsWith("/shelf/");
   return (
     <BooksterProvider>
-      {inSettings ? null : <LibraryPage />}
+      {inSettings ? null : (
+        <LibraryPage key={inShelf ? "shelf" : "list"} view={inShelf ? "shelf" : "list"} />
+      )}
       <Outlet />
     </BooksterProvider>
   );
