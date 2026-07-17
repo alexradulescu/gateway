@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as bookster from "../bookster.js";
 import type * as notes from "../notes.js";
 import type * as things from "../things.js";
 import type * as thingsDomain from "../thingsDomain.js";
@@ -15,6 +16,7 @@ import type * as thingsDomain from "../thingsDomain.js";
 import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  bookster: typeof bookster;
   notes: typeof notes;
   things: typeof things;
   thingsDomain: typeof thingsDomain;
