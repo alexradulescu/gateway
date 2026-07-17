@@ -762,6 +762,10 @@ a {
   backdrop-filter: blur(3px) saturate(1.08);
 }
 
+.bookster-sheet:has(.bookster-add-header-tabs) {
+  padding-block: 10px 0;
+}
+
 .bookster-sheet .modal__header {
   min-height: 44px;
   padding: 12px 52px 2px 10px;
