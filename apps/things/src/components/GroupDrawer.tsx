@@ -121,6 +121,14 @@ export function GroupDrawer({
                     <section aria-label="To do" className="things-item-section">
                       <h3 className="things-item-section__label">To do</h3>
                       <div className="things-item-group things-active-list">
+                        <AddGroupItemRow
+                          group={openedGroup.group}
+                          name={addItemName}
+                          quantity={addItemQuantity}
+                          onNameChange={setAddItemName}
+                          onPendingChange={setAddItemPending}
+                          onQuantityChange={setAddItemQuantity}
+                        />
                         {openedGroup.activeItems.length === 0 ? (
                           <p className="things-empty">Nothing active yet.</p>
                         ) : (
@@ -145,14 +153,6 @@ export function GroupDrawer({
                             )}
                           />
                         )}
-                        <AddGroupItemRow
-                          group={openedGroup.group}
-                          name={addItemName}
-                          quantity={addItemQuantity}
-                          onNameChange={setAddItemName}
-                          onPendingChange={setAddItemPending}
-                          onQuantityChange={setAddItemQuantity}
-                        />
                       </div>
                     </section>
                     <DoneSection
