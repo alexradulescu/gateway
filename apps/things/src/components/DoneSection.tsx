@@ -14,7 +14,7 @@ export function DoneSection({
   onItemPendingChange: (itemId: string, pending: boolean) => void;
 }) {
   const clearCompleted = useMutation(api.things.clearCompletedGroupItems);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (openedGroup.completedItems.length === 0) return null;
 
