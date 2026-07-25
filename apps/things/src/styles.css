@@ -89,16 +89,18 @@
  */
 html {
   min-width: 320px;
-  height: 100%;
-  min-height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   overflow: hidden;
   background-color: var(--things-page-base);
 }
 
 body {
   min-width: 320px;
-  height: 100%;
-  min-height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   margin: 0;
   overflow: hidden;
   color: var(--things-page-ink);
@@ -109,7 +111,8 @@ body {
 #root {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   min-height: 0;
   overflow: hidden;
   isolation: isolate;
@@ -155,7 +158,7 @@ button {
 .things-app-shell {
   position: relative;
   width: 100%;
-  /* Browsers use the dynamic viewport; installed mode is handled below. */
+  /* Legacy fallback first; current engines use the dynamic visual viewport. */
   height: 100vh;
   height: 100dvh;
   min-height: 0;
@@ -166,17 +169,6 @@ button {
     radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
     radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
     radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
-}
-
-/*
- * WebKit standalone has shipped viewport calculations where dvh excludes the
- * safe-area inset. With no browser chrome, vh is the stable full-screen surface
- * and prevents the unpainted home-indicator strip on launch and resume.
- */
-@media (display-mode: standalone) {
-  .things-app-shell {
-    height: 100vh;
-  }
 }
 
 .things-app-shell__pattern {
