@@ -98,10 +98,10 @@ export function useThingsData() {
 
 function ThingsLoadingState({ label = "Loading" }: { label?: string }) {
   return (
-    <main className="things-state" aria-busy="true" aria-label={label}>
+    <div className="things-state" aria-busy="true" aria-label={label}>
       <Spinner color="accent" size="lg" />
       <p>{label}…</p>
-    </main>
+    </div>
   );
 }
 

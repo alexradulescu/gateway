@@ -6,6 +6,7 @@ export const router = createRouter({
   basepath: "/things",
   defaultPreload: "intent",
   scrollRestoration: true,
+  scrollToTopSelectors: [".things-app-shell__scroll"],
 });
 
 declare module "@tanstack/react-router" {

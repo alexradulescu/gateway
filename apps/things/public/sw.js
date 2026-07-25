@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "things-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v2`;
+const CACHE_NAME = `${CACHE_PREFIX}v4`;
 const SHELL_URL = "/things/";
 const ASSET_MANIFEST_URL = "/things/asset-manifest.json";
 const STATIC_URLS = [
@@ -32,7 +32,8 @@ self.addEventListener("install", (event) => {
       const cache = await caches.open(CACHE_NAME);
       await cache.put(SHELL_URL, shellResponse);
       await cache.addAll([ASSET_MANIFEST_URL, ...STATIC_URLS, ...versionedAssets]);
-      await self.skipWaiting();
+      // Let an existing client keep its current worker and lazy asset generation.
+      // The new shell becomes active after those clients close.
     })(),
   );
 });
@@ -47,7 +48,6 @@ self.addEventListener("activate", (event) => {
         }
       }
       await Promise.all(deletions);
-      await self.clients.claim();
     })(),
   );
 });

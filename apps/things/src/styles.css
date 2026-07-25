@@ -16,8 +16,12 @@
 
   --things-max-width: 480px;
   --things-page-gutter: clamp(12px, 3.8vw, 20px);
-  --things-safe-top: max(12px, env(safe-area-inset-top));
-  --things-safe-bottom: max(14px, env(safe-area-inset-bottom));
+  --things-safe-top: env(safe-area-inset-top, 0px);
+  --things-safe-right: env(safe-area-inset-right, 0px);
+  --things-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --things-safe-left: env(safe-area-inset-left, 0px);
+  --things-header-top-gap: 12px;
+  --things-scroll-bottom-gap: 32px;
 
   --things-accent: var(--accent);
   --things-accent-strong: var(--accent);
@@ -26,7 +30,7 @@
   --things-danger: var(--danger);
   --things-danger-soft: var(--danger-soft);
 
-  --things-page-base: var(--background);
+  --things-page-base: #edf3ed;
   --things-page-ink: var(--foreground);
   --things-page-muted: var(--muted);
   --things-page-faint: color-mix(in oklab, var(--muted) 72%, transparent);
@@ -62,6 +66,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --things-page-base: #101a17;
     --things-pattern-color: rgb(156 216 193 / 0.075);
     --things-glow-a: rgb(37 92 73 / 0.44);
     --things-glow-b: rgb(35 47 43 / 0.62);
@@ -77,61 +82,38 @@
   }
 }
 
+/*
+ * Keep the document fixed and let the shell own scrolling. iOS standalone can
+ * expose a stale document edge when a min-height document and fixed background
+ * are recomposited after launch, resume, or overlay scroll locking.
+ */
 html {
   min-width: 320px;
+  height: 100%;
   min-height: 100%;
-  min-height: 100dvh;
+  overflow: hidden;
   background-color: var(--things-page-base);
-  background-image:
-    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
-    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
-    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
-  background-attachment: fixed;
 }
 
 body {
   min-width: 320px;
+  height: 100%;
   min-height: 100%;
-  min-height: 100dvh;
   margin: 0;
-}
-
-body,
-body.things-theme {
-  isolation: isolate;
+  overflow: hidden;
   color: var(--things-page-ink);
   background-color: var(--things-page-base);
-  background-image:
-    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
-    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
-    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
-  background-attachment: fixed;
-  overscroll-behavior-y: none;
-}
-
-body::before,
-body.things-theme::before {
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  background: var(--things-pattern-color);
-  content: "";
-  pointer-events: none;
-  -webkit-mask-image: url("/things/things-art-deco-pattern.svg");
-  mask-image: url("/things/things-art-deco-pattern.svg");
-  -webkit-mask-position: center top;
-  mask-position: center top;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  -webkit-mask-size: 240px 240px;
-  mask-size: 240px 240px;
+  overscroll-behavior: none;
 }
 
 #root {
   position: relative;
-  z-index: 1;
-  min-height: 100%;
-  min-height: 100dvh;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--things-page-base);
 }
 
 *,
@@ -147,7 +129,7 @@ select {
   font: inherit;
 }
 
-body.things-theme input {
+body input {
   font-size: 16px;
 }
 
@@ -168,17 +150,117 @@ button {
   background: var(--things-accent);
 }
 
-/* Page shell */
+/* Application shell */
 
-.things-shell {
+.things-app-shell {
+  position: relative;
   width: 100%;
-  min-height: 100dvh;
+  /* Browsers use the dynamic viewport; installed mode is handled below. */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--things-page-base);
+  background-image:
+    radial-gradient(circle at 14% 8%, var(--things-glow-a), transparent 34rem),
+    radial-gradient(circle at 92% 22%, var(--things-glow-c), transparent 30rem),
+    radial-gradient(circle at 52% 92%, var(--things-glow-b), transparent 36rem);
 }
 
-.things-shell {
+/*
+ * WebKit standalone has shipped viewport calculations where dvh excludes the
+ * safe-area inset. With no browser chrome, vh is the stable full-screen surface
+ * and prevents the unpainted home-indicator strip on launch and resume.
+ */
+@media (display-mode: standalone) {
+  .things-app-shell {
+    height: 100vh;
+  }
+}
+
+.things-app-shell__pattern {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: var(--things-pattern-color);
+  pointer-events: none;
+  -webkit-mask-image: url("/things/things-art-deco-pattern.svg");
+  mask-image: url("/things/things-art-deco-pattern.svg");
+  -webkit-mask-position: center top;
+  mask-position: center top;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: 240px 240px;
+  mask-size: 240px 240px;
+}
+
+.things-app-shell__frame {
+  position: relative;
+  z-index: 1;
+  display: flex;
   width: min(100%, calc(var(--things-max-width) + (2 * var(--things-page-gutter))));
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
   margin-inline: auto;
-  padding: var(--things-safe-top) var(--things-page-gutter) calc(28px + var(--things-safe-bottom));
+}
+
+.things-app-shell__header {
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
+  padding-top: calc(var(--things-safe-top) + var(--things-header-top-gap));
+  padding-right: max(var(--things-page-gutter), var(--things-safe-right));
+  padding-left: max(var(--things-page-gutter), var(--things-safe-left));
+}
+
+.things-app-shell__scroll {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--things-glass-separator) transparent;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-top: 12px;
+  scroll-padding-bottom: calc(var(--things-scroll-bottom-gap) + var(--things-safe-bottom));
+}
+
+.things-app-shell__content {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding-right: max(var(--things-page-gutter), var(--things-safe-right));
+  padding-bottom: calc(var(--things-scroll-bottom-gap) + var(--things-safe-bottom));
+  padding-left: max(var(--things-page-gutter), var(--things-safe-left));
+}
+
+.things-app-shell__content--no-header {
+  padding-top: calc(var(--things-safe-top) + var(--things-header-top-gap));
+}
+
+.things-app-shell__fade {
+  position: absolute;
+  z-index: 3;
+  right: max(var(--things-page-gutter), var(--things-safe-right));
+  left: max(var(--things-page-gutter), var(--things-safe-left));
+  height: 18px;
+  pointer-events: none;
+}
+
+.things-app-shell__fade--top {
+  top: 100%;
+  background: linear-gradient(to bottom, var(--things-page-base), transparent);
+}
+
+.things-app-shell__fade--bottom {
+  bottom: 0;
+  height: calc(22px + var(--things-safe-bottom));
+  background: linear-gradient(to bottom, transparent, var(--things-page-base));
 }
 
 .things-header {
@@ -703,7 +785,11 @@ body .drawer__dialog {
   position: relative;
   display: flex;
   width: min(100%, var(--things-max-width));
-  max-height: min(720px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+  /* React Aria updates this inherited variable from visualViewport for keyboards. */
+  max-height: min(
+    720px,
+    calc(var(--visual-viewport-height, 100dvh) - var(--things-safe-top) - 8px)
+  );
   flex-direction: column;
   padding: 0;
 }
@@ -731,7 +817,7 @@ body .drawer__dialog {
   height: var(--visual-viewport-height, 100dvh);
   align-items: flex-end;
   justify-content: center;
-  padding: 8px 0 0;
+  padding: calc(var(--things-safe-top) + 8px) 0 0;
   pointer-events: auto;
   background: var(--things-scrim);
   -webkit-backdrop-filter: blur(5px) saturate(1.04);
@@ -743,7 +829,10 @@ body .drawer__dialog {
   display: flex;
   width: min(100%, var(--things-max-width));
   max-width: var(--things-max-width);
-  max-height: min(660px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+  max-height: min(
+    660px,
+    calc(var(--visual-viewport-height, 100dvh) - var(--things-safe-top) - 8px)
+  );
   flex-direction: column;
   overflow: hidden;
   padding: 0;
@@ -759,10 +848,10 @@ body .drawer__dialog {
 }
 
 .things-full-page-layer {
-  position: fixed;
+  position: absolute;
   z-index: 120;
   inset: 0;
-  overflow-y: auto;
+  overflow: hidden;
   color: var(--things-page-ink);
   background:
     radial-gradient(circle at 18% 12%, var(--things-glow-a), transparent 28rem),
@@ -777,8 +866,13 @@ body .alert-dialog__dialog {
 body .alert-dialog__dialog.things-confirm-dialog,
 .alert-dialog__dialog.things-confirm-dialog {
   position: relative;
-  width: min(calc(100vw - 24px), 400px);
-  margin-inline: 12px;
+  width: min(
+    calc(
+      100vw - var(--things-safe-left) - var(--things-safe-right) - (2 * var(--things-page-gutter))
+    ),
+    400px
+  );
+  margin-inline: auto;
 }
 
 body .drawer__dialog.things-group-drawer,
@@ -909,7 +1003,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 12px max(10px, env(safe-area-inset-bottom));
+  padding: 0 max(12px, var(--things-safe-right)) max(10px, var(--things-safe-bottom))
+    max(12px, var(--things-safe-left));
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -928,7 +1023,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  padding: 10px var(--things-page-gutter) max(12px, env(safe-area-inset-bottom));
+  padding: 10px max(var(--things-page-gutter), var(--things-safe-right))
+    max(12px, var(--things-safe-bottom)) max(var(--things-page-gutter), var(--things-safe-left));
   border-top: 0;
   background: transparent;
 }
@@ -1171,7 +1267,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   flex: 1;
   overflow-y: auto;
   gap: 16px;
-  padding: 18px var(--things-page-gutter);
+  padding: 18px max(var(--things-page-gutter), var(--things-safe-right)) 18px
+    max(var(--things-page-gutter), var(--things-safe-left));
 }
 
 .things-item-form__field,
@@ -1296,7 +1393,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-state {
   display: grid;
-  min-height: min(58svh, 520px);
+  min-height: 100%;
+  flex: 1 0 auto;
   place-content: center;
   justify-items: center;
   gap: 12px;
@@ -1353,8 +1451,9 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-toast-region {
   z-index: 110;
   width: min(100%, var(--things-max-width));
-  padding-inline: 12px;
-  padding-bottom: var(--things-safe-bottom);
+  padding-right: max(12px, var(--things-safe-right));
+  padding-bottom: max(14px, var(--things-safe-bottom));
+  padding-left: max(12px, var(--things-safe-left));
   margin-inline: auto;
 }
 
@@ -1400,8 +1499,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (min-width: 540px) {
-  .things-shell {
-    padding-top: max(24px, env(safe-area-inset-top));
+  .things-app-shell {
+    --things-header-top-gap: 24px;
   }
 
   body .drawer__dialog {
@@ -1411,8 +1510,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (max-width: 539px) {
-  .things-shell {
-    padding-top: calc(env(safe-area-inset-top) + var(--things-page-gutter));
+  .things-app-shell {
+    --things-header-top-gap: var(--things-page-gutter);
   }
 
   .things-header {
@@ -1438,6 +1537,22 @@ body .alert-dialog__dialog.things-confirm-dialog {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .things-app-shell__fade {
+    display: none;
+  }
+
+  .things-frosted,
+  .things-group-surface,
+  body .drawer__dialog,
+  body .modal__dialog,
+  body .alert-dialog__dialog {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--things-glass-popover);
   }
 }
 

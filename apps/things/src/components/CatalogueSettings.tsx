@@ -9,9 +9,8 @@ import {
   TextField,
   toast,
 } from "@heroui/react";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
-import { useNavigate } from "@tanstack/react-router";
 import { api } from "../../../../convex/_generated/api";
 import { cleanVisibleText } from "../../../../convex/thingsDomain";
 import { errorMessage } from "../context/ThingsDataContext";
@@ -20,15 +19,14 @@ import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 
 export function CatalogueSettings() {
   const catalogue = useQuery(api.things.catalogueSettings);
-  const navigate = useNavigate({ from: "/settings" });
   const [editingId, setEditingId] = useState<string | null>(null);
 
   if (catalogue === undefined) {
     return (
-      <main className="things-state" aria-busy="true" aria-label="Loading catalogue settings">
+      <section className="things-state" aria-busy="true" aria-label="Loading catalogue settings">
         <Spinner color="accent" size="lg" />
         <p>Loading catalogue…</p>
-      </main>
+      </section>
     );
   }
 
@@ -36,22 +34,7 @@ export function CatalogueSettings() {
   const hiddenItems = catalogue.filter((item) => !item.isVisible);
 
   return (
-    <main className="things-shell things-settings-page">
-      <header className="things-header things-settings-header">
-        <Button
-          isIconOnly
-          aria-label="Back to Things"
-          className="things-page-icon-button"
-          size="sm"
-          variant="ghost"
-          onPress={() => navigate({ to: "/" })}
-        >
-          <ArrowLeft aria-hidden="true" size={21} />
-        </Button>
-        <h1>Catalogue</h1>
-        <span aria-hidden="true" className="things-header-spacer" />
-      </header>
-
+    <>
       <CatalogueSection
         title="Active"
         items={visibleItems}
@@ -64,7 +47,7 @@ export function CatalogueSettings() {
         editingId={editingId}
         onEditingChange={setEditingId}
       />
-    </main>
+    </>
   );
 }
 

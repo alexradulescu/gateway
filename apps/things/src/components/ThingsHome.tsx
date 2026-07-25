@@ -1,6 +1,6 @@
 import { useId, useRef, useState, type FormEvent } from "react";
 import { Button, Input, Surface, TextField } from "@heroui/react";
-import { GripVertical, Plus, Settings } from "lucide-react";
+import { GripVertical, Plus } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../../../../convex/_generated/api";
@@ -12,40 +12,23 @@ import { ThingsBusyOverlay } from "./ThingsBusyOverlay";
 export function ThingsHome() {
   const { home } = useThingsData();
   const reorderGroups = useMutation(api.things.reorderGroups);
-  const navigate = useNavigate({ from: "/" });
 
   return (
-    <main className="things-shell">
-      <header className="things-header things-home-header">
-        <h1>Things</h1>
-        <Button
-          isIconOnly
-          aria-label="Open catalogue settings"
-          className="things-page-icon-button"
-          size="sm"
-          variant="ghost"
-          onPress={() => navigate({ to: "/settings" })}
-        >
-          <Settings aria-hidden="true" size={20} />
-        </Button>
-      </header>
-
-      <Surface className="things-frosted things-group-surface things-home-groups">
-        {home.groups.length === 0 ? (
-          <p className="things-empty">Add your first household list below.</p>
-        ) : (
-          <SortableList
-            items={home.groups}
-            failureMessage="Could not save the group order."
-            onReorder={async (groups) => {
-              await reorderGroups({ groupIds: groups.map((group) => group._id) });
-            }}
-            renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
-          />
-        )}
-        <AddGroupRow />
-      </Surface>
-    </main>
+    <Surface className="things-frosted things-group-surface things-home-groups">
+      {home.groups.length === 0 ? (
+        <p className="things-empty">Add your first household list below.</p>
+      ) : (
+        <SortableList
+          items={home.groups}
+          failureMessage="Could not save the group order."
+          onReorder={async (groups) => {
+            await reorderGroups({ groupIds: groups.map((group) => group._id) });
+          }}
+          renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
+        />
+      )}
+      <AddGroupRow />
+    </Surface>
   );
 }
 

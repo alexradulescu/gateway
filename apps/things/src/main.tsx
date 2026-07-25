@@ -5,8 +5,6 @@ import { GatewayConvexProvider } from "@gateway/convex/react";
 import { router } from "./router";
 import "./styles.css";
 
-document.body.classList.add("things-theme");
-
 const darkMode = window.matchMedia("(prefers-color-scheme: dark)");
 const syncHeroTheme = () => {
   document.documentElement.classList.toggle("dark", darkMode.matches);

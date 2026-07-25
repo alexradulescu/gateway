@@ -2,11 +2,12 @@
   "name": "Things",
   "short_name": "Things",
   "description": "Fast shared household lists.",
+  "id": "/things/",
   "start_url": "/things/",
   "scope": "/things/",
   "display": "standalone",
   "background_color": "#edf3ed",
-  "theme_color": "#101a17",
+  "theme_color": "#edf3ed",
   "icons": [
     {
       "src": "/things/icons/things-icon-192.png",

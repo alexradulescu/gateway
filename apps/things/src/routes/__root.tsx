@@ -1,12 +1,22 @@
 import { createRootRoute, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { ThingsDataProvider } from "../context/ThingsDataContext";
+import { AppShell } from "../components/AppShell";
 import { ThingsErrorState, ThingsNotFound } from "../components/ThingsStates";
 import { ThingsHome } from "../components/ThingsHome";
+import { CatalogueSettingsHeader, ThingsHomeHeader } from "../components/ThingsHeaders";
 
 export const Route = createRootRoute({
   component: ThingsRoot,
-  errorComponent: ({ reset }) => <ThingsErrorState onRetry={reset} />,
-  notFoundComponent: () => <ThingsNotFound />,
+  errorComponent: ({ reset }) => (
+    <AppShell topFade={false}>
+      <ThingsErrorState onRetry={reset} />
+    </AppShell>
+  ),
+  notFoundComponent: () => (
+    <AppShell topFade={false}>
+      <ThingsNotFound />
+    </AppShell>
+  ),
 });
 
 function ThingsRoot() {
@@ -14,9 +24,11 @@ function ThingsRoot() {
   const isSettingsPage = Boolean(matchRoute({ to: "/settings" }));
 
   return (
-    <ThingsDataProvider>
-      {!isSettingsPage && <ThingsHome />}
-      <Outlet />
-    </ThingsDataProvider>
+    <AppShell header={isSettingsPage ? <CatalogueSettingsHeader /> : <ThingsHomeHeader />}>
+      <ThingsDataProvider>
+        {!isSettingsPage && <ThingsHome />}
+        <Outlet />
+      </ThingsDataProvider>
+    </AppShell>
   );
 }
