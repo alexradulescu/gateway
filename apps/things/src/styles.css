@@ -56,7 +56,7 @@
   --things-glass-shadow-raised: var(--overlay-shadow);
 
   /* Subtract the modal inset from the iPhone 15 Pro screen curve to keep both edges parallel. */
-  --things-drawer-inset: 12px;
+  --things-drawer-inset: 8px;
   --things-screen-corner-radius: 55px;
   --things-drawer-header-height: 60px;
   --things-radius-panel: 24px;
@@ -686,6 +686,23 @@ body .alert-dialog__backdrop--blur {
   backdrop-filter: blur(5px) saturate(1.04);
 }
 
+/* Keep the page blur outside the drawer's backdrop tree so Safari can blur the scrolling header. */
+body .drawer__backdrop--blur:has(.things-group-drawer) {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body .drawer__backdrop--blur:has(.things-group-drawer)::before {
+  position: absolute;
+  inset: 0;
+  background: var(--things-scrim);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  content: "";
+  pointer-events: none;
+}
+
 body .drawer__dialog,
 body .modal__dialog,
 body .alert-dialog__dialog {
@@ -793,6 +810,15 @@ body .drawer__dialog.things-group-drawer,
 .things-item-modal,
 body .alert-dialog__dialog.things-confirm-dialog {
   background: color-mix(in srgb, var(--overlay) 80%, transparent);
+}
+
+body .drawer__dialog.things-group-drawer {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.things-item-modal,
+body .alert-dialog__dialog.things-confirm-dialog {
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
@@ -829,8 +855,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   min-height: var(--things-drawer-header-height);
   padding: 8px 12px;
   background: transparent;
-  -webkit-backdrop-filter: blur(16px) saturate(1.12);
-  backdrop-filter: blur(16px) saturate(1.12);
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
 }
 
 .things-drawer-title {
