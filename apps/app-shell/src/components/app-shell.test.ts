@@ -28,26 +28,17 @@ test("AppBody does not become a second scroll viewport", () => {
   expect(body).not.toContain("overflow-y: auto");
 });
 
-test("bar boxes and body clearance use the same configured sizes", () => {
+test("bar boxes stop at the safe-area boundary", () => {
   const header = rule('[data-slot="app-header"]');
   const footer = rule('[data-slot="app-footer"]', true);
 
-  expect(header).toContain(
-    "block-size: calc(var(--app-shell-safe-top) + var(--app-shell-header-size, 48px))",
-  );
-  expect(footer).toContain(
-    "block-size: calc(var(--app-shell-safe-bottom) + var(--app-shell-footer-size, 48px))",
-  );
-  expect(header).not.toContain("min-block-size");
-  expect(footer).not.toContain("min-block-size");
+  expect(header).toContain("inset-block-start: var(--app-shell-safe-top)");
+  expect(header).toContain("block-size: var(--app-shell-header-size, 48px)");
+  expect(footer).toContain("inset-block-end: var(--app-shell-safe-bottom)");
+  expect(footer).toContain("block-size: var(--app-shell-footer-size, 48px)");
 });
 
-test("edge guards cover only real unsafe insets", () => {
-  const edges = rule('[data-slot="app-shell"]::before,\n[data-slot="app-shell"]::after');
-  const bottomEdge = rule('[data-slot="app-shell"]::after', true);
-
-  expect(edges).toContain("block-size: var(--app-shell-safe-top)");
-  expect(bottomEdge).toContain("block-size: var(--app-shell-safe-bottom)");
-  expect(edges).not.toContain("max(12px");
-  expect(bottomEdge).not.toContain("max(12px");
+test("AppShell has no fixed layer over the unsafe areas", () => {
+  expect(css).not.toContain('[data-slot="app-shell"]::before');
+  expect(css).not.toContain('[data-slot="app-shell"]::after');
 });

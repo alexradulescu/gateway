@@ -4,7 +4,6 @@ import { AppBody, AppFooter, AppHeader, AppShell } from "./components/AppShell";
 
 const SHELL_STYLE = {
   "--app-shell-background": "var(--demo-canvas)",
-  "--app-shell-edge-fade-color": "var(--demo-canvas)",
 } as CSSProperties;
 
 const SCROLL_ITEMS = [
@@ -14,7 +13,11 @@ const SCROLL_ITEMS = [
     "The page owns vertical scrolling. There is no fixed root or inner viewport.",
   ],
   ["02", "Safe start", "The first content starts below the status area and the 48 px header."],
-  ["03", "Transparent header", "Content remains visible as it moves behind the fixed top region."],
+  [
+    "03",
+    "Transparent header",
+    "The fixed bar starts below the top inset, leaving the unsafe edge to the document.",
+  ],
   [
     "04",
     "Full canvas",
@@ -34,7 +37,7 @@ const SCROLL_ITEMS = [
   [
     "08",
     "Transparent footer",
-    "Content remains visible as it moves behind the fixed bottom region.",
+    "The fixed bar ends above the bottom inset, leaving the unsafe edge to the document.",
   ],
   [
     "09",
@@ -108,7 +111,7 @@ function App() {
             <dl>
               <div data-region="header">
                 <dt>Blue</dt>
-                <dd>Fixed AppHeader, including the top safe inset.</dd>
+                <dd>Fixed AppHeader, starting below the top safe inset.</dd>
               </div>
               <div data-region="body">
                 <dt>Amber</dt>
@@ -116,7 +119,7 @@ function App() {
               </div>
               <div data-region="footer">
                 <dt>Green</dt>
-                <dd>Fixed AppFooter, including the bottom safe inset.</dd>
+                <dd>Fixed AppFooter, ending above the bottom safe inset.</dd>
               </div>
             </dl>
           </section>
