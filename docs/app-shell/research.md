@@ -272,6 +272,6 @@ Show diagnostics in the demo:
 2. **Scroll owner:** `AppBody` is the only vertical scroller. `AppShell` locks document and horizontal scrolling.
 3. **Fade behaviour:** both 12 px physical-edge fades remain fixed and always visible.
 4. **Surface style:** the core bars are transparent with no blur or glass. Apps own any surface treatment.
-5. **Viewport keyboard fallback:** `AppShell` follows `visualViewport.height` and `offsetTop` because WebKit does not implement `interactive-widget=resizes-content`. This remains a real-device test requirement because WebKit has had delayed and inconsistent offset updates.
+5. **Viewport keyboard fallback:** while a text editor is focused and the visual viewport is materially contracted, `AppShell` follows `visualViewport.height` and `offsetTop` because WebKit does not implement `interactive-widget=resizes-content`. Otherwise CSS `100dvh` owns full-screen sizing. This remains a real-device test requirement because WebKit has had delayed and inconsistent offset updates.
 6. **Offline support:** the first diagnostic demo has no service worker. Installation and online layout testing are the intended scope.
 7. **Orientation:** portrait is supported. Landscape behaviour and testing are out of scope.

@@ -12,6 +12,7 @@ import {
   type Ref,
 } from "react";
 import "./app-shell.css";
+import { resolveViewportOverride } from "./appShellViewport";
 
 const MINIMUM_BAR_HEIGHT = 48;
 
@@ -98,14 +99,31 @@ function useVisualViewport(element: HTMLDivElement | null) {
 
     const updateViewport = () => {
       const viewport = window.visualViewport;
-      const isPinchZoomed = viewport ? viewport.scale > 1.01 : false;
-      const height = viewport && !isPinchZoomed ? viewport.height : window.innerHeight;
-      const pageOffset = viewport ? viewport.pageTop - window.scrollY : 0;
-      const offsetTop =
-        viewport && !isPinchZoomed ? Math.max(0, viewport.offsetTop, pageOffset) : 0;
+      const activeElement = document.activeElement;
+      const hasFocusedEditor =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+      const override = viewport
+        ? resolveViewportOverride({
+            layoutHeight: Math.max(window.innerHeight, document.documentElement.clientHeight),
+            visualHeight: viewport.height,
+            visualOffsetTop: viewport.offsetTop,
+            visualPageTop: viewport.pageTop,
+            windowScrollY: window.scrollY,
+            scale: viewport.scale,
+            hasFocusedEditor,
+          })
+        : null;
 
-      element.style.setProperty("--app-shell-viewport-height", `${height}px`);
-      element.style.setProperty("--app-shell-viewport-offset-top", `${offsetTop}px`);
+      if (!override) {
+        element.style.removeProperty("--app-shell-viewport-height");
+        element.style.removeProperty("--app-shell-viewport-offset-top");
+        return;
+      }
+
+      element.style.setProperty("--app-shell-viewport-height", `${override.height}px`);
+      element.style.setProperty("--app-shell-viewport-offset-top", `${override.offsetTop}px`);
     };
 
     const scheduleViewportUpdate = () => {
@@ -121,6 +139,8 @@ function useVisualViewport(element: HTMLDivElement | null) {
     const viewport = window.visualViewport;
     window.addEventListener("resize", scheduleViewportUpdate);
     window.addEventListener("orientationchange", scheduleViewportUpdate);
+    document.addEventListener("focusin", scheduleViewportUpdate);
+    document.addEventListener("focusout", scheduleViewportUpdate);
     viewport?.addEventListener("resize", scheduleViewportUpdate);
     viewport?.addEventListener("scroll", scheduleViewportUpdate);
 
@@ -129,6 +149,8 @@ function useVisualViewport(element: HTMLDivElement | null) {
       window.clearTimeout(settleTimer);
       window.removeEventListener("resize", scheduleViewportUpdate);
       window.removeEventListener("orientationchange", scheduleViewportUpdate);
+      document.removeEventListener("focusin", scheduleViewportUpdate);
+      document.removeEventListener("focusout", scheduleViewportUpdate);
       viewport?.removeEventListener("resize", scheduleViewportUpdate);
       viewport?.removeEventListener("scroll", scheduleViewportUpdate);
     };
