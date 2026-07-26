@@ -82,40 +82,23 @@
   }
 }
 
-/*
- * Keep the document fixed and let the shell own scrolling. iOS standalone can
- * expose a stale document edge when a min-height document and fixed background
- * are recomposited after launch, resume, or overlay scroll locking.
- */
 html {
   min-width: 320px;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
   background-color: var(--things-page-base);
 }
 
 body {
   min-width: 320px;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
   color: var(--things-page-ink);
   background-color: var(--things-page-base);
-  overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 #root {
   position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
-  isolation: isolate;
   background-color: var(--things-page-base);
 }
 
@@ -157,12 +140,13 @@ button {
 
 .things-app-shell {
   position: relative;
+  z-index: 0;
+  display: flex;
   width: 100%;
-  /* Legacy fallback first; current engines use the dynamic visual viewport. */
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  overflow-x: clip;
   isolation: isolate;
   background-color: var(--things-page-base);
   background-image:
@@ -187,72 +171,38 @@ button {
   mask-size: 240px 240px;
 }
 
-.things-app-shell__frame {
+.things-app-shell__header {
+  position: sticky;
+  z-index: 4;
+  top: 0;
+  width: min(100%, calc(var(--things-max-width) + (2 * var(--things-page-gutter))));
+  flex: 0 0 auto;
+  margin-inline: auto;
+  padding-top: calc(var(--things-safe-top) + var(--things-header-top-gap));
+  padding-right: max(var(--things-page-gutter), var(--things-safe-right));
+  padding-left: max(var(--things-page-gutter), var(--things-safe-left));
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--things-page-base) 88%, transparent) calc(100% - 18px),
+    transparent
+  );
+}
+
+.things-app-shell__main {
   position: relative;
   z-index: 1;
   display: flex;
   width: min(100%, calc(var(--things-max-width) + (2 * var(--things-page-gutter))));
-  height: 100%;
-  min-height: 0;
+  flex: 1 0 auto;
   flex-direction: column;
   margin-inline: auto;
-}
-
-.things-app-shell__header {
-  position: relative;
-  z-index: 4;
-  flex: 0 0 auto;
-  padding-top: calc(var(--things-safe-top) + var(--things-header-top-gap));
-  padding-right: max(var(--things-page-gutter), var(--things-safe-right));
-  padding-left: max(var(--things-page-gutter), var(--things-safe-left));
-}
-
-.things-app-shell__scroll {
-  position: relative;
-  z-index: 1;
-  min-height: 0;
-  flex: 1 1 auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--things-glass-separator) transparent;
-  -webkit-overflow-scrolling: touch;
-  scroll-padding-top: 12px;
-  scroll-padding-bottom: calc(var(--things-scroll-bottom-gap) + var(--things-safe-bottom));
-}
-
-.things-app-shell__content {
-  display: flex;
-  min-height: 100%;
-  flex-direction: column;
   padding-right: max(var(--things-page-gutter), var(--things-safe-right));
   padding-bottom: calc(var(--things-scroll-bottom-gap) + var(--things-safe-bottom));
   padding-left: max(var(--things-page-gutter), var(--things-safe-left));
 }
 
-.things-app-shell__content--no-header {
+.things-app-shell__main--no-header {
   padding-top: calc(var(--things-safe-top) + var(--things-header-top-gap));
-}
-
-.things-app-shell__fade {
-  position: absolute;
-  z-index: 3;
-  right: max(var(--things-page-gutter), var(--things-safe-right));
-  left: max(var(--things-page-gutter), var(--things-safe-left));
-  height: 18px;
-  pointer-events: none;
-}
-
-.things-app-shell__fade--top {
-  top: 100%;
-  background: linear-gradient(to bottom, var(--things-page-base), transparent);
-}
-
-.things-app-shell__fade--bottom {
-  bottom: 0;
-  height: calc(22px + var(--things-safe-bottom));
-  background: linear-gradient(to bottom, transparent, var(--things-page-base));
 }
 
 .things-header {
@@ -1533,10 +1483,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .things-app-shell__fade {
-    display: none;
-  }
-
   .things-frosted,
   .things-group-surface,
   body .drawer__dialog,

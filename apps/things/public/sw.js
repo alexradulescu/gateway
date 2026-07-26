@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "things-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v5`;
+const CACHE_NAME = `${CACHE_PREFIX}v6`;
 const SHELL_URL = "/things/";
 const ASSET_MANIFEST_URL = "/things/asset-manifest.json";
 const STATIC_URLS = [

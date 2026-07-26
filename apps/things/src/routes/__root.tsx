@@ -8,12 +8,12 @@ import { CatalogueSettingsHeader, ThingsHomeHeader } from "../components/ThingsH
 export const Route = createRootRoute({
   component: ThingsRoot,
   errorComponent: ({ reset }) => (
-    <AppShell topFade={false}>
+    <AppShell>
       <ThingsErrorState onRetry={reset} />
     </AppShell>
   ),
   notFoundComponent: () => (
-    <AppShell topFade={false}>
+    <AppShell>
       <ThingsNotFound />
     </AppShell>
   ),
