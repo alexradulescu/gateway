@@ -1,3 +1,4 @@
+import { AppBody, AppHeader, AppShell } from "@gateway/app-shell";
 import {
   AlertDialog,
   Button,
@@ -64,66 +65,63 @@ export function SettingsOverviewPage() {
   };
 
   return (
-    <main className="bookster-settings">
-      <SettingsHeader title="Settings" />
-      <section className="bookster-settings-content">
-        <div className="bookster-settings-stack">
-          <SettingsGroup title="Library">
-            <SettingSelect
-              description="How books are ordered when you open Bookster."
-              label="Default Sort Order"
-              onChange={setSort}
-              options={SORT_OPTIONS}
-              value={library.settings.defaultSortOrder}
-            />
-          </SettingsGroup>
+    <SettingsShell title="Settings">
+      <div className="bookster-settings-stack">
+        <SettingsGroup title="Library">
+          <SettingSelect
+            description="How books are ordered when you open Bookster."
+            label="Default Sort Order"
+            onChange={setSort}
+            options={SORT_OPTIONS}
+            value={library.settings.defaultSortOrder}
+          />
+        </SettingsGroup>
 
-          <SettingsGroup title="Organization">
-            <SettingsLinkRow
-              description={`${library.categories.length} ${library.categories.length === 1 ? "category" : "categories"}`}
-              icon={<Tags aria-hidden="true" size={18} />}
-              label="Categories"
-              tab="categories"
-            />
-            <SettingsLinkRow
-              description={`${library.locations.length} ${library.locations.length === 1 ? "location" : "locations"}`}
-              icon={<MapPin aria-hidden="true" size={18} />}
-              label="Locations"
-              tab="locations"
-            />
-          </SettingsGroup>
+        <SettingsGroup title="Organization">
+          <SettingsLinkRow
+            description={`${library.categories.length} ${library.categories.length === 1 ? "category" : "categories"}`}
+            icon={<Tags aria-hidden="true" size={18} />}
+            label="Categories"
+            tab="categories"
+          />
+          <SettingsLinkRow
+            description={`${library.locations.length} ${library.locations.length === 1 ? "location" : "locations"}`}
+            icon={<MapPin aria-hidden="true" size={18} />}
+            label="Locations"
+            tab="locations"
+          />
+        </SettingsGroup>
 
-          <SettingsGroup title="Maintenance">
-            <SettingsLinkRow
-              description="Find repeated titles"
-              icon={<Search aria-hidden="true" size={18} />}
-              label="Duplicate Books"
-              tab="duplicates"
-            />
-            <SettingsLinkRow
-              description="Import books in bulk"
-              icon={<CloudUpload aria-hidden="true" size={18} />}
-              label="Import CSV"
-              tab="import"
-            />
-          </SettingsGroup>
+        <SettingsGroup title="Maintenance">
+          <SettingsLinkRow
+            description="Find repeated titles"
+            icon={<Search aria-hidden="true" size={18} />}
+            label="Duplicate Books"
+            tab="duplicates"
+          />
+          <SettingsLinkRow
+            description="Import books in bulk"
+            icon={<CloudUpload aria-hidden="true" size={18} />}
+            label="Import CSV"
+            tab="import"
+          />
+        </SettingsGroup>
 
-          <SettingsGroup title="Appearance">
-            <SettingSelect
-              description="Stored on this device, so each family member keeps their preference."
-              label="Theme"
-              onChange={(value) => {
-                if (value !== null && !Array.isArray(value)) {
-                  setTheme(String(value) as BooksterTheme);
-                }
-              }}
-              options={THEME_OPTIONS}
-              value={theme}
-            />
-          </SettingsGroup>
-        </div>
-      </section>
-    </main>
+        <SettingsGroup title="Appearance">
+          <SettingSelect
+            description="Stored on this device, so each family member keeps their preference."
+            label="Theme"
+            onChange={(value) => {
+              if (value !== null && !Array.isArray(value)) {
+                setTheme(String(value) as BooksterTheme);
+              }
+            }}
+            options={THEME_OPTIONS}
+            value={theme}
+          />
+        </SettingsGroup>
+      </div>
+    </SettingsShell>
   );
 }
 
@@ -131,15 +129,37 @@ export function SettingsPage({ tab }: { tab: BooksterSettingsTab }) {
   const [isImportBusy, setIsImportBusy] = useState(false);
   if (tab === "config") return <SettingsOverviewPage />;
   return (
-    <main className="bookster-settings">
-      <SettingsHeader backToSettings isBackDisabled={isImportBusy} title={pageLabels[tab]} />
-      <section className="bookster-settings-content">
-        {tab === "categories" ? <LabelSettings key="category" kind="category" /> : null}
-        {tab === "locations" ? <LabelSettings key="location" kind="location" /> : null}
-        {tab === "duplicates" ? <DuplicateSettings /> : null}
-        {tab === "import" ? <CsvImportSettings onBusyChange={setIsImportBusy} /> : null}
-      </section>
-    </main>
+    <SettingsShell backToSettings isBackDisabled={isImportBusy} title={pageLabels[tab]}>
+      {tab === "categories" ? <LabelSettings key="category" kind="category" /> : null}
+      {tab === "locations" ? <LabelSettings key="location" kind="location" /> : null}
+      {tab === "duplicates" ? <DuplicateSettings /> : null}
+      {tab === "import" ? <CsvImportSettings onBusyChange={setIsImportBusy} /> : null}
+    </SettingsShell>
+  );
+}
+
+function SettingsShell({
+  title,
+  backToSettings = false,
+  isBackDisabled = false,
+  children,
+}: {
+  title: string;
+  backToSettings?: boolean;
+  isBackDisabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <AppShell className="bookster-settings">
+      <SettingsHeader
+        backToSettings={backToSettings}
+        isBackDisabled={isBackDisabled}
+        title={title}
+      />
+      <AppBody className="bookster-settings-body">
+        <section className="bookster-settings-content">{children}</section>
+      </AppBody>
+    </AppShell>
   );
 }
 
@@ -153,7 +173,7 @@ function SettingsHeader({
   isBackDisabled?: boolean;
 }) {
   return (
-    <header className="bookster-settings-header">
+    <AppHeader className="bookster-settings-header">
       <div className="bookster-glass bookster-settings-title">
         {isBackDisabled ? (
           <Button
@@ -176,7 +196,7 @@ function SettingsHeader({
         )}
         <h1>{title}</h1>
       </div>
-    </header>
+    </AppHeader>
   );
 }
 

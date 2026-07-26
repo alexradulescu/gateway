@@ -1,0 +1,11 @@
+{
+  "name": "@gateway/app-shell",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/AppShell.tsx"
+  },
+  "peerDependencies": {
+    "react": "latest"
+  }
+}
