@@ -39,7 +39,7 @@ test("bar boxes stop at the safe-area boundary", () => {
 });
 
 test("focused form controls collapse the bottom safe-area inset", () => {
-  const focusedShell = rule('body:has(input:focus, textarea:focus) [data-slot="app-shell"]');
+  const focusedShell = rule('[data-slot="app-shell"]:has(input:focus, textarea:focus)');
 
   expect(focusedShell).toContain("--app-shell-safe-bottom: 0px");
 });

@@ -1,12 +1,8 @@
 import type { ComponentProps } from "react";
 import "./app-shell.css";
 
-function AppShell({ children, ...props }: ComponentProps<"div">) {
-  return (
-    <div {...props} data-slot="app-shell">
-      {children}
-    </div>
-  );
+function AppShell(props: ComponentProps<"div">) {
+  return <div {...props} data-slot="app-shell" />;
 }
 
 function AppHeader(props: ComponentProps<"header">) {

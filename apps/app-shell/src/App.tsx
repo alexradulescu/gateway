@@ -1,10 +1,6 @@
 import { Eye, EyeOff, Home, Layers3, ShieldCheck, Smartphone } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { AppBody, AppFooter, AppHeader, AppShell } from "./components/AppShell";
-
-const SHELL_STYLE = {
-  "--app-shell-background": "var(--demo-canvas)",
-} as CSSProperties;
 
 const SCROLL_ITEMS = [
   [
@@ -58,7 +54,7 @@ function App() {
     <AppShell
       className="demo-shell"
       data-region-colors={showRegionColors || undefined}
-      style={SHELL_STYLE}
+      style={{ background: "var(--demo-canvas)" }}
     >
       <AppHeader className="demo-header">
         <div className="demo-header__bar">
