@@ -1,7 +1,8 @@
-import { Spinner, Toast } from "@heroui/react";
+import { Toast } from "@heroui/react";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
+import { BooksterLoadingState } from "../components/BooksterStates";
 import type { BooksterCategoryId, BooksterTheme } from "../types";
 import { BooksterContext, type BooksterContextValue } from "./contextValue";
 const THEME_STORAGE_KEY = "bookster-theme";
@@ -68,12 +69,7 @@ export function BooksterProvider({ children }: { children: React.ReactNode }) {
   }, [library, searchValue, selectedCategoryIds, theme]);
 
   if (value === null) {
-    return (
-      <main className="bookster-state" aria-busy="true" aria-label="Loading Bookster">
-        <Spinner color="accent" size="lg" />
-        <p>Opening the library…</p>
-      </main>
-    );
+    return <BooksterLoadingState />;
   }
 
   return (

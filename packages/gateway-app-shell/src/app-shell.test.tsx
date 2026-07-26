@@ -1,4 +1,6 @@
 import { expect, test } from "bun:test";
+import { renderToStaticMarkup } from "react-dom/server";
+import { AppBody, AppFooter, AppHeader, AppShell } from "./AppShell";
 
 const css = await Bun.file(new URL("./app-shell.css", import.meta.url)).text();
 
@@ -47,4 +49,19 @@ test("focused form controls collapse the bottom safe-area inset", () => {
 test("AppShell has no fixed layer over the unsafe areas", () => {
   expect(css).not.toContain('[data-slot="app-shell"]::before');
   expect(css).not.toContain('[data-slot="app-shell"]::after');
+});
+
+test("AppShell exposes semantic composable regions", () => {
+  const markup = renderToStaticMarkup(
+    <AppShell className="test-shell">
+      <AppHeader>Header</AppHeader>
+      <AppBody>Body</AppBody>
+      <AppFooter>Footer</AppFooter>
+    </AppShell>,
+  );
+
+  expect(markup).toContain('<div class="test-shell" data-slot="app-shell">');
+  expect(markup).toContain('<header data-slot="app-header">Header</header>');
+  expect(markup).toContain('<main data-slot="app-body">Body</main>');
+  expect(markup).toContain('<footer data-slot="app-footer">Footer</footer>');
 });

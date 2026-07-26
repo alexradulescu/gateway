@@ -9,6 +9,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@gateway/app-shell": "workspace:*",
     "@gateway/convex": "workspace:*",
     "@tanstack/react-virtual": "^3.13.12",
     "papaparse": "^5.5.3"
