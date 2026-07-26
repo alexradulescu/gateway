@@ -828,7 +828,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   inset: 0 0 auto;
   min-height: var(--things-drawer-header-height);
   padding: 8px 12px;
-  background: color-mix(in srgb, var(--overlay) 78%, transparent);
+  background: transparent;
   -webkit-backdrop-filter: blur(16px) saturate(1.12);
   backdrop-filter: blur(16px) saturate(1.12);
 }
