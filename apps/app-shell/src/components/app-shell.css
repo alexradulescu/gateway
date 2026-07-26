@@ -1,73 +1,50 @@
 [data-slot="app-shell"] {
   --app-shell-safe-top: env(safe-area-inset-top, 0px);
   --app-shell-safe-bottom: env(safe-area-inset-bottom, 0px);
-  --app-shell-content-top: var(--app-shell-safe-top);
-  --app-shell-content-bottom: var(--app-shell-safe-bottom);
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
+  --app-shell-edge: var(--app-shell-edge-fade-color, Canvas);
+  min-block-size: 100vh;
   background: var(--app-shell-background, Canvas);
 }
-
-[data-slot="app-shell"]:has(> [data-slot="app-header"]) {
-  --app-shell-content-top: calc(var(--app-shell-safe-top) + var(--app-shell-header-size, 48px));
-}
-
-[data-slot="app-shell"]:has(> [data-slot="app-footer"]) {
-  --app-shell-content-bottom: calc(
-    var(--app-shell-safe-bottom) + var(--app-shell-footer-size, 48px)
-  );
-}
-
 [data-slot="app-body"] {
-  position: absolute;
-  inset: 0;
-  padding-block: var(--app-shell-content-top) var(--app-shell-content-bottom);
-  overflow-x: hidden;
-  overflow-y: auto;
-  touch-action: pan-y;
+  padding-block: var(--app-shell-safe-top) var(--app-shell-safe-bottom);
 }
-
+[data-slot="app-shell"]:has(> [data-slot="app-header"]) > [data-slot="app-body"] {
+  padding-block-start: calc(var(--app-shell-safe-top) + var(--app-shell-header-size, 48px));
+}
+[data-slot="app-shell"]:has(> [data-slot="app-footer"]) > [data-slot="app-body"] {
+  padding-block-end: calc(var(--app-shell-safe-bottom) + var(--app-shell-footer-size, 48px));
+}
 [data-slot="app-header"],
 [data-slot="app-footer"] {
-  position: absolute;
+  position: fixed;
   z-index: 2;
   inset-inline: 0;
   box-sizing: border-box;
 }
-
 [data-slot="app-header"] {
   inset-block-start: 0;
   block-size: calc(var(--app-shell-safe-top) + var(--app-shell-header-size, 48px));
   padding-block-start: var(--app-shell-safe-top);
 }
-
 [data-slot="app-footer"] {
   inset-block-end: 0;
   block-size: calc(var(--app-shell-safe-bottom) + var(--app-shell-footer-size, 48px));
   padding-block-end: var(--app-shell-safe-bottom);
 }
-
 [data-slot="app-shell"]::before,
 [data-slot="app-shell"]::after {
-  position: absolute;
+  position: fixed;
   z-index: 3;
   inset-inline: 0;
-  pointer-events: auto;
-  touch-action: none;
+  block-size: var(--app-shell-safe-top);
   content: "";
 }
-
 [data-slot="app-shell"]::before {
   inset-block-start: 0;
-  block-size: max(var(--app-shell-safe-top), 12px);
-  background: linear-gradient(to bottom, var(--app-shell-edge-fade-color, Canvas), transparent) top
-    / 100% 12px no-repeat;
+  background: linear-gradient(to bottom, var(--app-shell-edge), transparent 12px);
 }
-
 [data-slot="app-shell"]::after {
   inset-block-end: 0;
-  block-size: max(var(--app-shell-safe-bottom), 12px);
-  background: linear-gradient(to top, var(--app-shell-edge-fade-color, Canvas), transparent) bottom
-    / 100% 12px no-repeat;
+  block-size: var(--app-shell-safe-bottom);
+  background: linear-gradient(to top, var(--app-shell-edge), transparent 12px);
 }

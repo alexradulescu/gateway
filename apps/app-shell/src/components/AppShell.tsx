@@ -1,8 +1,6 @@
 import type { ComponentProps } from "react";
 import "./app-shell.css";
 
-const MINIMUM_BAR_HEIGHT = 48;
-
 function AppShell({ children, ...props }: ComponentProps<"div">) {
   return (
     <div {...props} data-slot="app-shell">
@@ -23,4 +21,4 @@ function AppFooter(props: ComponentProps<"footer">) {
   return <footer {...props} data-slot="app-footer" />;
 }
 
-export { AppBody, AppFooter, AppHeader, AppShell, MINIMUM_BAR_HEIGHT };
+export { AppBody, AppFooter, AppHeader, AppShell };

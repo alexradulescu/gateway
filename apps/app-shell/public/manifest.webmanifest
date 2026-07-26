@@ -2,7 +2,7 @@
   "id": "/app-shell/",
   "name": "AppShell Lab",
   "short_name": "AppShell",
-  "description": "A full-screen safe-area app shell test bench.",
+  "description": "A document-scrolling safe-area app shell test bench.",
   "start_url": "/app-shell/",
   "scope": "/app-shell/",
   "display": "standalone",
