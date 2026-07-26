@@ -4,6 +4,9 @@
   min-block-size: 100dvh;
   background: var(--app-shell-background, Canvas);
 }
+body:has(input:focus, textarea:focus) [data-slot="app-shell"] {
+  --app-shell-safe-bottom: 0px;
+}
 [data-slot="app-body"] {
   padding-block: var(--app-shell-safe-top) var(--app-shell-safe-bottom);
 }

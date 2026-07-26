@@ -38,6 +38,12 @@ test("bar boxes stop at the safe-area boundary", () => {
   expect(footer).toContain("block-size: var(--app-shell-footer-size, 48px)");
 });
 
+test("focused form controls collapse the bottom safe-area inset", () => {
+  const focusedShell = rule('body:has(input:focus, textarea:focus) [data-slot="app-shell"]');
+
+  expect(focusedShell).toContain("--app-shell-safe-bottom: 0px");
+});
+
 test("AppShell has no fixed layer over the unsafe areas", () => {
   expect(css).not.toContain('[data-slot="app-shell"]::before');
   expect(css).not.toContain('[data-slot="app-shell"]::after');
