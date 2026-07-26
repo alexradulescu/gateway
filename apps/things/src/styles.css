@@ -55,8 +55,12 @@
   --things-glass-shadow: var(--surface-shadow);
   --things-glass-shadow-raised: var(--overlay-shadow);
 
+  /* Subtract the modal inset from the iPhone 15 Pro screen curve to keep both edges parallel. */
+  --things-drawer-inset: 12px;
+  --things-screen-corner-radius: 55px;
+  --things-drawer-header-height: 60px;
   --things-radius-panel: 24px;
-  --things-radius-drawer: 28px;
+  --things-radius-drawer: calc(var(--things-screen-corner-radius) - var(--things-drawer-inset));
   --things-radius-control: 14px;
 }
 
@@ -696,16 +700,20 @@ body .alert-dialog__dialog {
 
 body .drawer__dialog {
   overflow: hidden;
-  border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
+  border-radius: var(--things-radius-drawer);
 }
 
-.things-group-drawer {
+body .drawer__dialog.things-group-drawer {
   position: relative;
   display: flex;
-  width: min(100%, var(--things-max-width));
-  max-height: min(720px, calc(var(--visual-viewport-height, 100dvh) - 8px));
+  width: min(calc(100% - (2 * var(--things-drawer-inset))), var(--things-max-width));
+  max-height: min(
+    720px,
+    calc(var(--visual-viewport-height, 100dvh) - (2 * var(--things-drawer-inset)))
+  );
   flex-direction: column;
   padding: 0;
+  margin-bottom: var(--things-drawer-inset);
 }
 
 .things-item-overlay-root {
@@ -815,8 +823,14 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-drawer > .things-drawer-header {
-  min-height: 52px;
-  padding-block: 4px;
+  position: absolute;
+  z-index: 4;
+  inset: 0 0 auto;
+  min-height: var(--things-drawer-header-height);
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--overlay) 78%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.12);
+  backdrop-filter: blur(16px) saturate(1.12);
 }
 
 .things-drawer-title {
@@ -905,11 +919,13 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-group-drawer__body {
   position: relative;
   min-height: 0;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  margin-top: 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 12px max(10px, env(safe-area-inset-bottom));
+  padding: var(--things-drawer-header-height) 12px max(10px, env(safe-area-inset-bottom));
+  scroll-padding-top: var(--things-drawer-header-height);
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -1403,11 +1419,11 @@ body .alert-dialog__dialog.things-confirm-dialog {
   .things-shell {
     padding-top: max(24px, env(safe-area-inset-top));
   }
+}
 
-  body .drawer__dialog {
-    bottom: 0;
-    border-radius: var(--things-radius-drawer) var(--things-radius-drawer) 0 0;
-  }
+.drawer__content--bottom[data-entering="true"] .things-group-drawer,
+.drawer__content--bottom[data-exiting="true"] .things-group-drawer {
+  translate: 0 calc(100% + var(--things-drawer-inset));
 }
 
 @media (max-width: 539px) {
