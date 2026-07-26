@@ -11,9 +11,7 @@
   --demo-surface: rgb(255 255 255 / 0.72);
   --demo-border: rgb(26 32 43 / 0.16);
   --demo-accent: #365fc2;
-  --demo-header: rgb(90 141 238 / 0.34);
   --demo-body: rgb(231 184 75 / 0.18);
-  --demo-footer: rgb(85 169 123 / 0.34);
   --demo-shadow: 0 12px 32px rgb(36 42 54 / 0.08);
 }
 
@@ -25,9 +23,7 @@
     --demo-surface: rgb(34 39 49 / 0.78);
     --demo-border: rgb(226 232 242 / 0.15);
     --demo-accent: #82a8ff;
-    --demo-header: rgb(92 145 246 / 0.34);
     --demo-body: rgb(232 184 73 / 0.18);
-    --demo-footer: rgb(85 180 127 / 0.34);
     --demo-shadow: 0 14px 36px rgb(0 0 0 / 0.26);
   }
 }
@@ -72,7 +68,7 @@ a {
 }
 
 .demo-header {
-  background: var(--demo-header);
+  background: transparent;
   box-shadow: inset 0 -1px var(--demo-border);
 }
 
@@ -266,16 +262,14 @@ a {
   text-align: center;
 }
 
-.demo-anatomy [data-region="header"] dt {
-  background: var(--demo-header);
-}
-
 .demo-anatomy [data-region="body"] dt {
   background: var(--demo-body);
 }
 
+.demo-anatomy [data-region="header"] dt,
 .demo-anatomy [data-region="footer"] dt {
-  background: var(--demo-footer);
+  border: 1px dashed var(--demo-border);
+  background: transparent;
 }
 
 .demo-anatomy dd {
@@ -342,7 +336,7 @@ a {
 }
 
 .demo-footer {
-  background: var(--demo-footer);
+  background: transparent;
   box-shadow: inset 0 1px var(--demo-border);
 }
 

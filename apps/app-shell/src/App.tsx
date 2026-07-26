@@ -90,16 +90,16 @@ function App() {
             </div>
             <dl>
               <div data-region="header">
-                <dt>Blue</dt>
-                <dd>Fixed AppHeader, including the top safe inset.</dd>
+                <dt>Clear</dt>
+                <dd>Transparent fixed AppHeader, including the top safe inset.</dd>
               </div>
               <div data-region="body">
                 <dt>Amber</dt>
                 <dd>Normal document content. This is the only scroll plane.</dd>
               </div>
               <div data-region="footer">
-                <dt>Green</dt>
-                <dd>Fixed AppFooter, including the bottom safe inset.</dd>
+                <dt>Clear</dt>
+                <dd>Transparent fixed AppFooter, including the bottom safe inset.</dd>
               </div>
             </dl>
           </section>
@@ -125,7 +125,9 @@ function App() {
 
           <div className="demo-end" id="end">
             <strong>End of document</strong>
-            <span>The amber canvas and green footer should reach the physical bottom.</span>
+            <span>
+              The amber canvas should remain visible behind the footer to the physical bottom.
+            </span>
           </div>
 
           <div className="demo-boundary">
