@@ -1,5 +1,5 @@
-import { Home, Layers3, ShieldCheck, Smartphone } from "lucide-react";
-import type { CSSProperties } from "react";
+import { Eye, EyeOff, Home, Layers3, ShieldCheck, Smartphone } from "lucide-react";
+import { useState, type CSSProperties } from "react";
 import { AppBody, AppFooter, AppHeader, AppShell } from "./components/AppShell";
 
 const SHELL_STYLE = {
@@ -49,8 +49,14 @@ const SCROLL_ITEMS = [
 ] as const;
 
 function App() {
+  const [showRegionColors, setShowRegionColors] = useState(true);
+
   return (
-    <AppShell className="demo-shell" style={SHELL_STYLE}>
+    <AppShell
+      className="demo-shell"
+      data-region-colors={showRegionColors || undefined}
+      style={SHELL_STYLE}
+    >
       <AppHeader className="demo-header">
         <div className="demo-header__bar">
           <a href="/" aria-label="Back to Gateway">
@@ -60,7 +66,18 @@ function App() {
             <span>Core component lab</span>
             <strong>AppShell</strong>
           </div>
-          <code>48 px</code>
+          <button
+            type="button"
+            aria-label={showRegionColors ? "Hide region colours" : "Show region colours"}
+            aria-pressed={showRegionColors}
+            onClick={() => setShowRegionColors((current) => !current)}
+          >
+            {showRegionColors ? (
+              <Eye aria-hidden="true" size={20} />
+            ) : (
+              <EyeOff aria-hidden="true" size={20} />
+            )}
+          </button>
         </div>
       </AppHeader>
 
@@ -90,16 +107,16 @@ function App() {
             </div>
             <dl>
               <div data-region="header">
-                <dt>Clear</dt>
-                <dd>Transparent fixed AppHeader, including the top safe inset.</dd>
+                <dt>Blue</dt>
+                <dd>Fixed AppHeader, including the top safe inset.</dd>
               </div>
               <div data-region="body">
                 <dt>Amber</dt>
                 <dd>Normal document content. This is the only scroll plane.</dd>
               </div>
               <div data-region="footer">
-                <dt>Clear</dt>
-                <dd>Transparent fixed AppFooter, including the bottom safe inset.</dd>
+                <dt>Green</dt>
+                <dd>Fixed AppFooter, including the bottom safe inset.</dd>
               </div>
             </dl>
           </section>
@@ -125,9 +142,7 @@ function App() {
 
           <div className="demo-end" id="end">
             <strong>End of document</strong>
-            <span>
-              The amber canvas should remain visible behind the footer to the physical bottom.
-            </span>
+            <span>The document canvas should remain visible behind the footer to the bottom.</span>
           </div>
 
           <div className="demo-boundary">

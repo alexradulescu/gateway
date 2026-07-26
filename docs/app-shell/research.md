@@ -131,6 +131,16 @@ The demo supplies:
 
 The `html`, `body`, shell, manifest, and theme colours must agree. This prevents a different browser-owned colour from appearing around the page during launch or overscroll.
 
+## Safari tab versus standalone unsafe areas
+
+As of iOS and Safari 26–27, these are different rendering contracts:
+
+- **Safari tab:** a webpage cannot set the opacity of Safari's status area or address toolbar. Safari owns those controls, their material, their hit testing, and the obscured regions around the page viewport. In Safari 26, WebKit deliberately keeps `bottom: 0` above the bottom controls and fills the area below using a browser heuristic; this is not a live extension of the page's scroll layer ([WebKit bug 297779, comment 23](https://bugs.webkit.org/show_bug.cgi?id=297779#c23)). Safari 26.2 separately extended a fullscreen dialog's _background_ into that obscured inset, which confirms that it is a browser-composited region rather than ordinary author layout space ([Safari 26.2 release notes](https://webkit.org/blog/17640/webkit-features-for-safari-26-2/)).
+- **Author control in a Safari tab:** `viewport-fit=cover` lets WebKit lay the page out edge to edge, while `env(safe-area-inset-*)` lets the author keep essential content inside the visible rectangle ([WebKit's viewport guide](https://webkit.org/blog/7929/designing-websites-for-iphone-x/), [CSS Environment Variables](https://www.w3.org/TR/css-env-1/#safe-area-insets)). It does not grant control of Safari chrome or make content beneath those controls hit-testable. `theme-color` is only a colour hint for the user agent; the user agent may ignore its alpha component, so `transparent` cannot force transparent browser chrome ([Web App Manifest](https://www.w3.org/TR/appmanifest/#theme_color-member)).
+- **Installed Home Screen app:** Safari's address toolbar is absent. With Apple full-screen mode enabled, `apple-mobile-web-app-status-bar-style=black-translucent` makes the web content occupy the entire screen and leaves it partially obscured by the OS status bar ([Apple Safari HTML Reference](https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html)). This allows painting beneath the status bar, but the OS status items remain above the page and important interactive content must stay inside the safe area.
+
+Therefore, AppShell can remove its own opaque unsafe-area paint and let Safari choose the surrounding tint or material. It cannot guarantee that scrolling cards or text appear behind Safari's top and bottom controls. That guarantee is available only for app-owned overlays and, at the top, in the installed `black-translucent` standalone presentation. Apple's published Safari 27 overview introduces no author API that changes this boundary ([WWDC26: What's new in WebKit for Safari 27](https://developer.apple.com/videos/play/wwdc2026/204/)).
+
 ## Explicit exclusions
 
 This first core does not handle:
