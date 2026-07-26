@@ -176,20 +176,13 @@ function App() {
       </AppBody>
 
       <AppFooter className="demo-footer">
-        <nav aria-label="AppShell demo">
-          <a href="#top">
-            <Smartphone aria-hidden="true" size={19} />
-            <span>Shell</span>
-          </a>
-          <a href="#anatomy">
-            <Layers3 aria-hidden="true" size={19} />
-            <span>Regions</span>
-          </a>
-          <a href="#end">
-            <ShieldCheck aria-hidden="true" size={19} />
-            <span>Finish</span>
-          </a>
-        </nav>
+        <input
+          className="demo-footer__input"
+          type="text"
+          aria-label="Footer keyboard test"
+          enterKeyHint="done"
+          placeholder="Open the iOS keyboard"
+        />
       </AppFooter>
     </AppShell>
   );
