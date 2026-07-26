@@ -39,13 +39,12 @@
 }
 
 html {
-  min-inline-size: 320px;
   background: var(--demo-canvas);
   scroll-behavior: smooth;
 }
 
 body {
-  min-block-size: 100vh;
+  min-block-size: 100dvh;
   margin: 0;
   overflow-x: hidden;
   color: var(--demo-ink);
@@ -53,7 +52,7 @@ body {
 }
 
 #root {
-  min-block-size: 100vh;
+  min-block-size: 100dvh;
 }
 
 a {

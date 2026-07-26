@@ -9,7 +9,7 @@ The working local iOS apps do not lock their outer app root to a fixed viewport.
 AppShell must use the same outer layout:
 
 - `html`, `body`, and the React root remain in normal document flow.
-- The shell has `min-height: 100vh`.
+- The shell has `min-height: 100dvh`.
 - The document owns page scrolling.
 - The header and footer are fixed overlays.
 - Main content uses safe-area and bar padding, so it starts and finishes clear of persistent controls.
@@ -105,7 +105,7 @@ The four components only render semantic elements:
 
 Core CSS owns the layout:
 
-- `AppShell` has a `100vh` minimum and the app canvas background.
+- `AppShell` has a `100dvh` minimum and the app canvas background.
 - `AppBody` remains in normal flow.
 - `AppHeader` and `AppFooter` are fixed and transparent.
 - Both bars have a 48 px default inner size.

@@ -16,7 +16,7 @@ function rule(selector: string, fromEnd = false) {
 test("AppShell keeps the page in normal document flow", () => {
   const shell = rule('[data-slot="app-shell"]');
 
-  expect(shell).toContain("min-block-size: 100vh");
+  expect(shell).toContain("min-block-size: 100dvh");
   expect(shell).not.toContain("position: fixed");
   expect(shell).not.toContain("overflow: hidden");
 });
