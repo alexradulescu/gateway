@@ -91,7 +91,14 @@ Add light and dark `theme-color` meta values that match the root background. Web
 
 Safari has supported `svh`, `lvh`, and `dvh` since 15.4. `100dvh` follows the dynamic viewport; `100svh` is the smallest viewport and `100lvh` is the largest. See [WebKit: New WebKit Features in Safari 15.4](https://webkit.org/blog/12445/new-webkit-features-in-safari-15-4/).
 
-For an installed app shell, use `min-block-size: 100dvh` with a `100vh` fallback. Do not combine `100vh`, fixed bars, and safe-area padding without testing the result. Safari 26.1 fixed one bottom-gap defect in viewport-sized fixed containers, which shows why a physical iPhone test remains necessary; see [WebKit: Safari 26.1 fixes](https://webkit.org/blog/17541/webkit-features-for-safari-26-1/).
+The core does not select among viewport units. It uses `position: fixed; inset: 0` and fills the layout viewport that WebKit exposes.
+
+This distinction matters on current iOS 26 releases:
+
+- [WebKit bug 301108](https://bugs.webkit.org/show_bug.cgi?id=301108) tracks Safari failing to honour `viewport-fit=cover` across the physical screen.
+- [WebKit bug 301994](https://bugs.webkit.org/show_bug.cgi?id=301994) records a Home Screen app where `screen.height` is 874 px but `innerHeight`, `100dvh`, and the document client height are 812 px. The remaining 62 px strip is outside the web layer and cannot be reached by a DOM element.
+
+The page background and light/dark `theme-color` values must therefore match the app canvas. They provide the best available colour for any iOS-owned strip, but cannot place content or gradients inside it.
 
 ## 2. Recommended layout contract
 
@@ -155,7 +162,7 @@ A web component cannot reproduce Apple's system material exactly. Use:
 
 - transparent bars with no blur or glass in the core;
 - app-owned classes and CSS variables for colour and diagnostic overlays;
-- a fixed 12 px colour fade at each physical screen edge;
+- a fixed 12 px colour fade at each exposed web viewport edge, which reaches the physical edge when WebKit honours `viewport-fit=cover`;
 - no automatic collapsing or parallax in the core component.
 
 ## 3. Library comparison
@@ -188,7 +195,7 @@ Do not add any reviewed library as a dependency only for AppShell. The required 
 - Keep focus outlines visible above fades and overlays.
 - Ensure a focused component is not entirely hidden by the header or footer. This is a WCAG 2.2 Level AA requirement; see [WCAG 2.2: Focus Not Obscured (Minimum)](https://www.w3.org/TR/WCAG22/#focus-not-obscured-minimum).
 - Make every iOS-style control hit area at least 44 by 44 CSS pixels.
-- Keep focused form fields visible when the software keyboard opens. Fixed bottom bars and safe-area insets have had iOS defects; the demo must include a footer input and test it on the iPhone.
+- Keyboard accommodation is outside this first core. Applications that add editing flows must test focus visibility separately.
 - Do not disable zoom in viewport metadata.
 - Do not use colour or transparency as the only boundary between controls and content.
 - Keep the edge fades out of the accessibility tree. Prefer pseudo-elements; if they are DOM nodes, use `aria-hidden="true"`.
@@ -252,26 +259,26 @@ Test these cases on the iPhone 15 Pro:
 2. Home Screen web app, portrait.
 3. Header + footer, header only, footer only, and neither.
 4. Long content behind both overlays.
-5. Buttons at each edge and at least one focused input near the footer.
-6. Open and close the keyboard while scrolled in portrait.
-7. Light mode, Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and larger text.
-8. In-scope navigation and an out-of-scope link.
-9. The iOS 26 **Open as Web App** toggle turned on and off.
+5. Buttons near each interactive edge.
+6. Light mode, Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and larger text.
+7. In-scope navigation and an out-of-scope link.
+8. The iOS 26 **Open as Web App** toggle turned on and off.
 
 Show diagnostics in the demo:
 
 - current `matchMedia("(display-mode: standalone)")` state;
 - legacy `navigator.standalone` state when present;
 - current safe inset values copied into visible CSS-sized rulers;
-- viewport width/height and orientation;
+- screen, layout viewport, visual viewport, and any screen-to-layout height gap;
 - header/footer presence and configured sizes.
 
 ## 7. Final architecture decisions
 
-1. **Bar sizing:** `AppHeader` and `AppFooter` have a 48 px minimum and report arbitrary rendered growth through `ResizeObserver`.
-2. **Scroll owner:** `AppBody` is the only vertical scroller. `AppShell` locks document and horizontal scrolling.
-3. **Fade behaviour:** both 12 px physical-edge fades remain fixed and always visible.
+1. **Bar sizing:** `AppHeader` and `AppFooter` default to 48 px. Applications can set `--app-shell-header-size` and `--app-shell-footer-size` when a bar is taller.
+2. **Scroll owner:** `AppBody` is the only vertical scroller. Root CSS locks document scrolling.
+3. **Fade behaviour:** two fixed pseudo-elements provide the 12 px edge fades and block interaction in the exposed unsafe insets.
 4. **Surface style:** the core bars are transparent with no blur or glass. Apps own any surface treatment.
-5. **Viewport keyboard fallback:** while a text editor is focused and the visual viewport is materially contracted, `AppShell` follows `visualViewport.height` and `offsetTop` because WebKit does not implement `interactive-widget=resizes-content`. Otherwise CSS `100dvh` owns full-screen sizing. This remains a real-device test requirement because WebKit has had delayed and inconsistent offset updates.
-6. **Offline support:** the first diagnostic demo has no service worker. Installation and online layout testing are the intended scope.
-7. **Orientation:** portrait is supported. Landscape behaviour and testing are out of scope.
+5. **Viewport sizing:** the core contains no viewport or keyboard JavaScript and no viewport-height unit. `position: fixed; inset: 0` fills WebKit's layout viewport.
+6. **Platform limit:** iOS-owned pixels outside that viewport can only inherit a sampled page colour. The core cannot paint or place controls there.
+7. **Offline support:** the first diagnostic demo has no service worker. Installation and online layout testing are the intended scope.
+8. **Orientation:** portrait is supported. Landscape behaviour and testing are out of scope.

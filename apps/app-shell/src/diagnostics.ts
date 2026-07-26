@@ -8,6 +8,7 @@ type Insets = {
 };
 
 type ViewportSnapshot = {
+  screenHeight: number;
   layoutWidth: number;
   layoutHeight: number;
   visualWidth: number;
@@ -28,6 +29,7 @@ function getViewportSnapshot(): ViewportSnapshot {
   const appleStandalone = Boolean((navigator as NavigatorWithStandalone).standalone);
 
   return {
+    screenHeight: window.screen.height,
     layoutWidth: window.innerWidth,
     layoutHeight: window.innerHeight,
     visualWidth: visualViewport?.width ?? window.innerWidth,

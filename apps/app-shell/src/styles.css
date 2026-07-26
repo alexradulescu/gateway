@@ -52,7 +52,6 @@ body,
   inline-size: 100%;
   min-inline-size: 320px;
   block-size: 100%;
-  block-size: 100dvh;
   margin: 0;
   overflow: hidden;
 }
@@ -113,6 +112,14 @@ button {
   color: var(--demo-ink);
 }
 
+.demo-shell[data-grow-header] {
+  --app-shell-header-size: 78px;
+}
+
+.demo-shell[data-grow-footer] {
+  --app-shell-footer-size: 82px;
+}
+
 .demo-shell[data-debug-regions] [data-slot="app-body"] {
   background-color: var(--demo-debug-body);
 }
@@ -125,14 +132,11 @@ button {
   background-color: var(--demo-debug-footer);
 }
 
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"] {
-  border-color: rgb(166 42 34 / 0.7);
+.demo-shell[data-debug-regions]::before,
+.demo-shell[data-debug-regions]::after {
+  display: grid;
+  place-items: center;
   background-color: var(--demo-debug-unsafe);
-}
-
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"]::after {
-  position: absolute;
-  inset-inline: 8px;
   color: var(--demo-ink);
   content: "UNSAFE · OS";
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -141,22 +145,6 @@ button {
   letter-spacing: 0.08em;
   line-height: 1;
   text-align: center;
-}
-
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"][data-side="top"] {
-  border-block-end: 1px dashed rgb(166 42 34 / 0.7);
-}
-
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"][data-side="top"]::after {
-  inset-block-end: 4px;
-}
-
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"][data-side="bottom"] {
-  border-block-start: 1px dashed rgb(166 42 34 / 0.7);
-}
-
-.demo-shell[data-debug-regions] [data-slot="app-shell-unsafe-guard"][data-side="bottom"]::after {
-  inset-block-start: 4px;
 }
 
 .demo-header,
@@ -532,36 +520,6 @@ button {
   font-weight: 800;
 }
 
-.demo-focus-test {
-  display: grid;
-  gap: 18px;
-}
-
-.demo-focus-test h2 {
-  margin: 5px 0 0;
-  font-size: 1.35rem;
-  letter-spacing: -0.025em;
-}
-
-.demo-focus-test label {
-  display: grid;
-  gap: 7px;
-  color: var(--demo-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.demo-focus-test input {
-  inline-size: 100%;
-  min-block-size: 50px;
-  padding-inline: 14px;
-  border: 1px solid var(--demo-border);
-  border-radius: 13px;
-  color: var(--demo-ink);
-  background: var(--demo-surface-strong);
-  font-size: 16px;
-}
-
 .demo-action-output {
   display: block;
   min-block-size: 44px;
@@ -603,59 +561,21 @@ button {
   background: color-mix(in srgb, var(--demo-accent) 12%, transparent);
 }
 
-.demo-footer__form {
+.demo-footer__extra {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 7px;
-  padding: 5px 8px 9px;
-}
-
-.demo-footer__form label {
-  display: grid;
-  min-inline-size: 0;
-  min-block-size: 48px;
-  grid-template-columns: 24px minmax(0, 1fr);
-  align-items: center;
-  gap: 5px;
-  padding-inline: 11px;
-  border: 1px solid var(--demo-border);
-  border-radius: 14px;
-  background: var(--demo-surface-strong);
-}
-
-.demo-footer__form label:focus-within {
-  outline: 3px solid var(--demo-focus);
-  outline-offset: 1px;
-}
-
-.demo-footer__form input {
-  min-inline-size: 0;
-  block-size: 44px;
-  border: 0;
-  outline: 0;
-  color: var(--demo-ink);
-  background: transparent;
-  font-size: 16px;
-}
-
-.demo-footer__form > button {
-  min-inline-size: 58px;
-  min-block-size: 48px;
-  padding-inline: 12px;
-  border: 0;
-  border-radius: 14px;
-  color: var(--demo-accent-ink);
-  background: var(--demo-accent);
-  font-size: 0.76rem;
-  font-weight: 800;
+  min-block-size: 34px;
+  place-items: center;
+  margin: 0;
+  color: var(--demo-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .demo-icon-button:hover,
   .demo-toggle:hover,
   .demo-test-card button:hover,
-  .demo-footer__nav button:hover,
-  .demo-footer__form > button:hover {
+  .demo-footer__nav button:hover {
     filter: brightness(0.96);
   }
 }
@@ -667,11 +587,6 @@ button {
 
   .demo-toggle-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .demo-focus-test {
-    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.8fr);
-    align-items: end;
   }
 }
 

@@ -5,12 +5,11 @@ import {
   EyeOff,
   Home,
   LayoutPanelTop,
-  Search,
   Settings,
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
-import { useState, type CSSProperties, type FormEvent } from "react";
+import { useState, type CSSProperties } from "react";
 import { AppBody, AppFooter, AppHeader, AppShell } from "./components/AppShell";
 import { useSafeAreaInsets, useViewportSnapshot } from "./diagnostics";
 
@@ -18,14 +17,14 @@ const TEST_ITEMS = [
   ["01", "Morning brief", "A normal action row near the start of the scroll range."],
   ["02", "Safe targets", "Every control has a minimum 44 by 44 pixel hit area."],
   ["03", "Full-bleed paint", "The scroll plane extends beneath both fixed bars."],
-  ["04", "Measured header", "Grow the header and watch the content inset update."],
-  ["05", "Measured footer", "The footer can hold one row or a taller input area."],
+  ["04", "Sized header", "A CSS size token keeps the first content clear."],
+  ["05", "Sized footer", "The footer can use its minimum or a taller CSS size."],
   ["06", "System region", "Transient content can remain visible beneath iOS chrome."],
-  ["07", "Focus check", "Tab through the controls and confirm focus stays unobscured."],
-  ["08", "Scroll momentum", "The body owns vertical momentum and document scroll is locked."],
+  ["07", "Plain composition", "The four React components only render semantic elements."],
+  ["08", "Scroll ownership", "The body is the only vertical scrolling element."],
   ["09", "Dark appearance", "System colour preference changes the complete test palette."],
-  ["10", "Edge fade", "The physical top and bottom edges keep a fixed 12 pixel fade."],
-  ["11", "Keyboard test", "Expand the footer and focus its input on the installed app."],
+  ["10", "Edge fade", "The exposed web viewport edges keep a fixed 12 pixel fade."],
+  ["11", "No viewport script", "CSS alone owns shell height and bar placement."],
   ["12", "End marker", "The final item can rest fully above the footer and Home indicator."],
 ] as const;
 
@@ -77,17 +76,12 @@ function App() {
   const viewport = useViewportSnapshot();
   const safeArea = useSafeAreaInsets();
 
-  function submitFooterTest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const value = String(data.get("footer-test") ?? "").trim();
-    setLastAction(value ? `Footer input submitted: “${value}”` : "Footer input submitted empty.");
-  }
-
   return (
     <AppShell
       className="demo-shell"
       data-debug-regions={showRegions || undefined}
+      data-grow-header={growHeader || undefined}
+      data-grow-footer={growFooter || undefined}
       style={SHELL_STYLE}
     >
       {showHeader && (
@@ -115,9 +109,7 @@ function App() {
             </button>
           </div>
           {growHeader && (
-            <p className="demo-header__extra">
-              This extra row makes the header grow. ResizeObserver updates the body inset.
-            </p>
+            <p className="demo-header__extra">A CSS size token makes room for this second row.</p>
           )}
         </AppHeader>
       )}
@@ -140,7 +132,9 @@ function App() {
             </p>
             <output className="demo-status" aria-live="polite">
               <span className="demo-status__dot" aria-hidden="true" />
-              {viewport.standalone ? "Running as an installed app" : "Running in a browser tab"}
+              {viewport.standalone
+                ? `Installed · viewport ${Math.round(viewport.layoutHeight)} / screen ${Math.round(viewport.screenHeight)}px`
+                : "Running in a browser tab"}
             </output>
           </section>
 
@@ -187,6 +181,11 @@ function App() {
               <Metric
                 label="Visual viewport"
                 value={`${Math.round(viewport.visualWidth)} × ${Math.round(viewport.visualHeight)}`}
+              />
+              <Metric label="Screen height" value={`${Math.round(viewport.screenHeight)}px`} />
+              <Metric
+                label="Screen − layout"
+                value={`${Math.max(0, Math.round(viewport.screenHeight - viewport.layoutHeight))}px`}
               />
               <Metric label="Scale" value={`${viewport.scale.toFixed(2)}×`} />
               <Metric label="Display mode" value={viewport.standalone ? "Standalone" : "Browser"} />
@@ -248,22 +247,6 @@ function App() {
             ))}
           </section>
 
-          <section className="demo-panel demo-focus-test" aria-labelledby="focus-title">
-            <div>
-              <p className="demo-eyebrow">Final focus target</p>
-              <h2 id="focus-title">Keep this field clear of the footer.</h2>
-            </div>
-            <label>
-              <span>Test note</span>
-              <input
-                type="text"
-                inputMode="text"
-                placeholder="Focus me near the end"
-                onFocus={() => setLastAction("Focused the final body input.")}
-              />
-            </label>
-          </section>
-
           <output className="demo-action-output" aria-live="polite">
             {lastAction}
           </output>
@@ -291,7 +274,7 @@ function App() {
             </button>
             <button
               type="button"
-              aria-label={growFooter ? "Collapse footer input" : "Expand footer input"}
+              aria-label={growFooter ? "Use minimum footer" : "Grow footer"}
               aria-pressed={growFooter}
               onClick={() => setGrowFooter((value) => !value)}
             >
@@ -303,19 +286,7 @@ function App() {
             </button>
           </nav>
           {growFooter && (
-            <form className="demo-footer__form" onSubmit={submitFooterTest}>
-              <label>
-                <Search aria-hidden="true" size={18} />
-                <span className="sr-only">Footer keyboard test</span>
-                <input
-                  name="footer-test"
-                  type="search"
-                  enterKeyHint="done"
-                  placeholder="Open the iOS keyboard"
-                />
-              </label>
-              <button type="submit">Done</button>
-            </form>
+            <p className="demo-footer__extra">Extra footer row. No keyboard handling.</p>
           )}
         </AppFooter>
       )}
