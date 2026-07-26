@@ -1,0 +1,122 @@
+[data-slot="app-shell"] {
+  --app-shell-safe-top: env(safe-area-inset-top, 0px);
+  --app-shell-safe-right: env(safe-area-inset-right, 0px);
+  --app-shell-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-shell-safe-left: env(safe-area-inset-left, 0px);
+  --app-shell-header-height: 0px;
+  --app-shell-footer-height: 0px;
+  --app-shell-content-top: var(--app-shell-safe-top);
+  --app-shell-content-bottom: var(--app-shell-safe-bottom);
+  --app-shell-content-gutter: 0px;
+  --app-shell-edge-fade-size: 12px;
+  --app-shell-edge-fade-color: Canvas;
+  --app-shell-viewport-height: 100dvh;
+  --app-shell-viewport-offset-top: 0px;
+
+  position: absolute;
+  z-index: 0;
+  inset-block-start: var(--app-shell-viewport-offset-top);
+  inset-inline: 0;
+  isolation: isolate;
+  inline-size: 100%;
+  block-size: 100vh;
+  block-size: var(--app-shell-viewport-height);
+  overflow: hidden;
+  background: var(--app-shell-background, transparent);
+  overscroll-behavior: none;
+}
+
+[data-slot="app-shell"][data-has-header] {
+  --app-shell-content-top: var(--app-shell-header-height);
+}
+
+[data-slot="app-shell"][data-has-footer] {
+  --app-shell-content-bottom: var(--app-shell-footer-height);
+}
+
+[data-slot="app-body"] {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding-block: var(--app-shell-content-top) var(--app-shell-content-bottom);
+  padding-inline: max(var(--app-shell-content-gutter), var(--app-shell-safe-left))
+    max(var(--app-shell-content-gutter), var(--app-shell-safe-right));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: var(--app-shell-content-top) var(--app-shell-content-bottom);
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-slot="app-body"] :focus {
+  scroll-margin-block: var(--app-shell-content-top) var(--app-shell-content-bottom);
+}
+
+[data-slot="app-header"],
+[data-slot="app-footer"] {
+  position: absolute;
+  z-index: 20;
+  inset-inline: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 48px;
+  margin: 0;
+  padding-inline: var(--app-shell-safe-left) var(--app-shell-safe-right);
+  background: transparent;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+[data-slot="app-header"] {
+  inset-block-start: 0;
+  min-block-size: calc(48px + var(--app-shell-safe-top));
+  padding-block-start: var(--app-shell-safe-top);
+}
+
+[data-slot="app-footer"] {
+  inset-block-end: 0;
+  min-block-size: calc(48px + var(--app-shell-safe-bottom));
+  padding-block-end: var(--app-shell-safe-bottom);
+}
+
+[data-slot="app-shell-unsafe-guard"] {
+  position: absolute;
+  z-index: 30;
+  inset-inline: 0;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+[data-slot="app-shell-unsafe-guard"][data-side="top"] {
+  inset-block-start: 0;
+  block-size: var(--app-shell-safe-top);
+}
+
+[data-slot="app-shell-unsafe-guard"][data-side="bottom"] {
+  inset-block-end: 0;
+  block-size: var(--app-shell-safe-bottom);
+}
+
+[data-slot="app-shell-edge-fade"] {
+  position: absolute;
+  z-index: 40;
+  inset-inline: 0;
+  block-size: var(--app-shell-edge-fade-size);
+  pointer-events: none;
+}
+
+[data-slot="app-shell-edge-fade"][data-side="top"] {
+  inset-block-start: 0;
+  background: linear-gradient(to bottom, var(--app-shell-edge-fade-color), transparent);
+}
+
+[data-slot="app-shell-edge-fade"][data-side="bottom"] {
+  inset-block-end: 0;
+  background: linear-gradient(to top, var(--app-shell-edge-fade-color), transparent);
+}
