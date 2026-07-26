@@ -31,8 +31,8 @@ const SCROLL_ITEMS = [
   ],
   [
     "07",
-    "No keyboard logic",
-    "This test deliberately excludes input focus and visual viewport handling.",
+    "CSS-only focus probe",
+    "Input focus changes the canvas without keyboard or visual viewport JavaScript.",
   ],
   [
     "08",
@@ -141,6 +141,27 @@ function App() {
                 </div>
               </article>
             ))}
+          </section>
+
+          <section className="demo-focus-test" aria-labelledby="focus-test-title">
+            <div className="demo-section-title">
+              <div>
+                <p>Safari robustness test</p>
+                <h2 id="focus-test-title">Focus changes the canvas</h2>
+              </div>
+            </div>
+            <p>
+              Focus either field. The page background changes through <code>body:has(...)</code>
+              without React state or viewport handling.
+            </p>
+            <label>
+              <span>Input</span>
+              <input type="text" placeholder="Focus the input" />
+            </label>
+            <label>
+              <span>Textarea</span>
+              <textarea rows={3} placeholder="Focus the textarea" />
+            </label>
           </section>
 
           <div className="demo-end" id="end">

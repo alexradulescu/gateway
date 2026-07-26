@@ -11,6 +11,7 @@
   --demo-surface: rgb(255 255 255 / 0.72);
   --demo-border: rgb(26 32 43 / 0.16);
   --demo-accent: #365fc2;
+  --demo-focus-canvas: #e9e0ff;
   --demo-header: rgb(90 141 238 / 0.34);
   --demo-body: rgb(231 184 75 / 0.18);
   --demo-footer: rgb(85 169 123 / 0.34);
@@ -25,6 +26,7 @@
     --demo-surface: rgb(34 39 49 / 0.78);
     --demo-border: rgb(226 232 242 / 0.15);
     --demo-accent: #82a8ff;
+    --demo-focus-canvas: #2b1d3d;
     --demo-header: rgb(92 145 246 / 0.34);
     --demo-body: rgb(232 184 73 / 0.18);
     --demo-footer: rgb(85 180 127 / 0.34);
@@ -49,6 +51,10 @@ body {
   overflow-x: hidden;
   color: var(--demo-ink);
   background: var(--demo-canvas);
+}
+
+body:has(input:focus, textarea:focus) {
+  --demo-canvas: var(--demo-focus-canvas);
 }
 
 #root {
@@ -339,6 +345,52 @@ a {
   gap: 8px;
   scroll-margin-block-start: 72px;
   text-align: center;
+}
+
+.demo-focus-test {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--demo-border);
+  border-radius: 22px;
+  background: var(--demo-surface);
+  box-shadow: var(--demo-shadow);
+}
+
+.demo-focus-test .demo-section-title,
+.demo-focus-test > p {
+  margin: 0;
+}
+
+.demo-focus-test > p {
+  color: var(--demo-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.demo-focus-test label {
+  display: grid;
+  gap: 6px;
+  color: var(--demo-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.demo-focus-test input,
+.demo-focus-test textarea {
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: 11px 13px;
+  border: 1px solid var(--demo-border);
+  border-radius: 12px;
+  color: var(--demo-ink);
+  background: var(--demo-canvas);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.demo-focus-test textarea {
+  resize: vertical;
 }
 
 .demo-end strong {
