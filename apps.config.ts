@@ -7,6 +7,12 @@ export type GatewayApp = {
 
 export const gatewayApps = [
   {
+    id: "app-shell",
+    name: "AppShell",
+    description: "A full-screen safe-area shell and installable iOS PWA test bench.",
+    accent: "#5a8dee",
+  },
+  {
     id: "things",
     name: "Things",
     description: "Shared household lists with quick entry, live updates, and tidy completion.",

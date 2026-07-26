@@ -1,0 +1,33 @@
+[data-slot="app-shell"] {
+  --app-shell-safe-top: env(safe-area-inset-top, 0px);
+  --app-shell-safe-bottom: env(safe-area-inset-bottom, 0px);
+  min-block-size: 100dvh;
+  background: Canvas;
+}
+[data-slot="app-shell"]:has(input:focus, textarea:focus) {
+  --app-shell-safe-bottom: 0px;
+}
+[data-slot="app-body"] {
+  padding-block: var(--app-shell-safe-top) var(--app-shell-safe-bottom);
+}
+[data-slot="app-shell"]:has(> [data-slot="app-header"]) > [data-slot="app-body"] {
+  padding-block-start: calc(var(--app-shell-safe-top) + var(--app-shell-header-size, 48px));
+}
+[data-slot="app-shell"]:has(> [data-slot="app-footer"]) > [data-slot="app-body"] {
+  padding-block-end: calc(var(--app-shell-safe-bottom) + var(--app-shell-footer-size, 48px));
+}
+[data-slot="app-header"],
+[data-slot="app-footer"] {
+  position: fixed;
+  z-index: 2;
+  inset-inline: 0;
+  box-sizing: border-box;
+}
+[data-slot="app-header"] {
+  inset-block-start: var(--app-shell-safe-top);
+  block-size: var(--app-shell-header-size, 48px);
+}
+[data-slot="app-footer"] {
+  inset-block-end: var(--app-shell-safe-bottom);
+  block-size: var(--app-shell-footer-size, 48px);
+}

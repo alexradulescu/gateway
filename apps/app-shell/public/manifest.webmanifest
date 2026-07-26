@@ -1,0 +1,26 @@
+{
+  "id": "/app-shell/",
+  "name": "AppShell Lab",
+  "short_name": "AppShell",
+  "description": "A document-scrolling safe-area app shell test bench.",
+  "start_url": "/app-shell/",
+  "scope": "/app-shell/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f2ec",
+  "theme_color": "#f4f2ec",
+  "icons": [
+    {
+      "src": "/app-shell/icons/app-shell-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-shell/icons/app-shell-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
