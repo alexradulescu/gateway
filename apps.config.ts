@@ -7,6 +7,12 @@ export type GatewayApp = {
 
 export const gatewayApps = [
   {
+    id: "polis",
+    name: "Aegean Polis",
+    description: "A calm classical Greek city-builder shaped by land, research, and civic choices.",
+    accent: "#b7682f",
+  },
+  {
     id: "app-shell",
     name: "AppShell",
     description: "A full-screen safe-area shell and installable iOS PWA test bench.",
