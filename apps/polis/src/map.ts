@@ -69,6 +69,18 @@ export type RoadSegment = {
   depth: number;
 };
 
+export type RoadTile = {
+  key: string;
+  x: number;
+  y: number;
+  depth: number;
+  atlas: "roads" | "connectors";
+  atlasColumn: 0 | 1 | 2 | 3 | 4;
+  orientation: "none" | "flip-x" | "flip-y" | "flip-both";
+};
+
+export type RoadTileVariant = Pick<RoadTile, "atlas" | "atlasColumn" | "orientation">;
+
 const TOWN_HALL_CELL = 27;
 const HARBOUR_CELL = 52;
 const NATURE_KINDS: NatureKind[] = [
@@ -346,11 +358,7 @@ function findRoadPath(layout: CityMapLayout, fromCellId: number, passable: Set<n
   return path.reverse();
 }
 
-export function getRoadSegments(
-  seed: number,
-  occupiedPlotIds: number[],
-  _unlockedDistricts: number[],
-): RoadSegment[] {
+function getRoadEdges(seed: number, occupiedPlotIds: number[], _unlockedDistricts: number[]) {
   const layout = getMapLayout(seed);
   const passable = new Set<number>([layout.townHall.cellId, layout.harbour.cellId]);
   for (const cell of layout.plotCells.values()) {
@@ -367,7 +375,15 @@ export function getRoadSegments(
       edges.set(`${left}-${right}`, [left, right]);
     }
   }
+  return edges;
+}
 
+export function getRoadSegments(
+  seed: number,
+  occupiedPlotIds: number[],
+  unlockedDistricts: number[],
+): RoadSegment[] {
+  const edges = getRoadEdges(seed, occupiedPlotIds, unlockedDistricts);
   return [...edges.entries()].map(([key, [fromId, toId]]) => {
     const from = baseCell(fromId);
     const to = baseCell(toId);
@@ -382,4 +398,87 @@ export function getRoadSegments(
       depth: Math.min(from.position.depth, to.position.depth),
     };
   });
+}
+
+export function getRoadTiles(
+  seed: number,
+  occupiedPlotIds: number[],
+  unlockedDistricts: number[],
+): RoadTile[] {
+  const layout = getMapLayout(seed);
+  const edges = getRoadEdges(seed, occupiedPlotIds, unlockedDistricts);
+  const connections = new Map<number, number>();
+  const connect = (cellId: number, direction: number) => {
+    connections.set(cellId, (connections.get(cellId) ?? 0) | direction);
+  };
+
+  for (const [fromId, toId] of edges.values()) {
+    if (toId - fromId === 1) {
+      connect(fromId, 2);
+      connect(toId, 8);
+    } else {
+      connect(fromId, 4);
+      connect(toId, 1);
+    }
+  }
+
+  return [...connections.entries()].map(([cellId, mask]) => {
+    const position = baseCell(cellId).position;
+    const cell = layout.cells[cellId];
+    const hillside = cell && "trait" in cell && cell.trait === "hillside";
+    const variant = getRoadTileVariant(mask, hillside);
+
+    return {
+      key: `road-${cellId}`,
+      x: position.x,
+      y: position.y,
+      depth: position.depth,
+      ...variant,
+    };
+  });
+}
+
+export function getRoadTileVariant(mask: number, hillside: boolean): RoadTileVariant {
+  const branchCount = [1, 2, 4, 8].filter((direction) => (mask & direction) !== 0).length;
+  if (mask < 1 || mask > 15 || branchCount === 0) {
+    throw new Error(`Invalid road connection mask: ${mask}`);
+  }
+  if (branchCount === 1) {
+    return {
+      atlas: "connectors",
+      atlasColumn: (mask & 5) !== 0 ? 0 : 1,
+      orientation: mask === 4 || mask === 8 ? "flip-both" : "none",
+    };
+  }
+  if (branchCount === 2 && (mask === 5 || mask === 10)) {
+    return hillside
+      ? {
+          atlas: "connectors",
+          atlasColumn: 4,
+          orientation: mask === 10 ? "flip-x" : "none",
+        }
+      : { atlas: "roads", atlasColumn: mask === 5 ? 0 : 1, orientation: "none" };
+  }
+  if (branchCount === 2) {
+    return mask === 9 || mask === 6
+      ? {
+          atlas: "connectors",
+          atlasColumn: 2,
+          orientation: mask === 6 ? "flip-both" : "none",
+        }
+      : {
+          atlas: "roads",
+          atlasColumn: 2,
+          orientation: mask === 12 ? "flip-both" : "none",
+        };
+  }
+  if (branchCount === 3) {
+    return {
+      atlas: "connectors",
+      atlasColumn: 3,
+      orientation:
+        mask === 14 ? "none" : mask === 7 ? "flip-x" : mask === 13 ? "flip-y" : "flip-both",
+    };
+  }
+  return { atlas: "roads", atlasColumn: 4, orientation: "none" };
 }

@@ -161,11 +161,16 @@ controls.
 - The visual direction is a fixed three-quarter isometric, sunlit classical Aegean scene: warm
   limestone, white plaster, terracotta roofs, restrained cobalt accents, marble civic structures,
   olive and cypress trees, bright water, and soft painterly shadows.
-- Building artwork is original, high-resolution raster art with a coherent camera, lighting, base
-  footprint, and visual progression. The renderer may use a consolidated sprite atlas and separate
-  atmospheric overlays.
-- The island is a handcrafted six-by-six plot composition. Twelve central plots begin available.
-  Three eight-plot districts unlock separately.
+- All map artwork is original, high-resolution raster art with a coherent camera, lighting, base
+  footprint, and visual progression. Separate production atlases cover buildings, terrain,
+  directional roads and junctions, road endpoints and hillside ramps, coastline pieces, walls, and
+  permanent natural blockers.
+- The renderer assembles road art from route topology, selecting straight, corner, T-junction,
+  crossroads, endpoint, landscaped, and hillside-ramp variants. Coastline art is placed only on
+  compatible island boundary faces.
+- Each city uses a seeded eight-by-seven composition: 36 normal building plots, 18 permanent natural
+  blockers, a fixed Town Hall, and a fixed harbour. Twelve central plots begin available. Three
+  eight-plot districts unlock separately.
 - Plot placement has local effects. Residential appeal benefits from parks and selected services;
   workshops, barracks, and extraction buildings impose nearby penalties. Coastal and hillside traits
   provide specialised advantages.

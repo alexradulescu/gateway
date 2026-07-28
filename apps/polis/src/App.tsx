@@ -94,7 +94,7 @@ import {
   type Resources,
   type Staffing,
 } from "./game";
-import { getMapLayout, getRoadSegments } from "./map";
+import { getMapLayout, getRoadTiles, mapPosition, type PlotTrait, type RoadTile } from "./map";
 
 const SAVE_KEY = "aegean-polis.city.v1";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
@@ -224,6 +224,196 @@ function environmentStyle(index: number): CSSProperties {
 function EnvironmentSprite({ atlasIndex }: { atlasIndex: number }) {
   return (
     <span className="environment-sprite" style={environmentStyle(atlasIndex)} aria-hidden="true" />
+  );
+}
+
+function gridSpriteStyle(
+  index: number,
+  columns: number,
+  rows: number,
+  xVariable: string,
+  yVariable: string,
+): CSSProperties {
+  const column = index % columns;
+  const row = Math.floor(index / columns);
+  return {
+    [xVariable]: `${column * (100 / (columns - 1))}%`,
+    [yVariable]: `${row * (100 / (rows - 1))}%`,
+  } as CSSProperties;
+}
+
+function terrainAtlasIndex(
+  trait: PlotTrait,
+  seed: number,
+  cellId: number,
+  kind: "plot" | "nature" | "town-hall" | "harbour",
+) {
+  if (kind === "town-hall") return 3;
+  const base = trait === "plain" ? 0 : trait === "fertile" ? 4 : trait === "hillside" ? 8 : 12;
+  const variation = Math.abs(Math.imul(seed + 17, 31) + Math.imul(cellId + 5, 13)) % 4;
+  return base + variation;
+}
+
+function TerrainSprite({ atlasIndex }: { atlasIndex: number }) {
+  return (
+    <span
+      className="terrain-sprite"
+      style={gridSpriteStyle(atlasIndex, 4, 4, "--terrain-x", "--terrain-y")}
+      aria-hidden="true"
+    />
+  );
+}
+
+function RoadSprite({ tile, level }: { tile: RoadTile; level: number }) {
+  const atlasIndex = (Math.max(1, Math.min(4, level)) - 1) * 5 + tile.atlasColumn;
+  return (
+    <span
+      className={`road-tile road-tile--${tile.atlas} road-tile--${tile.orientation}`}
+      style={gridSpriteStyle(atlasIndex, 5, 4, "--road-x", "--road-y")}
+      aria-hidden="true"
+    />
+  );
+}
+
+type SpriteOrientation = RoadTile["orientation"];
+
+function MapDetailSprite({
+  atlasIndex,
+  orientation = "none",
+}: {
+  atlasIndex: number;
+  orientation?: SpriteOrientation;
+}) {
+  return (
+    <span
+      className={`map-detail-sprite map-detail-sprite--${orientation}`}
+      style={gridSpriteStyle(atlasIndex, 5, 4, "--detail-x", "--detail-y")}
+      aria-hidden="true"
+    />
+  );
+}
+
+function coastlineSprite(
+  row: number,
+  column: number,
+  seed: number,
+  cellId: number,
+): { atlasIndex: number; orientation: SpriteOrientation } | null {
+  const right = column === 7;
+  const bottom = row === 6;
+  if (!right && !bottom) return null;
+
+  const rocky = Math.abs(Math.imul(seed + 19, 17) + cellId * 11) % 3 === 0;
+  if (bottom) return { atlasIndex: rocky ? 13 : 11, orientation: "none" };
+  if (right) return { atlasIndex: rocky ? 12 : 10, orientation: "none" };
+  return null;
+}
+
+function boundaryOffset(row: number, column: number) {
+  let x = 0;
+  let y = 0;
+  if (row === 0) {
+    x += 41;
+    y -= 20.5;
+  }
+  if (row === 6) {
+    x -= 41;
+    y += 20.5;
+  }
+  if (column === 0) {
+    x -= 41;
+    y -= 20.5;
+  }
+  if (column === 7) {
+    x += 41;
+    y += 20.5;
+  }
+  return { x, y };
+}
+
+const WALL_SEGMENTS: ReadonlyArray<{ row: number; column: number; direction: 0 | 1 }> = [
+  ...Array.from({ length: 6 }, (_, index) => ({
+    row: 0,
+    column: index + 1,
+    direction: 1 as const,
+  })),
+  ...Array.from({ length: 6 }, (_, index) => ({
+    row: 6,
+    column: index + 1,
+    direction: 1 as const,
+  })),
+  ...Array.from({ length: 5 }, (_, index) => ({
+    row: index + 1,
+    column: 0,
+    direction: 0 as const,
+  })),
+  ...Array.from({ length: 5 }, (_, index) => ({
+    row: index + 1,
+    column: 7,
+    direction: 0 as const,
+  })),
+];
+
+const WALL_CORNERS = [
+  { row: 0, column: 0, orientation: "none" },
+  { row: 0, column: 7, orientation: "flip-x" },
+  { row: 6, column: 7, orientation: "flip-both" },
+  { row: 6, column: 0, orientation: "flip-y" },
+] as const;
+
+function CityWalls({ level }: { level: number }) {
+  if (level <= 0) return null;
+  const fortified = level >= 2;
+  return (
+    <div className={`city-walls city-walls--${level}`} aria-hidden="true">
+      {WALL_SEGMENTS.map((piece, index) => {
+        if (fortified && piece.row === 6 && piece.column === 3) return null;
+        const position = mapPosition(piece.row, piece.column);
+        const offset = boundaryOffset(piece.row, piece.column);
+        return (
+          <span
+            className={`city-wall-piece city-wall-piece--direction-${piece.direction}`}
+            style={{
+              left: position.x + offset.x,
+              top: position.y + offset.y,
+              zIndex: 67 + position.depth,
+            }}
+            key={`wall-${index}`}
+          >
+            <MapDetailSprite atlasIndex={(fortified ? 5 : 0) + piece.direction} />
+          </span>
+        );
+      })}
+      {WALL_CORNERS.map((piece, index) => {
+        const position = mapPosition(piece.row, piece.column);
+        const offset = boundaryOffset(piece.row, piece.column);
+        return (
+          <span
+            className={`city-wall-piece city-wall-piece--${piece.orientation}`}
+            style={{
+              left: position.x + offset.x,
+              top: position.y + offset.y,
+              zIndex: 68 + position.depth,
+            }}
+            key={`corner-${index}`}
+          >
+            <MapDetailSprite atlasIndex={level >= 3 ? 9 : fortified ? 7 : 2} />
+          </span>
+        );
+      })}
+      {fortified && (
+        <span
+          className="city-wall-piece city-wall-piece--gate"
+          style={{
+            left: mapPosition(6, 3).x + boundaryOffset(6, 3).x,
+            top: mapPosition(6, 3).y + boundaryOffset(6, 3).y,
+            zIndex: 77,
+          }}
+        >
+          <MapDetailSprite atlasIndex={8} />
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -466,13 +656,14 @@ export function App() {
   const metrics = useMemo(() => getCityMetrics(city), [city]);
   const defenceForces = useMemo(() => getDefenceForces(city), [city]);
   const mapLayout = useMemo(() => getMapLayout(city.seed), [city.seed]);
+  const plotCells = useMemo(() => [...mapLayout.plotCells.values()], [mapLayout]);
   const natureCells = useMemo(
     () => mapLayout.cells.filter((cell) => cell.kind === "nature"),
     [mapLayout],
   );
-  const roadSegments = useMemo(
+  const roadTiles = useMemo(
     () =>
-      getRoadSegments(
+      getRoadTiles(
         city.seed,
         city.buildings.map((building) => building.plotId),
         city.unlockedDistricts,
@@ -751,23 +942,37 @@ export function App() {
           <div className="coast-shadow" />
 
           {mapLayout.cells.map((cell) => {
-            if (cell.kind !== "plot") {
-              const terrain =
-                cell.kind === "nature" ? cell.trait : cell.kind === "harbour" ? "coastal" : "plain";
-              return (
-                <span
-                  className={`terrain-cell terrain-${terrain} terrain-cell--${cell.kind}`}
-                  style={{
-                    left: cell.position.x - 72,
-                    top: cell.position.y - 36,
-                    zIndex: 10 + cell.position.depth,
-                  }}
-                  key={`terrain-${cell.cellId}`}
-                  aria-hidden="true"
-                />
-              );
-            }
+            const trait =
+              cell.kind === "plot" || cell.kind === "nature"
+                ? cell.trait
+                : cell.kind === "harbour"
+                  ? "coastal"
+                  : "plain";
+            const coast = coastlineSprite(cell.row, cell.column, city.seed, cell.cellId);
+            const visualTrait = trait === "coastal" ? "plain" : trait;
+            return (
+              <span
+                className={`terrain-art terrain-art--${coast ? "coast" : visualTrait}`}
+                style={{
+                  left: cell.position.x,
+                  top: cell.position.y,
+                  zIndex: 10 + cell.position.depth,
+                }}
+                key={`terrain-${cell.cellId}`}
+                aria-hidden="true"
+              >
+                {coast ? (
+                  <MapDetailSprite atlasIndex={coast.atlasIndex} orientation={coast.orientation} />
+                ) : (
+                  <TerrainSprite
+                    atlasIndex={terrainAtlasIndex(visualTrait, city.seed, cell.cellId, cell.kind)}
+                  />
+                )}
+              </span>
+            );
+          })}
 
+          {plotCells.map((cell) => {
             const unlocked = isPlotUnlocked(city, cell.plotId);
             const occupied = city.buildings.some((building) => building.plotId === cell.plotId);
             return (
@@ -776,7 +981,6 @@ export function App() {
                 key={cell.plotId}
                 className={[
                   "plot",
-                  `terrain-${cell.trait}`,
                   unlocked ? "plot--open" : "plot--locked",
                   occupied ? "plot--occupied" : "",
                   (buildMode || moveMode) && unlocked && !occupied ? "plot--target" : "",
@@ -811,18 +1015,18 @@ export function App() {
           })}
 
           <div className={`road-network road-network--${city.roadLevel}`} aria-hidden="true">
-            {roadSegments.map((segment) => (
+            {roadTiles.map((tile) => (
               <span
-                className="road-segment"
-                key={segment.key}
+                className="road-tile-position"
+                key={tile.key}
                 style={{
-                  left: segment.x,
-                  top: segment.y,
-                  width: segment.width,
-                  zIndex: 34 + segment.depth,
-                  transform: `translateY(-50%) rotate(${segment.angle}deg)`,
+                  left: tile.x,
+                  top: tile.y,
+                  zIndex: 34 + tile.depth,
                 }}
-              />
+              >
+                <RoadSprite tile={tile} level={city.roadLevel} />
+              </span>
             ))}
           </div>
 
@@ -836,10 +1040,20 @@ export function App() {
               }}
               key={`nature-${cell.cellId}`}
               aria-hidden="true"
+              hidden={
+                city.wallLevel > 0 &&
+                (cell.row === 0 || cell.row === 6 || cell.column === 0 || cell.column === 7)
+              }
             >
-              <EnvironmentSprite atlasIndex={cell.atlasIndex} />
+              {(cell.cellId + city.seed) % 3 === 0 ? (
+                <MapDetailSprite atlasIndex={15 + ((cell.atlasIndex + cell.cellId) % 5)} />
+              ) : (
+                <EnvironmentSprite atlasIndex={cell.atlasIndex} />
+              )}
             </span>
           ))}
+
+          <CityWalls level={city.wallLevel} />
 
           <div
             className="harbour-pier"

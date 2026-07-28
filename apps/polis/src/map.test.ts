@@ -7,6 +7,7 @@ import {
   getMapLayout,
   getPlotDistance,
   getRoadSegments,
+  getRoadTileVariant,
 } from "./map";
 
 describe("Aegean Polis map", () => {
@@ -54,5 +55,35 @@ describe("Aegean Polis map", () => {
     expect(getPlotDistance(42, 7, 8)).toBe(
       Math.abs(left.row - right.row) + Math.abs(left.column - right.column),
     );
+  });
+
+  test("road topology selects every connector and intersection sprite explicitly", () => {
+    const expected = [
+      [1, false, "connectors", 0, "none"],
+      [2, false, "connectors", 1, "none"],
+      [3, false, "roads", 2, "none"],
+      [4, false, "connectors", 0, "flip-both"],
+      [5, false, "roads", 0, "none"],
+      [6, false, "connectors", 2, "flip-both"],
+      [7, false, "connectors", 3, "flip-x"],
+      [8, false, "connectors", 1, "flip-both"],
+      [9, false, "connectors", 2, "none"],
+      [10, false, "roads", 1, "none"],
+      [11, false, "connectors", 3, "flip-both"],
+      [12, false, "roads", 2, "flip-both"],
+      [13, false, "connectors", 3, "flip-y"],
+      [14, false, "connectors", 3, "none"],
+      [15, false, "roads", 4, "none"],
+      [5, true, "connectors", 4, "none"],
+      [10, true, "connectors", 4, "flip-x"],
+    ] as const;
+
+    for (const [mask, hillside, atlas, atlasColumn, orientation] of expected) {
+      expect(getRoadTileVariant(mask, hillside)).toEqual({
+        atlas,
+        atlasColumn,
+        orientation,
+      });
+    }
   });
 });

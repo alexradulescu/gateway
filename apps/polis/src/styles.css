@@ -397,39 +397,67 @@ a:focus-visible {
 .island-ground.walls-1 {
   box-shadow:
     inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23),
-    inset 0 0 0 7px #c9b489;
+    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
 }
 
 .island-ground.walls-2 {
   box-shadow:
     inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23),
-    inset 0 0 0 11px #bda275;
+    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
 }
 
 .island-ground.walls-3 {
   box-shadow:
     inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23),
-    inset 0 0 0 15px #a88c61;
+    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
 }
 
-.plot,
-.terrain-cell {
+.terrain-art {
+  position: absolute;
+  width: 176px;
+  height: 117px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.terrain-sprite {
+  display: block;
+  width: 176px;
+  height: 117px;
+  background-image: url("/polis/assets/terrain-atlas.png");
+  background-repeat: no-repeat;
+  background-position: var(--terrain-x) var(--terrain-y);
+  background-size: 400% 400%;
+  filter: drop-shadow(0 5px 3px rgba(66, 47, 25, 0.2));
+}
+
+.terrain-art > .map-detail-sprite {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.terrain-art > .map-detail-sprite--flip-x {
+  transform: translate(-50%, -50%) scaleX(-1);
+}
+
+.terrain-art > .map-detail-sprite--flip-y {
+  transform: translate(-50%, -50%) scaleY(-1);
+}
+
+.terrain-art > .map-detail-sprite--flip-both {
+  transform: translate(-50%, -50%) scale(-1);
+}
+
+.plot {
   position: absolute;
   width: 144px;
   height: 72px;
   padding: 0;
-  border: 1px solid rgba(112, 85, 48, 0.3);
+  border: 1px solid rgba(112, 85, 48, 0.16);
+  background: transparent;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.plot {
-  background:
-    radial-gradient(circle at 33% 38%, rgba(103, 126, 53, 0.2) 0 4px, transparent 5px),
-    radial-gradient(circle at 68% 65%, rgba(103, 126, 53, 0.17) 0 3px, transparent 4px),
-    linear-gradient(145deg, #d8c48e, #c4aa6d);
   cursor: pointer;
   transition:
     filter 160ms ease,
@@ -442,56 +470,13 @@ a:focus-visible {
   filter: brightness(1.12);
 }
 
-.terrain-plain {
-  background:
-    radial-gradient(circle at 28% 44%, rgba(91, 112, 55, 0.2) 0 4px, transparent 5px),
-    radial-gradient(circle at 67% 62%, rgba(126, 103, 58, 0.16) 0 3px, transparent 4px),
-    linear-gradient(145deg, #dfce9b, #c9ae72);
-}
-
-.terrain-fertile {
-  background:
-    repeating-linear-gradient(27deg, transparent 0 11px, rgba(74, 103, 43, 0.16) 12px 14px),
-    radial-gradient(circle at 68% 38%, rgba(223, 214, 121, 0.3) 0 6px, transparent 7px),
-    linear-gradient(145deg, #a9b86f, #7f9d58);
-}
-
-.terrain-hillside {
-  background:
-    radial-gradient(ellipse at 32% 42%, rgba(244, 231, 193, 0.52) 0 9px, transparent 10px),
-    radial-gradient(ellipse at 68% 60%, rgba(111, 92, 62, 0.18) 0 7px, transparent 8px),
-    repeating-linear-gradient(145deg, transparent 0 16px, rgba(104, 83, 55, 0.08) 17px 19px),
-    linear-gradient(145deg, #d2bf8e, #aa9568);
-  filter: drop-shadow(0 3px 0 rgba(112, 89, 55, 0.19));
-}
-
-.terrain-coastal {
-  background:
-    radial-gradient(ellipse at 27% 56%, rgba(255, 248, 212, 0.58) 0 5px, transparent 6px),
-    radial-gradient(ellipse at 71% 35%, rgba(95, 153, 145, 0.18) 0 5px, transparent 6px),
-    repeating-linear-gradient(27deg, transparent 0 18px, rgba(52, 125, 126, 0.08) 19px 21px),
-    linear-gradient(145deg, #e4d39e, #c6ba80);
-}
-
-.terrain-cell--town-hall {
-  background:
-    repeating-linear-gradient(27deg, transparent 0 10px, rgba(99, 85, 66, 0.13) 11px 12px),
-    repeating-linear-gradient(-27deg, transparent 0 10px, rgba(255, 255, 255, 0.18) 11px 12px),
-    #d6c6a1;
-}
-
-.terrain-cell--harbour {
-  background:
-    repeating-linear-gradient(27deg, rgba(209, 197, 165, 0.86) 0 8px, #a9936e 9px 10px), #c5b184;
-}
-
 .plot--occupied {
   border-color: rgba(117, 91, 55, 0.2);
 }
 
 .plot--locked {
   border-color: rgba(66, 70, 47, 0.36);
-  filter: saturate(0.58) brightness(0.74);
+  background: rgba(40, 52, 36, 0.32);
 }
 
 .plot--locked::after {
@@ -502,9 +487,7 @@ a:focus-visible {
 }
 
 .plot--target {
-  background:
-    radial-gradient(circle, rgba(247, 237, 179, 0.92) 0 13%, transparent 14%),
-    linear-gradient(145deg, #9bca66, #6c9e55);
+  background: radial-gradient(circle, rgba(247, 237, 179, 0.86) 0 13%, rgba(93, 154, 65, 0.28) 14%);
   filter: drop-shadow(0 0 8px rgba(246, 224, 124, 0.9));
   animation: plot-pulse 1.3s ease-in-out infinite;
 }
@@ -570,80 +553,43 @@ a:focus-visible {
   pointer-events: none;
 }
 
-.road-segment {
+.road-tile-position {
   position: absolute;
   display: block;
-  height: 22px;
-  border-block: 1px solid rgba(100, 74, 43, 0.36);
-  background:
-    radial-gradient(circle, rgba(83, 57, 31, 0.34) 0 1px, transparent 2px) 0 0 / 8px 7px,
-    linear-gradient(#ad8755, #8f6b43);
-  box-shadow: 0 3px 5px rgba(68, 48, 27, 0.24);
-  transform-origin: 0 50%;
+  width: 178px;
+  height: 148px;
+  transform: translate(-50%, -50%);
 }
 
-.road-network--2 .road-segment {
-  height: 24px;
-  border-block: 2px solid rgba(114, 96, 72, 0.62);
-  background:
-    repeating-linear-gradient(90deg, transparent 0 15px, rgba(88, 75, 59, 0.2) 16px 17px),
-    repeating-linear-gradient(0deg, #c8b899 0 9px, #aa987c 10px 11px);
-  box-shadow:
-    0 4px 6px rgba(68, 48, 27, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+.road-tile {
+  display: block;
+  width: 178px;
+  height: 148px;
+  background-repeat: no-repeat;
+  background-position: var(--road-x) var(--road-y);
+  background-size: 500% 400%;
+  filter: drop-shadow(0 6px 4px rgba(66, 47, 25, 0.22));
+  transform-origin: 50% 50%;
 }
 
-.road-network--3 .road-segment,
-.road-network--4 .road-segment {
-  height: 29px;
-  border: 2px solid #938367;
-  background:
-    linear-gradient(27deg, transparent 45%, rgba(91, 81, 66, 0.18) 46% 52%, transparent 53%) 0 0 /
-      25px 18px,
-    linear-gradient(-27deg, transparent 45%, rgba(255, 255, 255, 0.2) 46% 52%, transparent 53%) 0 0
-      / 25px 18px,
-    #d8cbb1;
-  box-shadow:
-    0 5px 7px rgba(68, 48, 27, 0.25),
-    inset 0 0 0 2px rgba(247, 237, 214, 0.48);
+.road-tile--roads {
+  background-image: url("/polis/assets/roads-atlas.png");
 }
 
-.road-network--4 .road-segment {
-  height: 32px;
-  border-color: #82745c;
-  background:
-    linear-gradient(27deg, transparent 45%, rgba(91, 81, 66, 0.16) 46% 52%, transparent 53%) 0 0 /
-      24px 17px,
-    linear-gradient(-27deg, transparent 45%, rgba(255, 255, 255, 0.26) 46% 52%, transparent 53%) 0 0
-      / 24px 17px,
-    #e2d7bd;
+.road-tile--connectors {
+  background-image: url("/polis/assets/road-connectors-atlas.png");
 }
 
-.road-network--4 .road-segment::before,
-.road-network--4 .road-segment::after {
-  position: absolute;
-  right: 4px;
-  left: 4px;
-  height: 15px;
-  background: radial-gradient(
-      ellipse at 50% 92%,
-      #34502d 0 24%,
-      #52723d 26% 42%,
-      #789451 44% 52%,
-      transparent 54%
-    )
-    0 0 / 23px 15px repeat-x;
-  filter: drop-shadow(0 2px 1px rgba(39, 54, 28, 0.28));
-  content: "";
+.road-tile--flip-x {
+  transform: scaleX(-1);
 }
 
-.road-network--4 .road-segment::before {
-  top: -17px;
+.road-tile--flip-y {
+  transform: scaleY(-1);
 }
 
-.road-network--4 .road-segment::after {
-  bottom: -17px;
-  transform: rotate(180deg);
+.road-tile--flip-both {
+  transform: scale(-1);
 }
 
 .environment-prop {
@@ -656,6 +602,10 @@ a:focus-visible {
   transform-origin: 50% 76%;
 }
 
+.environment-prop[hidden] {
+  display: none;
+}
+
 .environment-sprite {
   display: block;
   width: 178px;
@@ -665,6 +615,74 @@ a:focus-visible {
   background-position: var(--environment-x) var(--environment-y);
   background-size: 400% 200%;
   filter: drop-shadow(0 9px 5px rgba(55, 39, 21, 0.24));
+}
+
+.map-detail-sprite {
+  display: block;
+  width: 184px;
+  height: 154px;
+  background-image: url("/polis/assets/map-details-atlas.png");
+  background-repeat: no-repeat;
+  background-position: var(--detail-x) var(--detail-y);
+  background-size: 500% 400%;
+  filter: drop-shadow(0 8px 5px rgba(55, 39, 21, 0.24));
+}
+
+.map-detail-sprite--flip-x {
+  transform: scaleX(-1);
+}
+
+.map-detail-sprite--flip-y {
+  transform: scaleY(-1);
+}
+
+.map-detail-sprite--flip-both {
+  transform: scale(-1);
+}
+
+.environment-prop > .map-detail-sprite {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.city-walls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.city-wall-piece {
+  position: absolute;
+  width: 184px;
+  height: 154px;
+  transform: translate(-50%, -66%) scale(0.8);
+  transform-origin: 50% 70%;
+}
+
+.city-wall-piece--direction-0 {
+  transform: translate(-50%, -66%) scale(0.94);
+}
+
+.city-wall-piece--flip-x .map-detail-sprite {
+  transform: scaleX(-1);
+}
+
+.city-wall-piece--flip-y .map-detail-sprite {
+  transform: scaleY(-1);
+}
+
+.city-wall-piece--flip-both .map-detail-sprite {
+  transform: scale(-1);
+}
+
+.city-wall-piece--gate {
+  transform: translate(-50%, -70%) scale(0.95);
+}
+
+.city-walls--3 .city-wall-piece {
+  filter: brightness(1.04) drop-shadow(0 4px 3px rgba(58, 43, 26, 0.2));
 }
 
 .atlas-sprite {
