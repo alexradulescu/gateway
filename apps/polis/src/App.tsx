@@ -288,10 +288,10 @@ function RoadSprite({ tile, level }: { tile: RoadTile; level: number }) {
       {roadDirections.map((direction) => (
         <span className={`road-arm-clip road-arm-clip--${direction}`} key={`arm-${direction}`}>
           <span
-            className="road-atlas-sprite"
+            className={`road-atlas-sprite ${tile.hillside ? "road-atlas-sprite--ramp" : ""}`}
             style={gridSpriteStyle(
-              atlasRow * 4 + roadAxisColumn(direction),
-              4,
+              atlasRow * (tile.hillside ? 3 : 4) + roadAxisColumn(direction),
+              tile.hillside ? 3 : 4,
               4,
               "--road-x",
               "--road-y",

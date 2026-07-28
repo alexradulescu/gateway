@@ -589,6 +589,11 @@ a:focus-visible {
   background-size: 400% 400%;
 }
 
+.road-atlas-sprite--ramp {
+  background-image: url("/polis/assets/hex-road-ramps-atlas.png");
+  background-size: 300% 400%;
+}
+
 .road-arm-clip--0 {
   clip-path: polygon(47% 32%, 100% 20%, 100% 80%, 47% 68%);
 }
