@@ -18,7 +18,6 @@ export type HexDirection = 0 | 1 | 2 | 3 | 4 | 5;
 
 export const HEX_RADIUS = 4;
 export const HEX_CELL_COUNT = 1 + 3 * HEX_RADIUS * (HEX_RADIUS + 1);
-export const MAP_CELL_COUNT = HEX_CELL_COUNT;
 
 export const PLOT_DISTRICTS: number[][] = [
   [7, 8, 9, 10, 13, 14, 15, 16, 19, 20, 21, 22],
@@ -80,15 +79,6 @@ export type CityMapLayout = {
   exposedEdges: Map<number, HexDirection[]>;
   townHall: LandmarkMapCell;
   harbour: LandmarkMapCell;
-};
-
-export type RoadSegment = {
-  key: string;
-  x: number;
-  y: number;
-  width: number;
-  angle: number;
-  depth: number;
 };
 
 export type RoadTile = AxialCoordinate & {
@@ -497,30 +487,6 @@ function getRoadEdges(seed: number, occupiedPlotIds: number[], _unlockedDistrict
     }
   }
   return edges;
-}
-
-export function getRoadSegments(
-  seed: number,
-  occupiedPlotIds: number[],
-  unlockedDistricts: number[],
-): RoadSegment[] {
-  const layout = getMapLayout(seed);
-  return [...getRoadEdges(seed, occupiedPlotIds, unlockedDistricts)].map(
-    ([key, [fromId, toId]]) => {
-      const from = layout.cells[fromId].position;
-      const to = layout.cells[toId].position;
-      const deltaX = to.x - from.x;
-      const deltaY = to.y - from.y;
-      return {
-        key,
-        x: from.x,
-        y: from.y,
-        width: Math.hypot(deltaX, deltaY),
-        angle: (Math.atan2(deltaY, deltaX) * 180) / Math.PI,
-        depth: Math.min(from.depth, to.depth),
-      };
-    },
-  );
 }
 
 export function getRoadTiles(

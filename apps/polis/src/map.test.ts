@@ -3,7 +3,6 @@
 import { describe, expect, test } from "bun:test";
 import {
   HEX_CELL_COUNT,
-  MAP_CELL_COUNT,
   PLOT_DISTRICTS,
   axialDistance,
   axialNeighbours,
@@ -40,7 +39,6 @@ describe("Aegean Polis map", () => {
       const layout = getMapLayout(seed);
 
       expect(layout.cells).toHaveLength(HEX_CELL_COUNT);
-      expect(MAP_CELL_COUNT).toBe(HEX_CELL_COUNT);
       expect(layout.cells.filter((cell) => cell.kind === "plot")).toHaveLength(36);
       expect(layout.cells.filter((cell) => cell.kind === "nature")).toHaveLength(18);
       expect(layout.cells.filter((cell) => cell.kind === "town-hall")).toHaveLength(1);
