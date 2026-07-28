@@ -47,10 +47,14 @@ import {
 import {
   BUILDING_DEFINITIONS,
   BUILDING_ORDER,
+  BUILDING_RESEARCH_REQUIREMENTS,
   CRISIS_DEFINITIONS,
   DISTRICT_COSTS,
   DISTRICT_NAMES,
+  DOCTRINE_RESEARCH_REQUIREMENTS,
+  GAME_TIMING,
   PLOT_DISTRICTS,
+  PLOT_TRAITS,
   RESEARCH_DEFINITIONS,
   RESOURCE_LABELS,
   advanceCity,
@@ -63,6 +67,7 @@ import {
   developerGrant,
   finishAllProjects,
   getCityMetrics,
+  getDefenceForces,
   isPlotUnlocked,
   maybeTriggerScheduledCrisis,
   moveBuilding,
@@ -72,6 +77,7 @@ import {
   queueUpgrade,
   renameCity,
   resolveCrisis,
+  resolveHarbourMission,
   serializeCity,
   setDoctrine,
   setStaffing,
@@ -193,11 +199,28 @@ function plotDistrict(plotId: number) {
   return PLOT_DISTRICTS.findIndex((plots) => plots.includes(plotId));
 }
 
-function AtlasSprite({ type, className = "" }: { type: BuildingType; className?: string }) {
+function AtlasSprite({
+  type,
+  level = 1,
+  className = "",
+}: {
+  type: BuildingType;
+  level?: number;
+  className?: string;
+}) {
+  const atlas =
+    level === 1
+      ? "/polis/assets/buildings-atlas.png"
+      : `/polis/assets/buildings-atlas-level-${Math.min(3, level)}.png`;
   return (
     <span
       className={`atlas-sprite ${className}`}
-      style={atlasStyle(BUILDING_DEFINITIONS[type].atlasIndex)}
+      style={
+        {
+          ...atlasStyle(BUILDING_DEFINITIONS[type].atlasIndex),
+          "--atlas-image": `url("${atlas}")`,
+        } as CSSProperties
+      }
       aria-hidden="true"
     />
   );
@@ -359,8 +382,67 @@ function CrisisDialog({
   );
 }
 
+function FoundingDialog({ onFound }: { onFound: (name: string) => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [name, setName] = useState("Thalassa");
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => {
+      if (dialog?.open) dialog.close();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="founding-overlay"
+      aria-labelledby="founding-title"
+      onCancel={(event) => event.preventDefault()}
+    >
+      <form
+        className="founding-card"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onFound(name.trim() || "Thalassa");
+        }}
+      >
+        <span className="city-seal">
+          <Landmark size={27} />
+        </span>
+        <span className="eyebrow">A new island awaits</span>
+        <h1 id="founding-title">Found your polis</h1>
+        <p>
+          Twelve plots are cleared around a small starter settlement. Name the city you will help
+          grow.
+        </p>
+        <label>
+          City name
+          <input
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            maxLength={36}
+            autoFocus
+          />
+        </label>
+        <button type="submit" className="primary-action">
+          Raise the city seal
+        </button>
+      </form>
+    </dialog>
+  );
+}
+
 export function App() {
   const [city, setCity] = useState(loadCity);
+  const [needsFounding, setNeedsFounding] = useState(() => {
+    try {
+      return localStorage.getItem(SAVE_KEY) === null;
+    } catch {
+      return false;
+    }
+  });
   const [speed, setSpeed] = useState<Speed>(1);
   const [panel, setPanel] = useState<PanelName>(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
@@ -378,6 +460,7 @@ export function App() {
   } | null>(null);
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
+  const defenceForces = useMemo(() => getDefenceForces(city), [city]);
   const selectedBuilding = city.buildings.find((building) => building.id === selectedBuildingId);
   const newestEvent = city.eventLog[0];
   const unlockedDistricts = new Set(city.unlockedDistricts);
@@ -417,6 +500,7 @@ export function App() {
   }, [speed]);
 
   useEffect(() => {
+    if (needsFounding) return;
     const timer = window.setTimeout(() => {
       try {
         localStorage.setItem(SAVE_KEY, serializeCity({ ...city, lastSavedAt: Date.now() }));
@@ -425,7 +509,7 @@ export function App() {
       }
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [city]);
+  }, [city, needsFounding]);
 
   useEffect(() => {
     if (!toast) return;
@@ -435,7 +519,8 @@ export function App() {
 
   function updateCity(action: (current: CityState) => CityState, success?: string) {
     try {
-      setCity((current) => action(current));
+      const next = action(city);
+      setCity(next);
       if (success) setToast(success);
     } catch (error) {
       setToast(error instanceof Error ? error.message : "That action could not be completed.");
@@ -473,6 +558,12 @@ export function App() {
   function beginBuild(type: BuildingType) {
     if (city.construction) {
       setToast("The builders are already working.");
+      return;
+    }
+    const requirement = BUILDING_RESEARCH_REQUIREMENTS[type];
+    if (requirement && !city.completedResearch.includes(requirement)) {
+      const research = RESEARCH_DEFINITIONS.find((definition) => definition.id === requirement);
+      setToast(`Complete ${research?.label ?? requirement} first.`);
       return;
     }
     if (!canAfford(city.resources, BUILDING_DEFINITIONS[type].cost)) {
@@ -533,7 +624,13 @@ export function App() {
   async function importCity(file: File) {
     try {
       const imported = parseCity(await file.text());
-      if (!window.confirm(`Replace ${city.name} with the frozen city ${imported.name}?`)) return;
+      if (
+        !window.confirm(
+          `Replacing ${city.name} cannot be undone. Download its backup first if you want to keep it.\n\nContinue with ${imported.name}?`,
+        )
+      ) {
+        return;
+      }
       setCity({ ...imported, lastSavedAt: Date.now(), pendingCrisis: null });
       setPanel(null);
       setSelectedBuildingId(null);
@@ -568,7 +665,7 @@ export function App() {
   const cityYear = Math.max(1, Math.floor(city.activeSeconds / 1200) + 1);
 
   return (
-    <main className="game-shell">
+    <main className={`game-shell game-shell--${city.doctrine}`}>
       <header className="top-bar">
         <button className="city-mark" type="button" onClick={() => setPanel("city")}>
           <span className="city-seal">
@@ -685,13 +782,18 @@ export function App() {
                   unlocked
                     ? occupied
                       ? `Occupied plot ${plotId + 1}`
-                      : `Open plot ${plotId + 1}`
+                      : `Open ${PLOT_TRAITS[plotId]} plot ${plotId + 1}`
                     : `Locked plot in ${DISTRICT_NAMES[district]}`
                 }
               >
                 {!unlocked && (
                   <span className="plot-lock">
                     <LockKeyhole size={12} />
+                  </span>
+                )}
+                {unlocked && !occupied && (
+                  <span className={`plot-trait plot-trait--${PLOT_TRAITS[plotId]}`}>
+                    {PLOT_TRAITS[plotId]}
                   </span>
                 )}
               </button>
@@ -728,7 +830,7 @@ export function App() {
                 }}
                 aria-label={`${definition.name}, level ${building.level}, ${building.condition}% condition`}
               >
-                <AtlasSprite type={building.type} />
+                <AtlasSprite type={building.type} level={building.level} />
                 {underConstruction && (
                   <span className="scaffolding">
                     <Construction size={18} />
@@ -825,6 +927,29 @@ export function App() {
         </aside>
       )}
 
+      {city.crisisWarning && city.crisisWarningEndsAt !== null && (
+        <aside className="crisis-warning-banner parchment" aria-label="Crisis warning">
+          <span className="visually-hidden" role="alert">
+            Crisis warning: {CRISIS_DEFINITIONS[city.crisisWarning].title}. Review your city
+            preparations.
+          </span>
+          <span className="crisis-warning-icon">
+            <Shield size={20} />
+          </span>
+          <span>
+            <small>Warning</small>
+            <strong>{CRISIS_DEFINITIONS[city.crisisWarning].title}</strong>
+            <p aria-hidden="true">
+              About {formatTime(Math.max(0, city.crisisWarningEndsAt - city.activeSeconds))} to
+              prepare.
+            </p>
+          </span>
+          <button type="button" onClick={() => setPanel("city")}>
+            Review city
+          </button>
+        </aside>
+      )}
+
       <aside className={`event-note parchment event-note--${newestEvent.tone}`}>
         <span className="eyebrow">Latest news</span>
         <strong>{newestEvent.title}</strong>
@@ -880,24 +1005,42 @@ export function App() {
           {BUILDING_ORDER.map((type) => {
             const definition = BUILDING_DEFINITIONS[type];
             const affordable = canAfford(city.resources, definition.cost);
+            const requirement = BUILDING_RESEARCH_REQUIREMENTS[type];
+            const unlocked = !requirement || city.completedResearch.includes(requirement);
+            const requiredResearch = RESEARCH_DEFINITIONS.find(
+              (research) => research.id === requirement,
+            );
             const Icon = BUILDING_ICONS[type];
             return (
               <button
                 type="button"
                 key={type}
+                disabled={!unlocked}
                 className={[
                   "build-option",
                   buildMode === type ? "build-option--active" : "",
                   !affordable ? "build-option--unaffordable" : "",
+                  !unlocked ? "build-option--locked" : "",
                 ].join(" ")}
                 onClick={() => beginBuild(type)}
+                aria-label={
+                  unlocked
+                    ? `Build ${definition.name}`
+                    : `${definition.name}, requires ${requiredResearch?.label ?? requirement}`
+                }
               >
                 <AtlasSprite type={type} className="build-thumb" />
                 <span className="build-option-copy">
                   <span>
                     <Icon size={13} /> {definition.shortName}
                   </span>
-                  <CostLine resources={definition.cost} />
+                  {unlocked ? (
+                    <CostLine resources={definition.cost} />
+                  ) : (
+                    <small className="research-lock">
+                      <LockKeyhole size={10} /> {requiredResearch?.label}
+                    </small>
+                  )}
                 </span>
               </button>
             );
@@ -917,7 +1060,7 @@ export function App() {
             >
               <X size={17} />
             </button>
-            <AtlasSprite type={selectedBuilding.type} />
+            <AtlasSprite type={selectedBuilding.type} level={selectedBuilding.level} />
             <div>
               <h2>{BUILDING_DEFINITIONS[selectedBuilding.type].name}</h2>
               <p>
@@ -1105,6 +1248,12 @@ export function App() {
               </span>
             </div>
           </div>
+          <p className="workforce-note">
+            {metrics.workersAssigned} of {metrics.workersAvailable} available workers assigned
+            {metrics.jobs > metrics.workersAvailable
+              ? ` · ${metrics.jobs - metrics.workersAvailable} requested jobs are unfilled`
+              : ` · ${metrics.jobs} jobs requested`}
+          </p>
 
           <section className="admin-section">
             <div className="section-heading">
@@ -1127,11 +1276,19 @@ export function App() {
                 )
               }
             >
-              {DOCTRINES.map((doctrine) => (
-                <option value={doctrine.value} key={doctrine.value}>
-                  {doctrine.label}
-                </option>
-              ))}
+              {DOCTRINES.map((doctrine) => {
+                const requirement = DOCTRINE_RESEARCH_REQUIREMENTS[doctrine.value];
+                const unlocked = !requirement || city.completedResearch.includes(requirement);
+                const requiredResearch = RESEARCH_DEFINITIONS.find(
+                  (research) => research.id === requirement,
+                );
+                return (
+                  <option value={doctrine.value} key={doctrine.value} disabled={!unlocked}>
+                    {doctrine.label}
+                    {unlocked ? "" : ` · requires ${requiredResearch?.label ?? requirement}`}
+                  </option>
+                );
+              })}
             </select>
             <p>{DOCTRINES.find((doctrine) => doctrine.value === city.doctrine)?.detail}</p>
           </section>
@@ -1171,6 +1328,77 @@ export function App() {
                   Improve
                 </button>
               </article>
+            </div>
+          </section>
+
+          <section className="admin-section">
+            <span className="eyebrow">Harbour and defence</span>
+            <div className="force-grid">
+              <span>
+                <small>Militia</small>
+                <strong>{defenceForces.militia}</strong>
+              </span>
+              <span>
+                <small>Hoplites</small>
+                <strong>{defenceForces.hoplites}</strong>
+              </span>
+              <span>
+                <small>Archers</small>
+                <strong>{defenceForces.archers}</strong>
+              </span>
+              <span>
+                <small>Ships</small>
+                <strong>{defenceForces.ships}</strong>
+              </span>
+            </div>
+            <p className="upkeep-note">Forces are stationary. Soldiers use food; ships use coin.</p>
+            <div className="mission-grid">
+              <button
+                type="button"
+                onClick={() =>
+                  updateCity(
+                    (current) => resolveHarbourMission(current, "fishing"),
+                    "Fishing boats returned with food.",
+                  )
+                }
+              >
+                <Wheat size={17} />
+                <span>
+                  <strong>Send fishing boats</strong>
+                  <small>25 coin</small>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  updateCity(
+                    (current) => resolveHarbourMission(current, "trade"),
+                    "The trade voyage returned.",
+                  )
+                }
+              >
+                <Anchor size={17} />
+                <span>
+                  <strong>Send trade voyage</strong>
+                  <small>20 goods · 20 coin</small>
+                </span>
+              </button>
+              <button
+                type="button"
+                disabled={metrics.defence < 30}
+                onClick={() =>
+                  updateCity(
+                    (current) => resolveHarbourMission(current, "patrol"),
+                    "The barbarian camp was cleared.",
+                  )
+                }
+              >
+                <Swords size={17} />
+                <span>
+                  <strong>Clear barbarian camp</strong>
+                  <small>Requires 30 defence</small>
+                </span>
+              </button>
             </div>
           </section>
 
@@ -1323,9 +1551,18 @@ export function App() {
           </section>
           <section className="admin-section config-readout">
             <span className="eyebrow">Current balance</span>
-            <p>Minor situations: every 20–40 active minutes.</p>
-            <p>Severe crises: every 2–5 calendar days, activated on return.</p>
-            <p>Offline progress: capped at 8 hours. Offline crises never resolve.</p>
+            <p>
+              Minor situations: every {GAME_TIMING.minorEventMinSeconds / 60}–
+              {GAME_TIMING.minorEventMaxSeconds / 60} active minutes.
+            </p>
+            <p>
+              Severe crises: every {GAME_TIMING.severeCrisisMinDays}–
+              {GAME_TIMING.severeCrisisMaxDays} calendar days, followed by a warning period.
+            </p>
+            <p>
+              Offline progress: capped at {GAME_TIMING.offlineCapSeconds / 3600} hours. Offline
+              crises never resolve.
+            </p>
           </section>
         </Drawer>
       )}
@@ -1336,6 +1573,16 @@ export function App() {
           onResolve={(response) =>
             updateCity((current) => resolveCrisis(current, response), "The crisis has passed.")
           }
+        />
+      )}
+
+      {needsFounding && (
+        <FoundingDialog
+          onFound={(name) => {
+            setCity(createCity(name));
+            setNeedsFounding(false);
+            setToast(`${name} founded. Welcome to your island.`);
+          }}
         />
       )}
 

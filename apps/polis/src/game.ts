@@ -24,6 +24,8 @@ export type Doctrine =
   | "civic"
   | "cultural"
   | "pastoral";
+export type PlotTrait = "civic" | "fertile" | "hillside" | "coastal";
+export type HarbourMission = "fishing" | "trade" | "patrol";
 
 export type BuildingDefinition = {
   type: BuildingType;
@@ -99,7 +101,10 @@ export type CityState = {
   harbourLevel: number;
   townHallLevel: number;
   pendingCrisis: CrisisType | null;
+  crisisWarning: CrisisType | null;
+  crisisWarningEndsAt: number | null;
   nextCrisisAt: number;
+  nextMinorEventAt: number;
   tutorialDismissed: boolean;
   eventLog: EventLogEntry[];
 };
@@ -268,6 +273,15 @@ export const PLOT_DISTRICTS: number[][] = [
   [26, 27, 28, 29, 32, 33, 34, 35],
 ];
 
+export const PLOT_TRAITS: PlotTrait[] = Array.from({ length: 36 }, (_, plotId) => {
+  const row = Math.floor(plotId / 6);
+  const column = plotId % 6;
+  if (row >= 4 || column === 0) return "coastal";
+  if (row <= 1 || column >= 4) return "hillside";
+  if ((row + column) % 3 === 0) return "fertile";
+  return "civic";
+});
+
 export const DISTRICT_NAMES = ["Civic heart", "Olive ridge", "Harbour ward", "Sunset terraces"];
 
 export const DISTRICT_COSTS: Resources[] = [
@@ -288,25 +302,37 @@ export const RESEARCH_DEFINITIONS = [
   {
     id: "stonecraft",
     label: "Stonecraft",
-    detail: "Quarries produce 20% more stone.",
+    detail: "Quarries produce 20% more stone and artisan workshops become available.",
     knowledge: 60,
     seconds: 70,
   },
   {
     id: "civic-records",
     label: "Civic records",
-    detail: "Markets produce 15% more coin.",
+    detail: "Markets and maritime civic policy become available.",
     knowledge: 75,
     seconds: 85,
   },
   {
     id: "public-health",
     label: "Public health",
-    detail: "Clinics provide stronger crisis protection.",
+    detail: "Clinics and civic administration become available.",
     knowledge: 90,
     seconds: 100,
   },
 ] as const;
+
+export const BUILDING_RESEARCH_REQUIREMENTS: Partial<Record<BuildingType, string>> = {
+  workshop: "stonecraft",
+  market: "civic-records",
+  clinic: "public-health",
+};
+
+export const DOCTRINE_RESEARCH_REQUIREMENTS: Partial<Record<Doctrine, string>> = {
+  industrial: "stonecraft",
+  maritime: "civic-records",
+  civic: "public-health",
+};
 
 export const CRISIS_DEFINITIONS: Record<
   CrisisType,
@@ -344,8 +370,27 @@ export const CRISIS_DEFINITIONS: Record<
   },
 };
 
+export const GAME_TIMING = {
+  offlineCapSeconds: 8 * 60 * 60,
+  minorEventMinSeconds: 20 * 60,
+  minorEventMaxSeconds: 40 * 60,
+  crisisWarningSeconds: 2 * 60,
+  severeCrisisMinDays: 2,
+  severeCrisisMaxDays: 5,
+} as const;
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const round = (value: number) => Math.round(value * 100) / 100;
+
+function minorEventInterval(seed: number, eventCount: number) {
+  const range = GAME_TIMING.minorEventMaxSeconds - GAME_TIMING.minorEventMinSeconds;
+  return GAME_TIMING.minorEventMinSeconds + ((seed * 17 + eventCount * 97) % (range + 1));
+}
+
+function severeCrisisDelay(seed: number, eventCount: number) {
+  const dayRange = GAME_TIMING.severeCrisisMaxDays - GAME_TIMING.severeCrisisMinDays + 1;
+  return (GAME_TIMING.severeCrisisMinDays + ((seed + eventCount) % dayRange)) * 24 * 60 * 60 * 1000;
+}
 
 const starterBuilding = (id: string, type: BuildingType, plotId: number): Building => ({
   id,
@@ -396,7 +441,10 @@ export function createCity(
     harbourLevel: 1,
     townHallLevel: 1,
     pendingCrisis: null,
-    nextCrisisAt: now + (2 + (seed % 4)) * 24 * 60 * 60 * 1000,
+    crisisWarning: null,
+    crisisWarningEndsAt: null,
+    nextCrisisAt: now + severeCrisisDelay(seed, 0),
+    nextMinorEventAt: minorEventInterval(seed, 0),
     tutorialDismissed: false,
     eventLog: [
       {
@@ -445,6 +493,12 @@ export function placeBuilding(city: CityState, type: BuildingType, plotId: numbe
   }
 
   const definition = BUILDING_DEFINITIONS[type];
+  const requirement = BUILDING_RESEARCH_REQUIREMENTS[type];
+  if (requirement && !city.completedResearch.includes(requirement)) {
+    throw new Error(
+      `Complete ${RESEARCH_DEFINITIONS.find((research) => research.id === requirement)?.label ?? requirement} first.`,
+    );
+  }
   const id = `building-${city.nextId}`;
   return {
     ...city,
@@ -629,11 +683,52 @@ export function upgradeWalls(city: CityState): CityState {
   return { ...city, resources: spend(city.resources, price), wallLevel: level };
 }
 
-function researchMultiplier(city: CityState, type: BuildingType) {
-  if (type === "farm" && city.completedResearch.includes("irrigation")) return 1.2;
-  if (type === "quarry" && city.completedResearch.includes("stonecraft")) return 1.2;
-  if (type === "market" && city.completedResearch.includes("civic-records")) return 1.15;
-  return 1;
+function productionMultiplier(city: CityState, building: Building) {
+  let multiplier = 1;
+  if (building.type === "farm" && city.completedResearch.includes("irrigation")) multiplier *= 1.2;
+  if (building.type === "quarry" && city.completedResearch.includes("stonecraft"))
+    multiplier *= 1.2;
+  if (building.type === "market" && city.completedResearch.includes("civic-records")) {
+    multiplier *= 1.15;
+  }
+
+  if (city.doctrine === "industrial" && ["lumber", "quarry", "workshop"].includes(building.type)) {
+    multiplier *= 1.12;
+  }
+  if (city.doctrine === "scholarly" && building.type === "academy") multiplier *= 1.18;
+  if (city.doctrine === "maritime" && ["market", "warehouse"].includes(building.type)) {
+    multiplier *= 1.12;
+  }
+  if (city.doctrine === "pastoral" && building.type === "farm") multiplier *= 1.12;
+
+  const trait = PLOT_TRAITS[building.plotId];
+  if (trait === "fertile" && building.type === "farm") multiplier *= 1.15;
+  if (trait === "hillside" && ["quarry", "barracks"].includes(building.type)) multiplier *= 1.15;
+  if (trait === "coastal" && ["market", "warehouse"].includes(building.type)) multiplier *= 1.1;
+  return multiplier;
+}
+
+function workforceFactors(city: CityState) {
+  const factors = new Map<string, number>();
+  let availableWorkers = Math.max(0, Math.floor(city.population * 0.6));
+  const staffed = city.buildings
+    .filter(
+      (building) =>
+        building.status === "active" &&
+        building.condition > 0 &&
+        BUILDING_DEFINITIONS[building.type].workers > 0 &&
+        building.staffing > 0,
+    )
+    .sort((left, right) => right.staffing - left.staffing || left.id.localeCompare(right.id));
+
+  for (const building of staffed) {
+    const baseWorkers = BUILDING_DEFINITIONS[building.type].workers * building.level;
+    const requestedWorkers = baseWorkers * building.staffing;
+    const assignedWorkers = Math.min(availableWorkers, requestedWorkers);
+    factors.set(building.id, baseWorkers === 0 ? 1 : assignedWorkers / baseWorkers);
+    availableWorkers -= assignedWorkers;
+  }
+  return factors;
 }
 
 function completeConstruction(city: CityState): CityState {
@@ -703,11 +798,18 @@ function finishExpansion(city: CityState): CityState {
   };
 }
 
-export function advanceCity(city: CityState, elapsedSeconds: number, speed = 1): CityState {
+export function advanceCity(
+  city: CityState,
+  elapsedSeconds: number,
+  speed = 1,
+  allowEvents = true,
+): CityState {
   const simulationSeconds = Math.max(0, elapsedSeconds * speed);
   if (simulationSeconds === 0) return city;
   const minutes = simulationSeconds / 60;
   const produced = { ...city.resources };
+  const workFactors = workforceFactors(city);
+  const forces = getDefenceForces(city);
 
   for (const building of city.buildings) {
     if (building.status !== "active" || building.condition <= 0 || building.staffing === 0)
@@ -718,14 +820,16 @@ export function advanceCity(city: CityState, elapsedSeconds: number, speed = 1):
     const levelFactor = 1 + (building.level - 1) * 0.65;
     const factor =
       minutes *
-      building.staffing *
+      (workFactors.get(building.id) ?? 1) *
       conditionFactor *
       levelFactor *
-      researchMultiplier(city, building.type);
+      productionMultiplier(city, building);
     for (const [key, amount] of Object.entries(definition.output) as [ResourceKey, number][]) {
       produced[key] = round(produced[key] + amount * factor);
     }
   }
+  produced.food = Math.max(0, produced.food - (forces.hoplites + forces.archers) * 0.02 * minutes);
+  produced.coin = Math.max(0, produced.coin - forces.ships * 0.03 * minutes);
 
   const metrics = getCityMetrics(city);
   const housingHeadroom = metrics.housing - city.population;
@@ -764,11 +868,54 @@ export function advanceCity(city: CityState, elapsedSeconds: number, speed = 1):
   if (next.construction?.remainingSeconds === 0) next = completeConstruction(next);
   if (next.research?.remainingSeconds === 0) next = finishResearch(next);
   if (next.expansion?.remainingSeconds === 0) next = finishExpansion(next);
+  if (
+    allowEvents &&
+    next.crisisWarning &&
+    next.crisisWarningEndsAt !== null &&
+    next.activeSeconds >= next.crisisWarningEndsAt
+  ) {
+    const crisis = next.crisisWarning;
+    next = {
+      ...next,
+      pendingCrisis: crisis,
+      crisisWarning: null,
+      crisisWarningEndsAt: null,
+      eventLog: addLog(next, {
+        title: CRISIS_DEFINITIONS[crisis].title,
+        detail: "The warning period has ended. Choose the city's response.",
+        tone: "warning",
+      }),
+    };
+  }
+  if (
+    allowEvents &&
+    !next.pendingCrisis &&
+    !next.crisisWarning &&
+    next.activeSeconds >= next.nextMinorEventAt
+  ) {
+    next = applyMinorOpportunity(next);
+  }
   return next;
 }
 
 export function advanceOffline(city: CityState, elapsedRealSeconds: number): CityState {
-  return advanceCity(city, Math.min(8 * 60 * 60, Math.max(0, elapsedRealSeconds)), 1);
+  const warningRemaining =
+    city.crisisWarningEndsAt === null
+      ? null
+      : Math.max(0, city.crisisWarningEndsAt - city.activeSeconds);
+  const advanced = advanceCity(
+    city,
+    Math.min(GAME_TIMING.offlineCapSeconds, Math.max(0, elapsedRealSeconds)),
+    1,
+    false,
+  );
+  return {
+    ...advanced,
+    crisisWarningEndsAt:
+      warningRemaining === null ? null : advanced.activeSeconds + warningRemaining,
+    nextMinorEventAt:
+      advanced.activeSeconds + minorEventInterval(advanced.seed, advanced.eventLog.length),
+  };
 }
 
 export function getCityMetrics(city: CityState) {
@@ -787,28 +934,153 @@ export function getCityMetrics(city: CityState) {
       0,
     ),
   );
+  const plotDistance = (left: number, right: number) => {
+    const leftRow = Math.floor(left / 6);
+    const rightRow = Math.floor(right / 6);
+    return Math.abs(leftRow - rightRow) + Math.abs((left % 6) - (right % 6));
+  };
+  const neighbourhoodEffect = active
+    .filter((building) => building.type === "house")
+    .reduce((total, house) => {
+      const neighbours = active.filter(
+        (building) => building.id !== house.id && plotDistance(house.plotId, building.plotId) <= 2,
+      );
+      return (
+        total +
+        neighbours.reduce((effect, building) => {
+          if (building.type === "park") return effect + 4;
+          if (building.type === "market" || building.type === "clinic") return effect + 2;
+          if (["workshop", "quarry", "barracks"].includes(building.type)) return effect - 3;
+          return effect;
+        }, 0)
+      );
+    }, 0);
+  const workersAvailable = Math.max(0, Math.floor(city.population * 0.6));
+  const workersAssigned = Math.min(workersAvailable, jobs);
   const employment =
-    city.population === 0 ? 100 : clamp(Math.round((jobs / city.population) * 100), 0, 100);
+    workersAvailable === 0
+      ? 0
+      : clamp(Math.round((workersAssigned / workersAvailable) * 100), 0, 100);
   const industrialPressure = levels("workshop") * 4 + levels("quarry") * 3 + levels("barracks") * 2;
+  const doctrineHappiness =
+    city.doctrine === "cultural"
+      ? 7
+      : city.doctrine === "pastoral"
+        ? 9
+        : city.doctrine === "industrial"
+          ? -3
+          : 0;
   const happiness = clamp(
-    Math.round(57 + levels("park") * 8 + levels("market") * 3 - industrialPressure),
+    Math.round(
+      57 +
+        levels("park") * 8 +
+        levels("market") * 3 +
+        neighbourhoodEffect +
+        doctrineHappiness -
+        industrialPressure,
+    ),
     20,
     100,
   );
   const researchHealth = city.completedResearch.includes("public-health") ? 8 : 0;
   const safety = clamp(
     Math.round(
-      42 + levels("clinic") * 10 + levels("firewatch") * 13 + city.roadLevel * 3 + researchHealth,
+      42 +
+        levels("clinic") * 10 +
+        levels("firewatch") * 13 +
+        city.roadLevel * 3 +
+        researchHealth +
+        (city.doctrine === "civic" ? 8 : 0),
     ),
     0,
     100,
   );
-  const defence = Math.round(city.wallLevel * 22 + city.harbourLevel * 4 + levels("barracks") * 26);
-  return { housing, jobs, employment, happiness, safety, defence };
+  const defence = Math.round(
+    city.wallLevel * 22 +
+      city.harbourLevel * 4 +
+      levels("barracks") * 26 +
+      (city.doctrine === "maritime" ? 8 : 0),
+  );
+  return {
+    housing,
+    jobs,
+    workersAvailable,
+    workersAssigned,
+    employment,
+    happiness,
+    safety,
+    defence,
+  };
+}
+
+export function getDefenceForces(city: CityState) {
+  const barracksLevels = city.buildings
+    .filter(
+      (building) =>
+        building.type === "barracks" && building.status === "active" && building.condition > 0,
+    )
+    .reduce((sum, building) => sum + building.level, 0);
+  return {
+    militia: city.townHallLevel * 6,
+    hoplites: barracksLevels * 8,
+    archers: city.wallLevel * 4,
+    ships: city.harbourLevel * 2,
+  };
+}
+
+export function resolveHarbourMission(city: CityState, mission: HarbourMission): CityState {
+  const definitions = {
+    fishing: {
+      cost: cost({ coin: 25 }),
+      reward: cost({ food: 110 }),
+      title: "Fishing boats return",
+      detail: "The harbour crews found a generous shoal beyond the headland.",
+    },
+    trade: {
+      cost: cost({ coin: 20, goods: 20 }),
+      reward: cost({ coin: 145 }),
+      title: "Trade voyage complete",
+      detail: "Local pottery and tools fetched a good price on a neighbouring island.",
+    },
+    patrol: {
+      cost: cost({ food: 50, coin: 45 }),
+      reward: cost({ timber: 90, stone: 75, coin: 80 }),
+      title: "Barbarian camp cleared",
+      detail: "The stationary force returned safely with recovered stores.",
+    },
+  } satisfies Record<
+    HarbourMission,
+    { cost: Resources; reward: Resources; title: string; detail: string }
+  >;
+  if (mission === "patrol" && getCityMetrics(city).defence < 30) {
+    throw new Error("Reach 30 defence before sending a patrol.");
+  }
+  const definition = definitions[mission];
+  const afterCost = spend(city.resources, definition.cost);
+  const resources = Object.fromEntries(
+    (Object.keys(afterCost) as ResourceKey[]).map((key) => [
+      key,
+      round(afterCost[key] + definition.reward[key]),
+    ]),
+  ) as Resources;
+  return {
+    ...city,
+    resources,
+    eventLog: addLog(city, {
+      title: definition.title,
+      detail: definition.detail,
+      tone: "good",
+    }),
+  };
 }
 
 export function triggerCrisis(city: CityState, type: CrisisType): CityState {
-  return { ...city, pendingCrisis: type };
+  return {
+    ...city,
+    pendingCrisis: type,
+    crisisWarning: null,
+    crisisWarningEndsAt: null,
+  };
 }
 
 function crisisPreparedness(city: CityState, type: CrisisType) {
@@ -906,12 +1178,14 @@ export function resolveCrisis(
     tone = "warning";
   }
 
-  const nextCrisisAt = Date.now() + (2 + ((city.seed + city.eventLog.length) % 4)) * 86_400_000;
+  const nextCrisisAt = Date.now() + severeCrisisDelay(city.seed, city.eventLog.length);
   return {
     ...city,
     resources,
     buildings,
     pendingCrisis: null,
+    crisisWarning: null,
+    crisisWarningEndsAt: null,
     nextCrisisAt,
     eventLog: addLog(city, {
       title: `${CRISIS_DEFINITIONS[type].title} resolved`,
@@ -922,9 +1196,19 @@ export function resolveCrisis(
 }
 
 export function maybeTriggerScheduledCrisis(city: CityState, now = Date.now()): CityState {
-  if (city.pendingCrisis || now < city.nextCrisisAt) return city;
+  if (city.pendingCrisis || city.crisisWarning || now < city.nextCrisisAt) return city;
   const types = Object.keys(CRISIS_DEFINITIONS) as CrisisType[];
-  return triggerCrisis(city, types[(city.seed + city.eventLog.length) % types.length]);
+  const crisis = types[(city.seed + city.eventLog.length) % types.length];
+  return {
+    ...city,
+    crisisWarning: crisis,
+    crisisWarningEndsAt: city.activeSeconds + GAME_TIMING.crisisWarningSeconds,
+    eventLog: addLog(city, {
+      title: `Warning: ${CRISIS_DEFINITIONS[crisis].title}`,
+      detail: `${CRISIS_DEFINITIONS[crisis].warning} The city has time to prepare.`,
+      tone: "warning",
+    }),
+  };
 }
 
 export function applyMinorOpportunity(city: CityState): CityState {
@@ -955,6 +1239,7 @@ export function applyMinorOpportunity(city: CityState): CityState {
   return {
     ...city,
     resources,
+    nextMinorEventAt: city.activeSeconds + minorEventInterval(city.seed, city.eventLog.length + 1),
     eventLog: addLog(city, { ...opportunity, tone: "good" }),
   };
 }
@@ -973,23 +1258,124 @@ export function serializeCity(city: CityState) {
   return JSON.stringify(city, null, 2);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isFiniteNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isValidResources(value: unknown): value is Resources {
+  return (
+    isRecord(value) &&
+    (Object.keys(RESOURCE_LABELS) as ResourceKey[]).every(
+      (key) => isFiniteNumber(value[key]) && (value[key] as number) >= 0,
+    )
+  );
+}
+
+function isValidProject(value: unknown, identityKey: "targetBuildingId" | "id" | "district") {
+  if (value === null) return true;
+  return (
+    isRecord(value) &&
+    typeof value.label === "string" &&
+    isFiniteNumber(value.totalSeconds) &&
+    isFiniteNumber(value.remainingSeconds) &&
+    (identityKey === "district"
+      ? isFiniteNumber(value[identityKey])
+      : typeof value[identityKey] === "string")
+  );
+}
+
 export function parseCity(serialized: string): CityState {
   const value: unknown = JSON.parse(serialized);
+  const buildingStatuses: BuildingStatus[] = ["constructing", "upgrading", "active", "damaged"];
+  const staffingLevels: Staffing[] = [0, 0.5, 1, 1.25];
+  const doctrines: Doctrine[] = [
+    "balanced",
+    "industrial",
+    "scholarly",
+    "maritime",
+    "civic",
+    "cultural",
+    "pastoral",
+  ];
+  const crises = Object.keys(CRISIS_DEFINITIONS) as CrisisType[];
   if (
-    !value ||
-    typeof value !== "object" ||
-    !("version" in value) ||
+    !isRecord(value) ||
     value.version !== 1 ||
-    !("name" in value) ||
     typeof value.name !== "string" ||
-    !("buildings" in value) ||
+    !isFiniteNumber(value.seed) ||
+    !isFiniteNumber(value.foundedAt) ||
+    !isFiniteNumber(value.lastSavedAt) ||
+    !isFiniteNumber(value.activeSeconds) ||
+    !isFiniteNumber(value.nextId) ||
+    !isFiniteNumber(value.population) ||
+    !isValidResources(value.resources) ||
     !Array.isArray(value.buildings) ||
-    !("resources" in value) ||
-    typeof value.resources !== "object"
+    !value.buildings.every(
+      (building) =>
+        isRecord(building) &&
+        typeof building.id === "string" &&
+        BUILDING_ORDER.includes(building.type as BuildingType) &&
+        isFiniteNumber(building.plotId) &&
+        (building.plotId as number) >= 0 &&
+        (building.plotId as number) < 36 &&
+        isFiniteNumber(building.level) &&
+        (building.level as number) >= 1 &&
+        (building.level as number) <= 3 &&
+        isFiniteNumber(building.condition) &&
+        (building.condition as number) >= 0 &&
+        (building.condition as number) <= 100 &&
+        staffingLevels.includes(building.staffing as Staffing) &&
+        buildingStatuses.includes(building.status as BuildingStatus),
+    ) ||
+    !Array.isArray(value.unlockedDistricts) ||
+    !value.unlockedDistricts.every(
+      (district) => Number.isInteger(district) && district >= 0 && district <= 3,
+    ) ||
+    !isValidProject(value.construction, "targetBuildingId") ||
+    !isValidProject(value.research, "id") ||
+    !isValidProject(value.expansion, "district") ||
+    !Array.isArray(value.completedResearch) ||
+    !value.completedResearch.every((research) => typeof research === "string") ||
+    !doctrines.includes(value.doctrine as Doctrine) ||
+    !isFiniteNumber(value.roadLevel) ||
+    !isFiniteNumber(value.wallLevel) ||
+    !isFiniteNumber(value.harbourLevel) ||
+    !isFiniteNumber(value.townHallLevel) ||
+    !isFiniteNumber(value.nextCrisisAt) ||
+    typeof value.tutorialDismissed !== "boolean" ||
+    !Array.isArray(value.eventLog) ||
+    value.eventLog.length === 0 ||
+    !value.eventLog.every(
+      (entry) =>
+        isRecord(entry) &&
+        typeof entry.id === "string" &&
+        typeof entry.title === "string" &&
+        typeof entry.detail === "string" &&
+        ["good", "neutral", "warning"].includes(String(entry.tone)),
+    ) ||
+    !(value.pendingCrisis === null || crises.includes(value.pendingCrisis as CrisisType)) ||
+    !(
+      value.crisisWarning === undefined ||
+      value.crisisWarning === null ||
+      crises.includes(value.crisisWarning as CrisisType)
+    )
   ) {
     throw new Error("This is not a valid Aegean Polis city file.");
   }
-  return value as CityState;
+
+  const city = value as unknown as CityState;
+  return {
+    ...city,
+    crisisWarning: city.crisisWarning ?? null,
+    crisisWarningEndsAt: isFiniteNumber(city.crisisWarningEndsAt) ? city.crisisWarningEndsAt : null,
+    nextMinorEventAt: isFiniteNumber(city.nextMinorEventAt)
+      ? city.nextMinorEventAt
+      : city.activeSeconds + minorEventInterval(city.seed, city.eventLog.length),
+  };
 }
 
 export function renameCity(city: CityState, name: string): CityState {
@@ -997,6 +1383,12 @@ export function renameCity(city: CityState, name: string): CityState {
 }
 
 export function setDoctrine(city: CityState, doctrine: Doctrine): CityState {
+  const requirement = DOCTRINE_RESEARCH_REQUIREMENTS[doctrine];
+  if (requirement && !city.completedResearch.includes(requirement)) {
+    throw new Error(
+      `Complete ${RESEARCH_DEFINITIONS.find((research) => research.id === requirement)?.label ?? requirement} first.`,
+    );
+  }
   const price = city.doctrine === "balanced" ? cost({}) : cost({ coin: 450, knowledge: 120 });
   return { ...city, doctrine, resources: spend(city.resources, price) };
 }
@@ -1025,5 +1417,24 @@ export function developerDamage(city: CityState): CityState {
 }
 
 export function finishAllProjects(city: CityState): CityState {
-  return advanceCity(city, 86_400, 1);
+  let next = city;
+  if (next.construction) {
+    next = completeConstruction({
+      ...next,
+      construction: { ...next.construction, remainingSeconds: 0 },
+    });
+  }
+  if (next.research) {
+    next = finishResearch({
+      ...next,
+      research: { ...next.research, remainingSeconds: 0 },
+    });
+  }
+  if (next.expansion) {
+    next = finishExpansion({
+      ...next,
+      expansion: { ...next.expansion, remainingSeconds: 0 },
+    });
+  }
+  return next;
 }

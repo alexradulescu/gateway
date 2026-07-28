@@ -5,11 +5,16 @@ import {
   advanceCity,
   advanceOffline,
   createCity,
+  finishAllProjects,
   parseCity,
   placeBuilding,
+  resolveHarbourMission,
   resolveCrisis,
   serializeCity,
+  setDoctrine,
+  startResearch,
   triggerCrisis,
+  maybeTriggerScheduledCrisis,
 } from "./game";
 
 describe("Aegean Polis simulation", () => {
@@ -68,5 +73,112 @@ describe("Aegean Polis simulation", () => {
     expect(resolved.resources.coin).toBeGreaterThanOrEqual(0);
     expect(resolved.buildings.filter((building) => building.condition === 0)).toHaveLength(1);
     expect(resolved.buildings.some((building) => building.type === "house")).toBe(true);
+  });
+
+  test("minor opportunities arrive from configurable active play time", () => {
+    const city = createCity("Thalassa", 42);
+    const due = { ...city, nextMinorEventAt: 1 };
+
+    const advanced = advanceCity(due, 2, 1);
+
+    expect(advanced.eventLog[0]?.title).not.toBe("A new polis");
+    expect(advanced.nextMinorEventAt).toBeGreaterThan(advanced.activeSeconds);
+  });
+
+  test("a scheduled severe crisis warns the city before it strikes", () => {
+    const city = createCity("Thalassa", 42);
+    const warned = maybeTriggerScheduledCrisis({ ...city, nextCrisisAt: 1 }, 2);
+
+    expect(warned.crisisWarning).not.toBeNull();
+    expect(warned.pendingCrisis).toBeNull();
+    expect(warned.crisisWarningEndsAt).toBeGreaterThan(warned.activeSeconds);
+
+    const warningSeconds = warned.crisisWarningEndsAt! - warned.activeSeconds;
+    const afterOffline = advanceOffline(warned, 60 * 60);
+    expect(afterOffline.crisisWarningEndsAt! - afterOffline.activeSeconds).toBe(warningSeconds);
+  });
+
+  test("malformed city files are rejected before replacing the active city", () => {
+    const malformed = JSON.stringify({
+      ...createCity("Thalassa", 42),
+      resources: { food: "all of it" },
+    });
+
+    expect(() => parseCity(malformed)).toThrow("valid Aegean Polis");
+  });
+
+  test("an imported city must retain at least one safe news entry", () => {
+    const malformed = JSON.stringify({ ...createCity("Thalassa", 42), eventLog: [] });
+
+    expect(() => parseCity(malformed)).toThrow("valid Aegean Polis");
+  });
+
+  test("developer completion finishes timers without simulating a day", () => {
+    const queued = startResearch(
+      placeBuilding(createCity("Thalassa", 42), "academy", 15),
+      "irrigation",
+    );
+    const resourcesBefore = queued.resources;
+    const activeSecondsBefore = queued.activeSeconds;
+
+    const finished = finishAllProjects(queued);
+
+    expect(finished.construction).toBeNull();
+    expect(finished.research).toBeNull();
+    expect(finished.completedResearch).toContain("irrigation");
+    expect(finished.activeSeconds).toBe(activeSecondsBefore);
+    expect(finished.resources).toEqual(resourcesBefore);
+  });
+
+  test("research opens specialised buildings and civic doctrines", () => {
+    const city = createCity("Thalassa", 42);
+
+    expect(() => placeBuilding(city, "workshop", 15)).toThrow("Stonecraft");
+    expect(() => setDoctrine(city, "industrial")).toThrow("Stonecraft");
+
+    const learned = finishAllProjects(startResearch(city, "stonecraft"));
+    expect(placeBuilding(learned, "workshop", 15).construction?.kind).toBe("build");
+    expect(setDoctrine(learned, "industrial").doctrine).toBe("industrial");
+  });
+
+  test("production stops when a city has no available workers", () => {
+    const city = createCity("Thalassa", 42);
+    const understaffed = {
+      ...city,
+      population: 1,
+      resources: { ...city.resources, food: 0, timber: 0 },
+    };
+
+    const advanced = advanceCity(understaffed, 60, 1, false);
+
+    expect(advanced.resources.food).toBe(0);
+    expect(advanced.resources.timber).toBe(0);
+  });
+
+  test("a pastoral doctrine changes the city's production path", () => {
+    const city = createCity("Thalassa", 42);
+    const baseline = advanceCity(
+      { ...city, population: 100, resources: { ...city.resources, food: 0 } },
+      60,
+      1,
+      false,
+    );
+    const pastoral = advanceCity(
+      { ...city, doctrine: "pastoral", population: 100, resources: { ...city.resources, food: 0 } },
+      60,
+      1,
+      false,
+    );
+
+    expect(pastoral.resources.food).toBeGreaterThan(baseline.resources.food);
+  });
+
+  test("harbour missions resolve off-screen and patrols require real defence", () => {
+    const city = createCity("Thalassa", 42);
+    const traded = resolveHarbourMission(city, "trade");
+
+    expect(traded.resources.coin).toBeGreaterThan(city.resources.coin);
+    expect(traded.eventLog[0]?.title).toBe("Trade voyage complete");
+    expect(() => resolveHarbourMission(city, "patrol")).toThrow("30 defence");
   });
 });
