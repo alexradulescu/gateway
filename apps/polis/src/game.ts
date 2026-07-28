@@ -1,3 +1,7 @@
+import { getPlotDistance, getPlotTrait, PLOT_DISTRICTS } from "./map";
+export { getPlotDistance, getPlotTrait, PLOT_DISTRICTS } from "./map";
+export type { PlotTrait } from "./map";
+
 export type ResourceKey = "food" | "timber" | "stone" | "coin" | "goods" | "knowledge";
 export type Resources = Record<ResourceKey, number>;
 export type BuildingType =
@@ -24,7 +28,6 @@ export type Doctrine =
   | "civic"
   | "cultural"
   | "pastoral";
-export type PlotTrait = "civic" | "fertile" | "hillside" | "coastal";
 export type HarbourMission = "fishing" | "trade" | "patrol";
 
 export type BuildingDefinition = {
@@ -265,22 +268,6 @@ export const RESOURCE_LABELS: Record<ResourceKey, string> = {
   goods: "Goods",
   knowledge: "Knowledge",
 };
-
-export const PLOT_DISTRICTS: number[][] = [
-  [7, 8, 9, 10, 13, 14, 15, 16, 19, 20, 21, 22],
-  [0, 1, 2, 3, 4, 5, 6, 11],
-  [12, 17, 18, 23, 24, 25, 30, 31],
-  [26, 27, 28, 29, 32, 33, 34, 35],
-];
-
-export const PLOT_TRAITS: PlotTrait[] = Array.from({ length: 36 }, (_, plotId) => {
-  const row = Math.floor(plotId / 6);
-  const column = plotId % 6;
-  if (row >= 4 || column === 0) return "coastal";
-  if (row <= 1 || column >= 4) return "hillside";
-  if ((row + column) % 3 === 0) return "fertile";
-  return "civic";
-});
 
 export const DISTRICT_NAMES = ["Civic heart", "Olive ridge", "Harbour ward", "Sunset terraces"];
 
@@ -670,7 +657,7 @@ export function startExpansion(city: CityState, district: number): CityState {
 }
 
 export function upgradeRoads(city: CityState): CityState {
-  if (city.roadLevel >= 3) throw new Error("Roads are fully upgraded.");
+  if (city.roadLevel >= 4) throw new Error("Roads are fully upgraded.");
   const level = city.roadLevel + 1;
   const price = cost({ timber: 45 * level, stone: 80 * level, coin: 90 * level });
   return { ...city, resources: spend(city.resources, price), roadLevel: level };
@@ -701,7 +688,7 @@ function productionMultiplier(city: CityState, building: Building) {
   }
   if (city.doctrine === "pastoral" && building.type === "farm") multiplier *= 1.12;
 
-  const trait = PLOT_TRAITS[building.plotId];
+  const trait = getPlotTrait(city.seed, building.plotId);
   if (trait === "fertile" && building.type === "farm") multiplier *= 1.15;
   if (trait === "hillside" && ["quarry", "barracks"].includes(building.type)) multiplier *= 1.15;
   if (trait === "coastal" && ["market", "warehouse"].includes(building.type)) multiplier *= 1.1;
@@ -934,16 +921,13 @@ export function getCityMetrics(city: CityState) {
       0,
     ),
   );
-  const plotDistance = (left: number, right: number) => {
-    const leftRow = Math.floor(left / 6);
-    const rightRow = Math.floor(right / 6);
-    return Math.abs(leftRow - rightRow) + Math.abs((left % 6) - (right % 6));
-  };
   const neighbourhoodEffect = active
     .filter((building) => building.type === "house")
     .reduce((total, house) => {
       const neighbours = active.filter(
-        (building) => building.id !== house.id && plotDistance(house.plotId, building.plotId) <= 2,
+        (building) =>
+          building.id !== house.id &&
+          getPlotDistance(city.seed, house.plotId, building.plotId) <= 2,
       );
       return (
         total +

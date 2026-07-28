@@ -54,7 +54,6 @@ import {
   DOCTRINE_RESEARCH_REQUIREMENTS,
   GAME_TIMING,
   PLOT_DISTRICTS,
-  PLOT_TRAITS,
   RESEARCH_DEFINITIONS,
   RESOURCE_LABELS,
   advanceCity,
@@ -95,6 +94,7 @@ import {
   type Resources,
   type Staffing,
 } from "./game";
+import { getMapLayout, getRoadSegments } from "./map";
 
 const SAVE_KEY = "aegean-polis.city.v1";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
@@ -185,20 +185,6 @@ function atlasStyle(index: number): CSSProperties {
   } as CSSProperties;
 }
 
-function plotPosition(plotId: number) {
-  const row = Math.floor(plotId / 6);
-  const column = plotId % 6;
-  return {
-    x: 450 + (column - row) * 70,
-    y: 92 + (column + row) * 36,
-    depth: column + row,
-  };
-}
-
-function plotDistrict(plotId: number) {
-  return PLOT_DISTRICTS.findIndex((plots) => plots.includes(plotId));
-}
-
 function AtlasSprite({
   type,
   level = 1,
@@ -223,6 +209,21 @@ function AtlasSprite({
       }
       aria-hidden="true"
     />
+  );
+}
+
+function environmentStyle(index: number): CSSProperties {
+  const column = index % 4;
+  const row = Math.floor(index / 4);
+  return {
+    "--environment-x": `${column * (100 / 3)}%`,
+    "--environment-y": `${row * 100}%`,
+  } as CSSProperties;
+}
+
+function EnvironmentSprite({ atlasIndex }: { atlasIndex: number }) {
+  return (
+    <span className="environment-sprite" style={environmentStyle(atlasIndex)} aria-hidden="true" />
   );
 }
 
@@ -291,6 +292,9 @@ function Drawer({
       ref={dialogRef}
       className="drawer"
       aria-labelledby="drawer-title"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -449,7 +453,7 @@ export function App() {
   const [buildMode, setBuildMode] = useState<BuildingType | null>(null);
   const [moveMode, setMoveMode] = useState<string | null>(null);
   const [toast, setToast] = useState("Welcome to the sunlit island of Thalassa.");
-  const [camera, setCamera] = useState({ x: 0, y: 10, zoom: 1 });
+  const [camera, setCamera] = useState({ x: 0, y: 8, zoom: 0.84 });
   const fileInput = useRef<HTMLInputElement>(null);
   const drag = useRef<{
     pointerId: number;
@@ -461,6 +465,20 @@ export function App() {
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
   const defenceForces = useMemo(() => getDefenceForces(city), [city]);
+  const mapLayout = useMemo(() => getMapLayout(city.seed), [city.seed]);
+  const natureCells = useMemo(
+    () => mapLayout.cells.filter((cell) => cell.kind === "nature"),
+    [mapLayout],
+  );
+  const roadSegments = useMemo(
+    () =>
+      getRoadSegments(
+        city.seed,
+        city.buildings.map((building) => building.plotId),
+        city.unlockedDistricts,
+      ),
+    [city.buildings, city.seed, city.unlockedDistricts],
+  );
   const selectedBuilding = city.buildings.find((building) => building.id === selectedBuildingId);
   const newestEvent = city.eventLog[0];
   const unlockedDistricts = new Set(city.unlockedDistricts);
@@ -731,12 +749,117 @@ export function App() {
         >
           <div className={`island-ground roads-${city.roadLevel} walls-${city.wallLevel}`} />
           <div className="coast-shadow" />
-          <div className="harbour-pier" aria-hidden="true">
+
+          {mapLayout.cells.map((cell) => {
+            if (cell.kind !== "plot") {
+              const terrain =
+                cell.kind === "nature" ? cell.trait : cell.kind === "harbour" ? "coastal" : "plain";
+              return (
+                <span
+                  className={`terrain-cell terrain-${terrain} terrain-cell--${cell.kind}`}
+                  style={{
+                    left: cell.position.x - 72,
+                    top: cell.position.y - 36,
+                    zIndex: 10 + cell.position.depth,
+                  }}
+                  key={`terrain-${cell.cellId}`}
+                  aria-hidden="true"
+                />
+              );
+            }
+
+            const unlocked = isPlotUnlocked(city, cell.plotId);
+            const occupied = city.buildings.some((building) => building.plotId === cell.plotId);
+            return (
+              <button
+                type="button"
+                key={cell.plotId}
+                className={[
+                  "plot",
+                  `terrain-${cell.trait}`,
+                  unlocked ? "plot--open" : "plot--locked",
+                  occupied ? "plot--occupied" : "",
+                  (buildMode || moveMode) && unlocked && !occupied ? "plot--target" : "",
+                ].join(" ")}
+                style={
+                  {
+                    left: cell.position.x - 72,
+                    top: cell.position.y - 36,
+                    zIndex: 10 + cell.position.depth,
+                    "--district": cell.district,
+                  } as CSSProperties
+                }
+                onClick={() => handlePlot(cell.plotId)}
+                aria-label={
+                  unlocked
+                    ? occupied
+                      ? `Occupied ${cell.trait} plot ${cell.plotId + 1}`
+                      : `Open ${cell.trait} plot ${cell.plotId + 1}`
+                    : `Locked ${cell.trait} plot in ${DISTRICT_NAMES[cell.district]}`
+                }
+              >
+                {!unlocked && (
+                  <span className="plot-lock">
+                    <LockKeyhole size={12} />
+                  </span>
+                )}
+                {unlocked && !occupied && (
+                  <span className={`plot-trait plot-trait--${cell.trait}`}>{cell.trait}</span>
+                )}
+              </button>
+            );
+          })}
+
+          <div className={`road-network road-network--${city.roadLevel}`} aria-hidden="true">
+            {roadSegments.map((segment) => (
+              <span
+                className="road-segment"
+                key={segment.key}
+                style={{
+                  left: segment.x,
+                  top: segment.y,
+                  width: segment.width,
+                  zIndex: 34 + segment.depth,
+                  transform: `translateY(-50%) rotate(${segment.angle}deg)`,
+                }}
+              />
+            ))}
+          </div>
+
+          {natureCells.map((cell) => (
+            <span
+              className={`environment-prop environment-prop--${cell.nature}`}
+              style={{
+                left: cell.position.x,
+                top: cell.position.y,
+                zIndex: 58 + cell.position.depth,
+              }}
+              key={`nature-${cell.cellId}`}
+              aria-hidden="true"
+            >
+              <EnvironmentSprite atlasIndex={cell.atlasIndex} />
+            </span>
+          ))}
+
+          <div
+            className="harbour-pier"
+            style={{
+              left: mapLayout.harbour.position.x,
+              top: mapLayout.harbour.position.y + 28,
+              zIndex: 62 + mapLayout.harbour.position.depth,
+            }}
+            aria-hidden="true"
+          >
             <span />
             <i />
           </div>
           <button
             className="landmark-building town-hall"
+            style={{
+              left: mapLayout.townHall.position.x,
+              top: mapLayout.townHall.position.y,
+              zIndex: 90 + mapLayout.townHall.position.depth,
+            }}
             type="button"
             onClick={() => setPanel("city")}
             aria-label={`Town Hall, level ${city.townHallLevel}`}
@@ -746,6 +869,11 @@ export function App() {
           </button>
           <button
             className="landmark-building harbour"
+            style={{
+              left: mapLayout.harbour.position.x,
+              top: mapLayout.harbour.position.y,
+              zIndex: 90 + mapLayout.harbour.position.depth,
+            }}
             type="button"
             onClick={() => setPanel("city")}
             aria-label={`Harbour, level ${city.harbourLevel}`}
@@ -754,54 +882,9 @@ export function App() {
             <span>Harbour · {city.harbourLevel}</span>
           </button>
 
-          {Array.from({ length: 36 }, (_, plotId) => {
-            const position = plotPosition(plotId);
-            const unlocked = isPlotUnlocked(city, plotId);
-            const occupied = city.buildings.some((building) => building.plotId === plotId);
-            const district = plotDistrict(plotId);
-            return (
-              <button
-                type="button"
-                key={plotId}
-                className={[
-                  "plot",
-                  unlocked ? "plot--open" : "plot--locked",
-                  occupied ? "plot--occupied" : "",
-                  (buildMode || moveMode) && unlocked && !occupied ? "plot--target" : "",
-                ].join(" ")}
-                style={
-                  {
-                    left: position.x - 70,
-                    top: position.y - 34,
-                    zIndex: position.depth + 2,
-                    "--district": district,
-                  } as CSSProperties
-                }
-                onClick={() => handlePlot(plotId)}
-                aria-label={
-                  unlocked
-                    ? occupied
-                      ? `Occupied plot ${plotId + 1}`
-                      : `Open ${PLOT_TRAITS[plotId]} plot ${plotId + 1}`
-                    : `Locked plot in ${DISTRICT_NAMES[district]}`
-                }
-              >
-                {!unlocked && (
-                  <span className="plot-lock">
-                    <LockKeyhole size={12} />
-                  </span>
-                )}
-                {unlocked && !occupied && (
-                  <span className={`plot-trait plot-trait--${PLOT_TRAITS[plotId]}`}>
-                    {PLOT_TRAITS[plotId]}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-
           {city.buildings.map((building) => {
-            const position = plotPosition(building.plotId);
+            const position = mapLayout.plotCells.get(building.plotId)?.position;
+            if (!position) return null;
             const definition = BUILDING_DEFINITIONS[building.type];
             const selected = building.id === selectedBuildingId;
             const underConstruction =
@@ -816,10 +899,10 @@ export function App() {
                 ].join(" ")}
                 style={
                   {
-                    left: position.x - 82,
-                    top: position.y - 125,
-                    zIndex: position.depth + 20,
-                    "--building-scale": 0.83 + building.level * 0.085,
+                    left: position.x,
+                    top: position.y,
+                    zIndex: 88 + position.depth,
+                    "--building-scale": 0.72 + building.level * 0.035,
                   } as CSSProperties
                 }
                 type="button"
@@ -962,7 +1045,7 @@ export function App() {
         </button>
         <button
           type="button"
-          onClick={() => setCamera({ x: 0, y: 10, zoom: 1 })}
+          onClick={() => setCamera({ x: 0, y: 8, zoom: 0.84 })}
           aria-label="Reset camera"
         >
           <RotateCcw size={18} />
@@ -1302,11 +1385,19 @@ export function App() {
                 </span>
                 <div>
                   <strong>Roads · Level {city.roadLevel}</strong>
-                  <p>Faster emergency access and richer streets.</p>
+                  <p>
+                    {city.roadLevel === 1
+                      ? "Packed earth lanes connect occupied plots."
+                      : city.roadLevel === 2
+                        ? "Broad limestone paving makes travel easier."
+                        : city.roadLevel === 3
+                          ? "Fine fitted stone gives the polis civic grandeur."
+                          : "Tree-lined ceremonial avenues shade the city."}
+                  </p>
                 </div>
                 <button
                   type="button"
-                  disabled={city.roadLevel >= 3}
+                  disabled={city.roadLevel >= 4}
                   onClick={() => updateCity(upgradeRoads, "Roads improved.")}
                 >
                   Improve

@@ -336,10 +336,10 @@ a:focus-visible {
 
 .camera-stage {
   position: absolute;
-  top: 52%;
+  top: 53%;
   left: 50%;
-  width: 900px;
-  height: 600px;
+  width: 1320px;
+  height: 760px;
   transform-origin: center;
   transition: transform 80ms linear;
 }
@@ -347,37 +347,49 @@ a:focus-visible {
 .island-ground,
 .coast-shadow {
   position: absolute;
-  top: 30px;
-  left: 35px;
-  width: 830px;
-  height: 520px;
-  clip-path: polygon(18% 5%, 72% 0, 95% 23%, 100% 66%, 82% 91%, 50% 100%, 16% 90%, 0 62%, 4% 25%);
+  top: 28px;
+  left: 58px;
+  width: 1200px;
+  height: 674px;
+  clip-path: polygon(
+    13% 3%,
+    65% 0,
+    91% 12%,
+    100% 42%,
+    95% 76%,
+    76% 94%,
+    42% 100%,
+    12% 91%,
+    0 66%,
+    2% 26%
+  );
 }
 
 .coast-shadow {
   z-index: -2;
   top: 48px;
-  background: #4f4b36;
-  filter: drop-shadow(0 34px 24px rgba(1, 42, 53, 0.42));
+  background: #776446;
+  filter: drop-shadow(0 38px 30px rgba(1, 42, 53, 0.46));
 }
 
 .island-ground {
   z-index: -1;
-  border: 10px solid rgba(236, 213, 166, 0.9);
+  border: 12px solid rgba(236, 213, 166, 0.92);
   background:
-    radial-gradient(circle at 28% 26%, rgba(102, 130, 57, 0.18) 0 12%, transparent 13%),
-    radial-gradient(circle at 81% 31%, rgba(108, 126, 53, 0.2) 0 10%, transparent 11%),
-    repeating-linear-gradient(132deg, transparent 0 24px, rgba(107, 77, 38, 0.035) 25px 26px),
-    linear-gradient(145deg, #d8c48e 0%, #c8ad71 100%);
+    radial-gradient(ellipse at 25% 25%, rgba(107, 139, 66, 0.22) 0 12%, transparent 13%),
+    radial-gradient(ellipse at 78% 34%, rgba(112, 133, 61, 0.2) 0 11%, transparent 12%),
+    radial-gradient(ellipse at 55% 77%, rgba(153, 119, 65, 0.18) 0 16%, transparent 17%),
+    repeating-linear-gradient(132deg, transparent 0 31px, rgba(107, 77, 38, 0.032) 32px 33px),
+    linear-gradient(145deg, #ddca94 0%, #c8ad71 100%);
   box-shadow:
-    inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
+    inset 0 0 80px rgba(77, 65, 31, 0.16),
+    inset 0 -18px 0 rgba(116, 91, 52, 0.25);
 }
 
 .island-ground::before {
   position: absolute;
-  inset: 24px;
-  border: 4px dashed rgba(122, 100, 62, 0.16);
+  inset: 29px;
+  border: 2px dashed rgba(122, 100, 62, 0.12);
   clip-path: inherit;
   content: "";
 }
@@ -403,16 +415,20 @@ a:focus-visible {
     inset 0 0 0 15px #a88c61;
 }
 
-.plot {
+.plot,
+.terrain-cell {
   position: absolute;
-  width: 140px;
-  height: 68px;
+  width: 144px;
+  height: 72px;
   padding: 0;
-  border: 1px solid rgba(112, 85, 48, 0.38);
+  border: 1px solid rgba(112, 85, 48, 0.3);
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.plot {
   background:
-    radial-gradient(circle at 35% 38%, rgba(103, 126, 53, 0.34) 0 5px, transparent 6px),
-    radial-gradient(circle at 64% 64%, rgba(103, 126, 53, 0.26) 0 4px, transparent 5px),
+    radial-gradient(circle at 33% 38%, rgba(103, 126, 53, 0.2) 0 4px, transparent 5px),
+    radial-gradient(circle at 68% 65%, rgba(103, 126, 53, 0.17) 0 3px, transparent 4px),
     linear-gradient(145deg, #d8c48e, #c4aa6d);
   cursor: pointer;
   transition:
@@ -426,37 +442,63 @@ a:focus-visible {
   filter: brightness(1.12);
 }
 
-.plot--occupied {
+.terrain-plain {
   background:
-    linear-gradient(
-      27deg,
-      transparent 0 43%,
-      rgba(226, 215, 190, 0.82) 44% 55%,
-      transparent 56% 100%
-    ),
-    linear-gradient(
-      -27deg,
-      transparent 0 43%,
-      rgba(171, 151, 116, 0.72) 44% 55%,
-      transparent 56% 100%
-    ),
-    linear-gradient(145deg, #d8c79d, #bda678);
+    radial-gradient(circle at 28% 44%, rgba(91, 112, 55, 0.2) 0 4px, transparent 5px),
+    radial-gradient(circle at 67% 62%, rgba(126, 103, 58, 0.16) 0 3px, transparent 4px),
+    linear-gradient(145deg, #dfce9b, #c9ae72);
 }
 
-.roads-2 ~ .plot--occupied,
-.roads-3 ~ .plot--occupied {
+.terrain-fertile {
   background:
-    repeating-linear-gradient(45deg, transparent 0 7px, rgba(81, 73, 61, 0.18) 8px 9px),
-    repeating-linear-gradient(-45deg, transparent 0 12px, rgba(255, 255, 255, 0.18) 13px 14px),
-    #d7cbb0;
+    repeating-linear-gradient(27deg, transparent 0 11px, rgba(74, 103, 43, 0.16) 12px 14px),
+    radial-gradient(circle at 68% 38%, rgba(223, 214, 121, 0.3) 0 6px, transparent 7px),
+    linear-gradient(145deg, #a9b86f, #7f9d58);
+}
+
+.terrain-hillside {
+  background:
+    radial-gradient(ellipse at 32% 42%, rgba(244, 231, 193, 0.52) 0 9px, transparent 10px),
+    radial-gradient(ellipse at 68% 60%, rgba(111, 92, 62, 0.18) 0 7px, transparent 8px),
+    repeating-linear-gradient(145deg, transparent 0 16px, rgba(104, 83, 55, 0.08) 17px 19px),
+    linear-gradient(145deg, #d2bf8e, #aa9568);
+  filter: drop-shadow(0 3px 0 rgba(112, 89, 55, 0.19));
+}
+
+.terrain-coastal {
+  background:
+    radial-gradient(ellipse at 27% 56%, rgba(255, 248, 212, 0.58) 0 5px, transparent 6px),
+    radial-gradient(ellipse at 71% 35%, rgba(95, 153, 145, 0.18) 0 5px, transparent 6px),
+    repeating-linear-gradient(27deg, transparent 0 18px, rgba(52, 125, 126, 0.08) 19px 21px),
+    linear-gradient(145deg, #e4d39e, #c6ba80);
+}
+
+.terrain-cell--town-hall {
+  background:
+    repeating-linear-gradient(27deg, transparent 0 10px, rgba(99, 85, 66, 0.13) 11px 12px),
+    repeating-linear-gradient(-27deg, transparent 0 10px, rgba(255, 255, 255, 0.18) 11px 12px),
+    #d6c6a1;
+}
+
+.terrain-cell--harbour {
+  background:
+    repeating-linear-gradient(27deg, rgba(209, 197, 165, 0.86) 0 8px, #a9936e 9px 10px), #c5b184;
+}
+
+.plot--occupied {
+  border-color: rgba(117, 91, 55, 0.2);
 }
 
 .plot--locked {
-  border-color: rgba(73, 72, 48, 0.3);
-  background:
-    repeating-linear-gradient(135deg, rgba(65, 79, 47, 0.22) 0 7px, transparent 7px 13px),
-    linear-gradient(145deg, #7f955e, #657849);
-  filter: saturate(0.72);
+  border-color: rgba(66, 70, 47, 0.36);
+  filter: saturate(0.58) brightness(0.74);
+}
+
+.plot--locked::after {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(47, 63, 40, 0.16) 0 7px, transparent 7px 14px);
+  content: "";
 }
 
 .plot--target {
@@ -468,15 +510,19 @@ a:focus-visible {
 }
 
 .plot-trait {
+  position: absolute;
+  right: 30px;
+  bottom: 7px;
   display: inline-flex;
-  min-width: 42px;
-  min-height: 18px;
+  min-width: 36px;
+  min-height: 15px;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
+  border: 1px solid rgba(72, 59, 37, 0.16);
+  border-radius: 2px;
   color: #4d4028;
-  background: rgba(255, 249, 219, 0.74);
-  font-size: 0.52rem;
+  background: rgba(255, 249, 219, 0.68);
+  font-size: 0.45rem;
   font-weight: 900;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -494,6 +540,10 @@ a:focus-visible {
   color: #684936;
 }
 
+.plot-trait--plain {
+  color: #715b35;
+}
+
 @keyframes plot-pulse {
   50% {
     transform: translateY(-3px);
@@ -502,6 +552,8 @@ a:focus-visible {
 }
 
 .plot-lock {
+  position: relative;
+  z-index: 2;
   display: grid;
   width: 26px;
   height: 26px;
@@ -510,6 +562,109 @@ a:focus-visible {
   border-radius: 50%;
   color: #f0e6c9;
   background: rgba(47, 57, 37, 0.6);
+}
+
+.road-network {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.road-segment {
+  position: absolute;
+  display: block;
+  height: 22px;
+  border-block: 1px solid rgba(100, 74, 43, 0.36);
+  background:
+    radial-gradient(circle, rgba(83, 57, 31, 0.34) 0 1px, transparent 2px) 0 0 / 8px 7px,
+    linear-gradient(#ad8755, #8f6b43);
+  box-shadow: 0 3px 5px rgba(68, 48, 27, 0.24);
+  transform-origin: 0 50%;
+}
+
+.road-network--2 .road-segment {
+  height: 24px;
+  border-block: 2px solid rgba(114, 96, 72, 0.62);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 15px, rgba(88, 75, 59, 0.2) 16px 17px),
+    repeating-linear-gradient(0deg, #c8b899 0 9px, #aa987c 10px 11px);
+  box-shadow:
+    0 4px 6px rgba(68, 48, 27, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.road-network--3 .road-segment,
+.road-network--4 .road-segment {
+  height: 29px;
+  border: 2px solid #938367;
+  background:
+    linear-gradient(27deg, transparent 45%, rgba(91, 81, 66, 0.18) 46% 52%, transparent 53%) 0 0 /
+      25px 18px,
+    linear-gradient(-27deg, transparent 45%, rgba(255, 255, 255, 0.2) 46% 52%, transparent 53%) 0 0
+      / 25px 18px,
+    #d8cbb1;
+  box-shadow:
+    0 5px 7px rgba(68, 48, 27, 0.25),
+    inset 0 0 0 2px rgba(247, 237, 214, 0.48);
+}
+
+.road-network--4 .road-segment {
+  height: 32px;
+  border-color: #82745c;
+  background:
+    linear-gradient(27deg, transparent 45%, rgba(91, 81, 66, 0.16) 46% 52%, transparent 53%) 0 0 /
+      24px 17px,
+    linear-gradient(-27deg, transparent 45%, rgba(255, 255, 255, 0.26) 46% 52%, transparent 53%) 0 0
+      / 24px 17px,
+    #e2d7bd;
+}
+
+.road-network--4 .road-segment::before,
+.road-network--4 .road-segment::after {
+  position: absolute;
+  right: 4px;
+  left: 4px;
+  height: 15px;
+  background: radial-gradient(
+      ellipse at 50% 92%,
+      #34502d 0 24%,
+      #52723d 26% 42%,
+      #789451 44% 52%,
+      transparent 54%
+    )
+    0 0 / 23px 15px repeat-x;
+  filter: drop-shadow(0 2px 1px rgba(39, 54, 28, 0.28));
+  content: "";
+}
+
+.road-network--4 .road-segment::before {
+  top: -17px;
+}
+
+.road-network--4 .road-segment::after {
+  bottom: -17px;
+  transform: rotate(180deg);
+}
+
+.environment-prop {
+  position: absolute;
+  display: block;
+  width: 178px;
+  height: 226px;
+  pointer-events: none;
+  transform: translate(-50%, -76%) scale(0.82);
+  transform-origin: 50% 76%;
+}
+
+.environment-sprite {
+  display: block;
+  width: 178px;
+  height: 226px;
+  background-image: url("/polis/assets/environment-atlas.png");
+  background-repeat: no-repeat;
+  background-position: var(--environment-x) var(--environment-y);
+  background-size: 400% 200%;
+  filter: drop-shadow(0 9px 5px rgba(55, 39, 21, 0.24));
 }
 
 .atlas-sprite {
@@ -532,7 +687,7 @@ a:focus-visible {
   border: 0;
   background: transparent;
   cursor: pointer;
-  transform: scale(var(--building-scale));
+  transform: translate(-50%, -82%) scale(var(--building-scale));
   transform-origin: 50% 82%;
   transition:
     filter 170ms ease,
@@ -543,7 +698,7 @@ a:focus-visible {
 .placed-building--selected {
   z-index: 160 !important;
   filter: brightness(1.08);
-  transform: translateY(-7px) scale(calc(var(--building-scale) + 0.04));
+  transform: translate(-50%, calc(-82% - 7px)) scale(calc(var(--building-scale) + 0.035));
 }
 
 .placed-building--selected .atlas-sprite {
@@ -609,23 +764,24 @@ a:focus-visible {
 
 .landmark-building {
   position: absolute;
-  z-index: 80;
-  width: 190px;
-  height: 180px;
+  width: 166px;
+  height: 166px;
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
+  transform: translate(-50%, -82%) scale(0.84);
+  transform-origin: 50% 82%;
 }
 
 .landmark-building .atlas-sprite {
-  width: 190px;
-  height: 190px;
+  width: 166px;
+  height: 166px;
 }
 
 .landmark-building > span:last-child {
   position: absolute;
-  bottom: 0;
+  bottom: 5px;
   left: 50%;
   padding: 5px 9px;
   border: 1px solid rgba(80, 54, 28, 0.35);
@@ -640,35 +796,27 @@ a:focus-visible {
   transform: translateX(-50%);
 }
 
-.town-hall {
-  top: 25px;
-  left: 355px;
-}
-
-.harbour {
-  top: 385px;
-  left: 248px;
+.landmark-building:hover {
+  filter: brightness(1.07);
+  transform: translate(-50%, calc(-82% - 5px)) scale(0.87);
 }
 
 .harbour-pier {
   position: absolute;
-  z-index: 0;
-  top: 498px;
-  left: 328px;
-  width: 160px;
-  height: 36px;
+  width: 132px;
+  height: 31px;
   border: 5px solid #745132;
   border-radius: 5px 5px 26px 26px;
   background: repeating-linear-gradient(90deg, #9c7145 0 11px, #7d5735 12px 14px);
-  transform: rotate(5deg);
+  transform: translateX(-50%) rotate(5deg);
 }
 
 .harbour-pier span {
   position: absolute;
-  top: 35px;
-  left: 30px;
-  width: 75px;
-  height: 25px;
+  top: 30px;
+  left: 22px;
+  width: 68px;
+  height: 22px;
   border: 3px solid #a66d2f;
   border-radius: 50% 50% 60% 60%;
   background: linear-gradient(180deg, #d6943a 0 70%, #8a5227 71% 100%);
@@ -2155,10 +2303,6 @@ button:disabled {
 }
 
 @media (max-width: 560px) {
-  .top-actions button:first-child {
-    display: none;
-  }
-
   .city-vitals {
     max-width: calc(100vw - 54px);
   }

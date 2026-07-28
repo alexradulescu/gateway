@@ -66,6 +66,9 @@
         "@gateway/convex": "workspace:*",
       },
     },
+    "apps/polis": {
+      "name": "@gateway/polis",
+    },
     "apps/things": {
       "name": "@gateway/things",
       "dependencies": {
@@ -220,6 +223,8 @@
     "@gateway/main": ["@gateway/main@workspace:apps/main"],
 
     "@gateway/notes": ["@gateway/notes@workspace:apps/notes"],
+
+    "@gateway/polis": ["@gateway/polis@workspace:apps/polis"],
 
     "@gateway/things": ["@gateway/things@workspace:apps/things"],
 
