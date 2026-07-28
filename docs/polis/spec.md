@@ -165,12 +165,14 @@ controls.
   footprint, and visual progression. Separate production atlases cover buildings, terrain,
   directional roads and junctions, road endpoints and hillside ramps, coastline pieces, walls, and
   permanent natural blockers.
-- The renderer assembles road art from route topology, selecting straight, corner, T-junction,
-  crossroads, endpoint, landscaped, and hillside-ramp variants. Coastline art is placed only on
-  compatible island boundary faces.
-- Each city uses a seeded eight-by-seven composition: 36 normal building plots, 18 permanent natural
-  blockers, a fixed Town Hall, and a fixed harbour. Twelve central plots begin available. Three
-  eight-plot districts unlock separately.
+- The renderer uses a radius-four axial hex field. Six-way road masks are composed from directional
+  road arms and a centre hub, allowing every endpoint, bend, junction, crossroads, landscaped avenue,
+  and hillside route without a separate sprite for every combination. Coast and wall rims are clipped
+  to the exposed edges of each land hex.
+- Each city uses a seeded 61-position pointy-top hex composition: 36 normal building plots, 18
+  permanent natural blockers, a fixed Town Hall, a fixed harbour, and five water cuts that create
+  bays and irregular headlands. Twelve central plots begin available. Three eight-plot districts
+  unlock separately.
 - Plot placement has local effects. Residential appeal benefits from parks and selected services;
   workshops, barracks, and extraction buildings impose nearby penalties. Coastal and hillside traits
   provide specialised advantages.

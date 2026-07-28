@@ -347,117 +347,120 @@ a:focus-visible {
 .island-ground,
 .coast-shadow {
   position: absolute;
-  top: 28px;
-  left: 58px;
-  width: 1200px;
-  height: 674px;
-  clip-path: polygon(
-    13% 3%,
-    65% 0,
-    91% 12%,
-    100% 42%,
-    95% 76%,
-    76% 94%,
-    42% 100%,
-    12% 91%,
-    0 66%,
-    2% 26%
-  );
+  top: 122px;
+  left: 96px;
+  width: 1128px;
+  height: 480px;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .coast-shadow {
-  z-index: -2;
-  top: 48px;
-  background: #776446;
-  filter: drop-shadow(0 38px 30px rgba(1, 42, 53, 0.46));
+  z-index: -3;
+  background: rgba(24, 57, 50, 0.42);
+  filter: blur(32px);
+  transform: translateY(48px) scale(0.92);
 }
 
 .island-ground {
-  z-index: -1;
-  border: 12px solid rgba(236, 213, 166, 0.92);
-  background:
-    radial-gradient(ellipse at 25% 25%, rgba(107, 139, 66, 0.22) 0 12%, transparent 13%),
-    radial-gradient(ellipse at 78% 34%, rgba(112, 133, 61, 0.2) 0 11%, transparent 12%),
-    radial-gradient(ellipse at 55% 77%, rgba(153, 119, 65, 0.18) 0 16%, transparent 17%),
-    repeating-linear-gradient(132deg, transparent 0 31px, rgba(107, 77, 38, 0.032) 32px 33px),
-    linear-gradient(145deg, #ddca94 0%, #c8ad71 100%);
-  box-shadow:
-    inset 0 0 80px rgba(77, 65, 31, 0.16),
-    inset 0 -18px 0 rgba(116, 91, 52, 0.25);
+  z-index: -2;
+  background: radial-gradient(
+    ellipse,
+    rgba(212, 188, 124, 0.2) 0 46%,
+    rgba(72, 119, 103, 0.08) 60%,
+    transparent 72%
+  );
 }
 
 .island-ground::before {
-  position: absolute;
-  inset: 29px;
-  border: 2px dashed rgba(122, 100, 62, 0.12);
-  clip-path: inherit;
-  content: "";
-}
-
-.island-ground.walls-1 {
-  box-shadow:
-    inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
-}
-
-.island-ground.walls-2 {
-  box-shadow:
-    inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
-}
-
-.island-ground.walls-3 {
-  box-shadow:
-    inset 0 0 55px rgba(77, 65, 31, 0.18),
-    inset 0 -14px 0 rgba(116, 91, 52, 0.23);
+  content: none;
 }
 
 .terrain-art {
   position: absolute;
-  width: 176px;
-  height: 117px;
+  width: 204px;
+  height: 153px;
   pointer-events: none;
   transform: translate(-50%, -50%);
 }
 
+.hex-land-underlay {
+  position: absolute;
+  z-index: -1;
+  top: 18px;
+  left: 16px;
+  width: 172px;
+  height: 116px;
+  clip-path: polygon(50% 0, 96% 30%, 96% 70%, 50% 100%, 4% 70%, 4% 30%);
+  background: linear-gradient(145deg, #d3b66f, #ad8b4d);
+  filter: drop-shadow(0 9px 5px rgba(38, 56, 38, 0.24));
+}
+
 .terrain-sprite {
   display: block;
-  width: 176px;
-  height: 117px;
-  background-image: url("/polis/assets/terrain-atlas.png");
+  width: 204px;
+  height: 153px;
+  background-image: url("/polis/assets/hex-terrain-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--terrain-x) var(--terrain-y);
   background-size: 400% 400%;
   filter: drop-shadow(0 5px 3px rgba(66, 47, 25, 0.2));
 }
 
-.terrain-art > .map-detail-sprite {
+.hex-rim-clip {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  z-index: 3;
+  top: 8px;
+  left: 0;
+  display: block;
+  width: 204px;
+  height: 136px;
+  pointer-events: none;
 }
 
-.terrain-art > .map-detail-sprite--flip-x {
-  transform: translate(-50%, -50%) scaleX(-1);
+.hex-rim-sprite {
+  display: block;
+  width: 204px;
+  height: 136px;
+  background-image: url("/polis/assets/hex-rims-atlas.png");
+  background-repeat: no-repeat;
+  background-position: var(--rim-x) var(--rim-y);
+  background-size: 400% 400%;
+  filter: drop-shadow(0 4px 3px rgba(38, 50, 35, 0.18));
 }
 
-.terrain-art > .map-detail-sprite--flip-y {
-  transform: translate(-50%, -50%) scaleY(-1);
+.hex-rim-clip--0 {
+  clip-path: polygon(72% 24%, 100% 26%, 100% 74%, 72% 76%, 48% 50%);
 }
 
-.terrain-art > .map-detail-sprite--flip-both {
-  transform: translate(-50%, -50%) scale(-1);
+.hex-rim-clip--1 {
+  clip-path: polygon(47% 0, 100% 12%, 100% 45%, 50% 52%, 38% 28%);
+}
+
+.hex-rim-clip--2 {
+  clip-path: polygon(0 12%, 53% 0, 62% 28%, 50% 52%, 0 45%);
+}
+
+.hex-rim-clip--3 {
+  clip-path: polygon(0 26%, 28% 24%, 52% 50%, 28% 76%, 0 74%);
+}
+
+.hex-rim-clip--4 {
+  clip-path: polygon(0 55%, 50% 48%, 62% 72%, 53% 100%, 0 88%);
+}
+
+.hex-rim-clip--5 {
+  clip-path: polygon(50% 48%, 100% 55%, 100% 88%, 47% 100%, 38% 72%);
 }
 
 .plot {
   position: absolute;
-  width: 144px;
-  height: 72px;
+  width: 182px;
+  height: 132px;
   padding: 0;
   border: 1px solid rgba(112, 85, 48, 0.16);
   background: transparent;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  clip-path: polygon(50% 0, 96% 30%, 96% 70%, 50% 100%, 4% 70%, 4% 30%);
   cursor: pointer;
   transition:
     filter 160ms ease,
@@ -494,8 +497,8 @@ a:focus-visible {
 
 .plot-trait {
   position: absolute;
-  right: 30px;
-  bottom: 7px;
+  right: 57px;
+  bottom: 18px;
   display: inline-flex;
   min-width: 36px;
   min-height: 15px;
@@ -556,40 +559,62 @@ a:focus-visible {
 .road-tile-position {
   position: absolute;
   display: block;
-  width: 178px;
-  height: 148px;
+  width: 204px;
+  height: 136px;
   transform: translate(-50%, -50%);
 }
 
 .road-tile {
+  position: relative;
   display: block;
-  width: 178px;
-  height: 148px;
+  width: 204px;
+  height: 136px;
+  filter: drop-shadow(0 4px 3px rgba(66, 47, 25, 0.2));
+}
+
+.road-arm-clip,
+.road-hub-clip {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.road-atlas-sprite {
+  display: block;
+  width: 204px;
+  height: 136px;
+  background-image: url("/polis/assets/hex-roads-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--road-x) var(--road-y);
-  background-size: 500% 400%;
-  filter: drop-shadow(0 6px 4px rgba(66, 47, 25, 0.22));
-  transform-origin: 50% 50%;
+  background-size: 400% 400%;
 }
 
-.road-tile--roads {
-  background-image: url("/polis/assets/roads-atlas.png");
+.road-arm-clip--0 {
+  clip-path: polygon(47% 32%, 100% 20%, 100% 80%, 47% 68%);
 }
 
-.road-tile--connectors {
-  background-image: url("/polis/assets/road-connectors-atlas.png");
+.road-arm-clip--1 {
+  clip-path: polygon(40% 58%, 42% 0, 100% 0, 100% 42%, 58% 54%);
 }
 
-.road-tile--flip-x {
-  transform: scaleX(-1);
+.road-arm-clip--2 {
+  clip-path: polygon(0 0, 58% 0, 60% 58%, 42% 54%, 0 42%);
 }
 
-.road-tile--flip-y {
-  transform: scaleY(-1);
+.road-arm-clip--3 {
+  clip-path: polygon(0 20%, 53% 32%, 53% 68%, 0 80%);
 }
 
-.road-tile--flip-both {
-  transform: scale(-1);
+.road-arm-clip--4 {
+  clip-path: polygon(0 58%, 42% 46%, 60% 42%, 58% 100%, 0 100%);
+}
+
+.road-arm-clip--5 {
+  clip-path: polygon(40% 42%, 58% 46%, 100% 58%, 100% 100%, 42% 100%);
+}
+
+.road-hub-clip {
+  clip-path: ellipse(21% 28% at 50% 50%);
 }
 
 .environment-prop {
@@ -653,6 +678,17 @@ a:focus-visible {
   pointer-events: none;
 }
 
+.city-wall-edge {
+  position: absolute;
+  width: 204px;
+  height: 136px;
+  transform: translate(-50%, -50%);
+}
+
+.city-wall-edge .hex-rim-clip {
+  top: 0;
+}
+
 .city-wall-piece {
   position: absolute;
   width: 184px;
@@ -661,27 +697,16 @@ a:focus-visible {
   transform-origin: 50% 70%;
 }
 
-.city-wall-piece--direction-0 {
-  transform: translate(-50%, -66%) scale(0.94);
-}
-
-.city-wall-piece--flip-x .map-detail-sprite {
-  transform: scaleX(-1);
-}
-
-.city-wall-piece--flip-y .map-detail-sprite {
-  transform: scaleY(-1);
-}
-
-.city-wall-piece--flip-both .map-detail-sprite {
-  transform: scale(-1);
+.city-wall-piece--tower {
+  transform: translate(-50%, -77%) scale(0.7);
 }
 
 .city-wall-piece--gate {
-  transform: translate(-50%, -70%) scale(0.95);
+  transform: translate(-50%, -72%) scale(0.8);
 }
 
-.city-walls--3 .city-wall-piece {
+.city-walls--3 .city-wall-piece,
+.city-walls--3 .city-wall-edge {
   filter: brightness(1.04) drop-shadow(0 4px 3px rgba(58, 43, 26, 0.2));
 }
 

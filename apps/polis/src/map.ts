@@ -9,9 +9,16 @@ export type NatureKind =
   | "rock-shelf"
   | "reeds";
 
-export const MAP_COLUMNS = 8;
-export const MAP_ROWS = 7;
-export const MAP_CELL_COUNT = MAP_COLUMNS * MAP_ROWS;
+export type AxialCoordinate = {
+  q: number;
+  r: number;
+};
+
+export type HexDirection = 0 | 1 | 2 | 3 | 4 | 5;
+
+export const HEX_RADIUS = 4;
+export const HEX_CELL_COUNT = 1 + 3 * HEX_RADIUS * (HEX_RADIUS + 1);
+export const MAP_CELL_COUNT = HEX_CELL_COUNT;
 
 export const PLOT_DISTRICTS: number[][] = [
   [7, 8, 9, 10, 13, 14, 15, 16, 19, 20, 21, 22],
@@ -20,16 +27,23 @@ export const PLOT_DISTRICTS: number[][] = [
   [26, 27, 28, 29, 32, 33, 34, 35],
 ];
 
+export const HEX_DIRECTIONS: ReadonlyArray<AxialCoordinate> = [
+  { q: 1, r: 0 },
+  { q: 1, r: -1 },
+  { q: 0, r: -1 },
+  { q: -1, r: 0 },
+  { q: -1, r: 1 },
+  { q: 0, r: 1 },
+];
+
 export type MapPosition = {
   x: number;
   y: number;
   depth: number;
 };
 
-type BaseMapCell = {
+type BaseMapCell = AxialCoordinate & {
   cellId: number;
-  row: number;
-  column: number;
   position: MapPosition;
 };
 
@@ -51,11 +65,19 @@ export type LandmarkMapCell = BaseMapCell & {
   kind: "town-hall" | "harbour";
 };
 
-export type MapCell = PlotMapCell | NatureMapCell | LandmarkMapCell;
+export type WaterMapCell = BaseMapCell & {
+  kind: "water";
+};
+
+export type LandMapCell = PlotMapCell | NatureMapCell | LandmarkMapCell;
+export type MapCell = LandMapCell | WaterMapCell;
 
 export type CityMapLayout = {
   cells: MapCell[];
+  landCells: LandMapCell[];
   plotCells: Map<number, PlotMapCell>;
+  cellByCoordinate: Map<string, MapCell>;
+  exposedEdges: Map<number, HexDirection[]>;
   townHall: LandmarkMapCell;
   harbour: LandmarkMapCell;
 };
@@ -69,20 +91,18 @@ export type RoadSegment = {
   depth: number;
 };
 
-export type RoadTile = {
+export type RoadTile = AxialCoordinate & {
   key: string;
+  cellId: number;
   x: number;
   y: number;
   depth: number;
-  atlas: "roads" | "connectors";
-  atlasColumn: 0 | 1 | 2 | 3 | 4;
-  orientation: "none" | "flip-x" | "flip-y" | "flip-both";
+  mask: number;
+  hillside: boolean;
 };
 
-export type RoadTileVariant = Pick<RoadTile, "atlas" | "atlasColumn" | "orientation">;
-
-const TOWN_HALL_CELL = 27;
-const HARBOUR_CELL = 52;
+const TOWN_HALL_COORDINATE = { q: 0, r: 0 } as const;
+const HARBOUR_COORDINATE = { q: 1, r: 3 } as const;
 const NATURE_KINDS: NatureKind[] = [
   "olive-grove",
   "cypress-grove",
@@ -95,29 +115,82 @@ const NATURE_KINDS: NatureKind[] = [
 ];
 const layoutCache = new Map<number, CityMapLayout>();
 
-function gridPoint(cellId: number) {
+export function axialKey(coordinate: AxialCoordinate) {
+  return `${coordinate.q},${coordinate.r}`;
+}
+
+export function axialNeighbours(coordinate: AxialCoordinate): AxialCoordinate[] {
+  return HEX_DIRECTIONS.map((direction) => ({
+    q: coordinate.q + direction.q,
+    r: coordinate.r + direction.r,
+  }));
+}
+
+export function axialDistance(left: AxialCoordinate, right: AxialCoordinate) {
+  const q = left.q - right.q;
+  const r = left.r - right.r;
+  return (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2;
+}
+
+export function exposedHexEdges(
+  landCoordinates: ReadonlySet<string>,
+  coordinate: AxialCoordinate,
+): HexDirection[] {
+  const exposed: HexDirection[] = [];
+  axialNeighbours(coordinate).forEach((neighbour, direction) => {
+    if (!landCoordinates.has(axialKey(neighbour))) exposed.push(direction as HexDirection);
+  });
+  return exposed;
+}
+
+export function getRoadDirections(mask: number): HexDirection[] {
+  if (!Number.isInteger(mask) || mask < 1 || mask > 63) {
+    throw new Error(`Invalid six-way road connection mask: ${mask}`);
+  }
+  return HEX_DIRECTIONS.map((_, direction) => direction as HexDirection).filter(
+    (direction) => (mask & (1 << direction)) !== 0,
+  );
+}
+
+const HEX_COORDINATES: AxialCoordinate[] = [];
+for (let q = -HEX_RADIUS; q <= HEX_RADIUS; q += 1) {
+  const minimumR = Math.max(-HEX_RADIUS, -q - HEX_RADIUS);
+  const maximumR = Math.min(HEX_RADIUS, -q + HEX_RADIUS);
+  for (let r = minimumR; r <= maximumR; r += 1) {
+    HEX_COORDINATES.push({ q, r });
+  }
+}
+HEX_COORDINATES.sort((left, right) => left.r - right.r || left.q - right.q);
+
+const CELL_ID_BY_COORDINATE = new Map(
+  HEX_COORDINATES.map((coordinate, cellId) => [axialKey(coordinate), cellId]),
+);
+
+function cellIdAt(coordinate: AxialCoordinate) {
+  return CELL_ID_BY_COORDINATE.get(axialKey(coordinate));
+}
+
+export function mapPosition(q: number, r: number): MapPosition {
   return {
-    row: Math.floor(cellId / MAP_COLUMNS),
-    column: cellId % MAP_COLUMNS,
+    x: 660 + q * 142 + r * 71,
+    y: 360 + r * 60,
+    depth: (r + HEX_RADIUS) * 16 + q + HEX_RADIUS,
   };
 }
 
-export function mapPosition(row: number, column: number): MapPosition {
+function baseCell(cellId: number): BaseMapCell {
+  const coordinate = HEX_COORDINATES[cellId];
   return {
-    x: 660 + (column - row) * 82,
-    y: 72 + (column + row) * 41,
-    depth: row + column,
+    cellId,
+    ...coordinate,
+    position: mapPosition(coordinate.q, coordinate.r),
   };
 }
 
-function neighbours(cellId: number) {
-  const { row, column } = gridPoint(cellId);
-  const result: number[] = [];
-  if (row > 0) result.push(cellId - MAP_COLUMNS);
-  if (row < MAP_ROWS - 1) result.push(cellId + MAP_COLUMNS);
-  if (column > 0) result.push(cellId - 1);
-  if (column < MAP_COLUMNS - 1) result.push(cellId + 1);
-  return result;
+function neighbourIds(cellId: number) {
+  return axialNeighbours(HEX_COORDINATES[cellId])
+    .map(cellIdAt)
+    .filter((candidate): candidate is number => candidate !== undefined);
 }
 
 function seededValue(seed: number, salt: number) {
@@ -134,7 +207,7 @@ function isConnected(openCells: Set<number>) {
   const queue = [start];
   while (queue.length > 0) {
     const current = queue.shift()!;
-    for (const next of neighbours(current)) {
+    for (const next of neighbourIds(current)) {
       if (openCells.has(next) && !visited.has(next)) {
         visited.add(next);
         queue.push(next);
@@ -144,47 +217,91 @@ function isConnected(openCells: Set<number>) {
   return visited.size === openCells.size;
 }
 
-function obstacleCells(seed: number) {
-  const town = gridPoint(TOWN_HALL_CELL);
-  const protectedCells = new Set<number>([TOWN_HALL_CELL, HARBOUR_CELL]);
-  for (let cellId = 0; cellId < MAP_CELL_COUNT; cellId += 1) {
-    const cell = gridPoint(cellId);
-    if (Math.abs(cell.row - town.row) + Math.abs(cell.column - town.column) <= 2) {
-      protectedCells.add(cellId);
+function waterCells(seed: number) {
+  const harbourId = cellIdAt(HARBOUR_COORDINATE)!;
+  const candidates = HEX_COORDINATES.reduce<number[]>((cellIds, coordinate, cellId) => {
+    if (
+      axialDistance(TOWN_HALL_COORDINATE, coordinate) === HEX_RADIUS &&
+      cellId !== harbourId &&
+      axialDistance(HARBOUR_COORDINATE, coordinate) > 1
+    ) {
+      cellIds.push(cellId);
     }
-  }
-  for (const neighbour of neighbours(HARBOUR_CELL)) protectedCells.add(neighbour);
+    return cellIds;
+  }, []);
 
-  const candidates = Array.from({ length: MAP_CELL_COUNT }, (_, cellId) => cellId).filter(
-    (cellId) => !protectedCells.has(cellId),
-  );
-  for (let attempt = 0; attempt < 48; attempt += 1) {
-    const shuffled = [...candidates].sort(
-      (left, right) =>
-        seededValue(seed + attempt * 101, left) - seededValue(seed + attempt * 101, right),
+  for (let attempt = 0; attempt < 64; attempt += 1) {
+    const water = new Set(
+      [...candidates]
+        .sort(
+          (left, right) =>
+            seededValue(seed + attempt * 67, left) - seededValue(seed + attempt * 67, right),
+        )
+        .slice(0, 5),
     );
-    const obstacles = new Set(shuffled.slice(0, 18));
+    const land = new Set(
+      Array.from({ length: HEX_CELL_COUNT }, (_, cellId) => cellId).filter(
+        (cellId) => !water.has(cellId),
+      ),
+    );
+    if (isConnected(land)) return water;
+  }
+  throw new Error("Could not shape a connected hex island.");
+}
+
+function obstacleCells(seed: number, water: ReadonlySet<number>) {
+  const townHallId = cellIdAt(TOWN_HALL_COORDINATE)!;
+  const harbourId = cellIdAt(HARBOUR_COORDINATE)!;
+  const protectedCells = new Set<number>([townHallId, harbourId]);
+  HEX_COORDINATES.forEach((coordinate, cellId) => {
+    if (axialDistance(TOWN_HALL_COORDINATE, coordinate) <= 2) protectedCells.add(cellId);
+  });
+  for (const neighbour of neighbourIds(harbourId)) protectedCells.add(neighbour);
+
+  const candidates = Array.from({ length: HEX_CELL_COUNT }, (_, cellId) => cellId).filter(
+    (cellId) => !water.has(cellId) && !protectedCells.has(cellId),
+  );
+  for (let attempt = 0; attempt < 96; attempt += 1) {
+    const obstacles = new Set(
+      [...candidates]
+        .sort(
+          (left, right) =>
+            seededValue(seed + attempt * 101, left) - seededValue(seed + attempt * 101, right),
+        )
+        .slice(0, 18),
+    );
     const open = new Set(
-      Array.from({ length: MAP_CELL_COUNT }, (_, cellId) => cellId).filter(
-        (cellId) => !obstacles.has(cellId),
+      Array.from({ length: HEX_CELL_COUNT }, (_, cellId) => cellId).filter(
+        (cellId) => !water.has(cellId) && !obstacles.has(cellId),
       ),
     );
     if (isConnected(open)) return obstacles;
   }
 
-  return new Set([0, 1, 6, 7, 8, 15, 16, 21, 30, 35, 40, 47, 48, 49, 50, 54, 55, 23]);
+  const open = new Set(
+    Array.from({ length: HEX_CELL_COUNT }, (_, cellId) => cellId).filter(
+      (cellId) => !water.has(cellId),
+    ),
+  );
+  const obstacles = new Set<number>();
+  for (const cellId of [...candidates].sort(
+    (left, right) => seededValue(seed, left) - seededValue(seed, right),
+  )) {
+    if (obstacles.size === 18) break;
+    open.delete(cellId);
+    if (isConnected(open)) obstacles.add(cellId);
+    else open.add(cellId);
+  }
+  if (obstacles.size !== 18) throw new Error("Could not place natural blockers.");
+  return obstacles;
 }
 
-function distanceTo(cellId: number, row: number, column: number) {
-  const cell = gridPoint(cellId);
-  return Math.abs(cell.row - row) + Math.abs(cell.column - column);
-}
-
-function takeNearest(cells: number[], count: number, row: number, column: number, seed: number) {
+function takeNearest(cells: number[], count: number, target: AxialCoordinate, seed: number) {
   return [...cells]
     .sort(
       (left, right) =>
-        distanceTo(left, row, column) - distanceTo(right, row, column) ||
+        axialDistance(HEX_COORDINATES[left], target) -
+          axialDistance(HEX_COORDINATES[right], target) ||
         seededValue(seed, left) - seededValue(seed, right),
     )
     .slice(0, count);
@@ -194,8 +311,7 @@ function takeConnected(
   cells: number[],
   count: number,
   anchors: Iterable<number>,
-  targetRow: number,
-  targetColumn: number,
+  target: AxialCoordinate,
   seed: number,
 ) {
   const available = new Set(cells);
@@ -203,12 +319,10 @@ function takeConnected(
   const selected: number[] = [];
   while (selected.length < count) {
     const frontier = [...available].filter((cellId) =>
-      neighbours(cellId).some((neighbour) => connected.has(neighbour)),
+      neighbourIds(cellId).some((neighbour) => connected.has(neighbour)),
     );
-    const next = takeNearest(frontier, 1, targetRow, targetColumn, seed + selected.length)[0];
-    if (next === undefined) {
-      throw new Error("Could not create a connected city district.");
-    }
+    const next = takeNearest(frontier, 1, target, seed + selected.length)[0];
+    if (next === undefined) throw new Error("Could not create a connected city district.");
     available.delete(next);
     connected.add(next);
     selected.push(next);
@@ -216,17 +330,20 @@ function takeConnected(
   return selected;
 }
 
-function traitForCell(seed: number, cellId: number): PlotTrait {
-  const { row, column } = gridPoint(cellId);
-  if (row >= 5 || column === 0 || column === MAP_COLUMNS - 1) return "coastal";
-  if (row <= 1 || column >= 6) return "hillside";
-  if (row >= 2 && row <= 4 && seededValue(seed + 71, cellId) > 0.48) return "fertile";
+function traitForCell(
+  seed: number,
+  cellId: number,
+  landCoordinates: ReadonlySet<string>,
+): PlotTrait {
+  const coordinate = HEX_COORDINATES[cellId];
+  if (exposedHexEdges(landCoordinates, coordinate).length > 0) return "coastal";
+  if (axialDistance(coordinate, { q: 2, r: -2 }) <= 2 || seededValue(seed + 71, cellId) > 0.84) {
+    return "hillside";
+  }
+  if (axialDistance(coordinate, { q: -1, r: 1 }) <= 2 && seededValue(seed + 97, cellId) > 0.34) {
+    return "fertile";
+  }
   return "plain";
-}
-
-function baseCell(cellId: number): BaseMapCell {
-  const { row, column } = gridPoint(cellId);
-  return { cellId, row, column, position: mapPosition(row, column) };
 }
 
 export function getMapLayout(seed: number): CityMapLayout {
@@ -234,18 +351,20 @@ export function getMapLayout(seed: number): CityMapLayout {
   const cached = layoutCache.get(normalizedSeed);
   if (cached) return cached;
 
-  const obstacles = obstacleCells(normalizedSeed);
-  const buildable = Array.from({ length: MAP_CELL_COUNT }, (_, cellId) => cellId).filter(
-    (cellId) => cellId !== TOWN_HALL_CELL && cellId !== HARBOUR_CELL && !obstacles.has(cellId),
+  const water = waterCells(normalizedSeed);
+  const obstacles = obstacleCells(normalizedSeed, water);
+  const townHallId = cellIdAt(TOWN_HALL_COORDINATE)!;
+  const harbourId = cellIdAt(HARBOUR_COORDINATE)!;
+  const buildable = Array.from({ length: HEX_CELL_COUNT }, (_, cellId) => cellId).filter(
+    (cellId) =>
+      cellId !== townHallId && cellId !== harbourId && !water.has(cellId) && !obstacles.has(cellId),
   );
-  const town = gridPoint(TOWN_HALL_CELL);
-  const connectedCells = new Set([TOWN_HALL_CELL]);
+  const connectedCells = new Set([townHallId]);
   const initialCells = takeConnected(
     buildable,
     PLOT_DISTRICTS[0].length,
     connectedCells,
-    town.row,
-    town.column,
+    TOWN_HALL_COORDINATE,
     normalizedSeed,
   );
   initialCells.forEach((cellId) => connectedCells.add(cellId));
@@ -255,8 +374,7 @@ export function getMapLayout(seed: number): CityMapLayout {
     remaining,
     PLOT_DISTRICTS[1].length,
     connectedCells,
-    1,
-    5,
+    { q: 2, r: -3 },
     normalizedSeed + 11,
   );
   ridgeCells.forEach((cellId) => connectedCells.add(cellId));
@@ -266,15 +384,13 @@ export function getMapLayout(seed: number): CityMapLayout {
     remaining,
     PLOT_DISTRICTS[2].length,
     connectedCells,
-    5,
-    6,
+    HARBOUR_COORDINATE,
     normalizedSeed + 23,
   );
   harbourCells.forEach((cellId) => connectedCells.add(cellId));
   const harbourCellSet = new Set(harbourCells);
   remaining = remaining.filter((cellId) => !harbourCellSet.has(cellId));
-  const sunsetCells = remaining;
-  const districtCells = [initialCells, ridgeCells, harbourCells, sunsetCells];
+  const districtCells = [initialCells, ridgeCells, harbourCells, remaining];
   const plotByCell = new Map<number, { plotId: number; district: number }>();
 
   districtCells.forEach((cellIds, district) => {
@@ -284,39 +400,45 @@ export function getMapLayout(seed: number): CityMapLayout {
     });
   });
 
-  const cells: MapCell[] = Array.from({ length: MAP_CELL_COUNT }, (_, cellId) => {
+  const landCoordinates = new Set<string>();
+  HEX_COORDINATES.forEach((coordinate, cellId) => {
+    if (!water.has(cellId)) landCoordinates.add(axialKey(coordinate));
+  });
+  const cells: MapCell[] = HEX_COORDINATES.map((_, cellId) => {
     const base = baseCell(cellId);
-    if (cellId === TOWN_HALL_CELL) return { ...base, kind: "town-hall" };
-    if (cellId === HARBOUR_CELL) return { ...base, kind: "harbour" };
+    if (water.has(cellId)) return { ...base, kind: "water" };
+    if (cellId === townHallId) return { ...base, kind: "town-hall" };
+    if (cellId === harbourId) return { ...base, kind: "harbour" };
     const plot = plotByCell.get(cellId);
-    if (plot) {
-      return {
-        ...base,
-        ...plot,
-        kind: "plot",
-        trait: traitForCell(normalizedSeed, cellId),
-      };
-    }
+    const trait = traitForCell(normalizedSeed, cellId, landCoordinates);
+    if (plot) return { ...base, ...plot, kind: "plot", trait };
     const atlasIndex = Math.floor(seededValue(normalizedSeed + 37, cellId) * NATURE_KINDS.length);
     return {
       ...base,
       kind: "nature",
       nature: NATURE_KINDS[atlasIndex],
       atlasIndex,
-      trait: traitForCell(normalizedSeed, cellId),
+      trait,
     };
   });
 
-  const plotCells = new Map(
-    cells
-      .filter((cell): cell is PlotMapCell => cell.kind === "plot")
-      .map((cell) => [cell.plotId, cell]),
+  const landCells = cells.filter((cell): cell is LandMapCell => cell.kind !== "water");
+  const plotCells = new Map<number, PlotMapCell>();
+  landCells.forEach((cell) => {
+    if (cell.kind === "plot") plotCells.set(cell.plotId, cell);
+  });
+  const cellByCoordinate = new Map(cells.map((cell) => [axialKey(cell), cell]));
+  const exposedEdges = new Map(
+    landCells.map((cell) => [cell.cellId, exposedHexEdges(landCoordinates, cell)]),
   );
   const layout: CityMapLayout = {
     cells,
+    landCells,
     plotCells,
-    townHall: cells.find((cell): cell is LandmarkMapCell => cell.kind === "town-hall")!,
-    harbour: cells.find((cell): cell is LandmarkMapCell => cell.kind === "harbour")!,
+    cellByCoordinate,
+    exposedEdges,
+    townHall: landCells.find((cell): cell is LandmarkMapCell => cell.kind === "town-hall")!,
+    harbour: landCells.find((cell): cell is LandmarkMapCell => cell.kind === "harbour")!,
   };
   if (layoutCache.size >= 24) layoutCache.delete(layoutCache.keys().next().value!);
   layoutCache.set(normalizedSeed, layout);
@@ -332,7 +454,7 @@ export function getPlotDistance(seed: number, leftPlotId: number, rightPlotId: n
   const left = layout.plotCells.get(leftPlotId);
   const right = layout.plotCells.get(rightPlotId);
   if (!left || !right) return Number.POSITIVE_INFINITY;
-  return Math.abs(left.row - right.row) + Math.abs(left.column - right.column);
+  return axialDistance(left, right);
 }
 
 function findRoadPath(layout: CityMapLayout, fromCellId: number, passable: Set<number>) {
@@ -341,10 +463,11 @@ function findRoadPath(layout: CityMapLayout, fromCellId: number, passable: Set<n
   while (queue.length > 0) {
     const current = queue.shift()!;
     if (current === layout.townHall.cellId) break;
-    for (const next of neighbours(current)) {
-      if (passable.has(next) && !previous.has(next)) {
-        previous.set(next, current);
-        queue.push(next);
+    for (const coordinate of axialNeighbours(layout.cells[current])) {
+      const next = layout.cellByCoordinate.get(axialKey(coordinate));
+      if (next && passable.has(next.cellId) && !previous.has(next.cellId)) {
+        previous.set(next.cellId, current);
+        queue.push(next.cellId);
       }
     }
   }
@@ -361,9 +484,7 @@ function findRoadPath(layout: CityMapLayout, fromCellId: number, passable: Set<n
 function getRoadEdges(seed: number, occupiedPlotIds: number[], _unlockedDistricts: number[]) {
   const layout = getMapLayout(seed);
   const passable = new Set<number>([layout.townHall.cellId, layout.harbour.cellId]);
-  for (const cell of layout.plotCells.values()) {
-    passable.add(cell.cellId);
-  }
+  for (const cell of layout.plotCells.values()) passable.add(cell.cellId);
   const edges = new Map<string, [number, number]>();
   for (const plotId of occupiedPlotIds) {
     const cell = layout.plotCells.get(plotId);
@@ -383,21 +504,23 @@ export function getRoadSegments(
   occupiedPlotIds: number[],
   unlockedDistricts: number[],
 ): RoadSegment[] {
-  const edges = getRoadEdges(seed, occupiedPlotIds, unlockedDistricts);
-  return [...edges.entries()].map(([key, [fromId, toId]]) => {
-    const from = baseCell(fromId);
-    const to = baseCell(toId);
-    const deltaX = to.position.x - from.position.x;
-    const deltaY = to.position.y - from.position.y;
-    return {
-      key,
-      x: from.position.x,
-      y: from.position.y,
-      width: Math.hypot(deltaX, deltaY),
-      angle: (Math.atan2(deltaY, deltaX) * 180) / Math.PI,
-      depth: Math.min(from.position.depth, to.position.depth),
-    };
-  });
+  const layout = getMapLayout(seed);
+  return [...getRoadEdges(seed, occupiedPlotIds, unlockedDistricts)].map(
+    ([key, [fromId, toId]]) => {
+      const from = layout.cells[fromId].position;
+      const to = layout.cells[toId].position;
+      const deltaX = to.x - from.x;
+      const deltaY = to.y - from.y;
+      return {
+        key,
+        x: from.x,
+        y: from.y,
+        width: Math.hypot(deltaX, deltaY),
+        angle: (Math.atan2(deltaY, deltaX) * 180) / Math.PI,
+        depth: Math.min(from.depth, to.depth),
+      };
+    },
+  );
 }
 
 export function getRoadTiles(
@@ -406,79 +529,35 @@ export function getRoadTiles(
   unlockedDistricts: number[],
 ): RoadTile[] {
   const layout = getMapLayout(seed);
-  const edges = getRoadEdges(seed, occupiedPlotIds, unlockedDistricts);
   const connections = new Map<number, number>();
-  const connect = (cellId: number, direction: number) => {
-    connections.set(cellId, (connections.get(cellId) ?? 0) | direction);
+  const connect = (cellId: number, direction: HexDirection) => {
+    connections.set(cellId, (connections.get(cellId) ?? 0) | (1 << direction));
   };
 
-  for (const [fromId, toId] of edges.values()) {
-    if (toId - fromId === 1) {
-      connect(fromId, 2);
-      connect(toId, 8);
-    } else {
-      connect(fromId, 4);
-      connect(toId, 1);
-    }
+  for (const [fromId, toId] of getRoadEdges(seed, occupiedPlotIds, unlockedDistricts).values()) {
+    const from = layout.cells[fromId];
+    const to = layout.cells[toId];
+    const direction = HEX_DIRECTIONS.findIndex(
+      (candidate) => from.q + candidate.q === to.q && from.r + candidate.r === to.r,
+    ) as HexDirection;
+    if (direction < 0) throw new Error("Road edge does not join neighbouring hexes.");
+    connect(fromId, direction);
+    connect(toId, ((direction + 3) % 6) as HexDirection);
   }
 
   return [...connections.entries()].map(([cellId, mask]) => {
-    const position = baseCell(cellId).position;
     const cell = layout.cells[cellId];
-    const hillside = cell && "trait" in cell && cell.trait === "hillside";
-    const variant = getRoadTileVariant(mask, hillside);
-
+    const hillside = "trait" in cell && cell.trait === "hillside";
     return {
       key: `road-${cellId}`,
-      x: position.x,
-      y: position.y,
-      depth: position.depth,
-      ...variant,
+      cellId,
+      q: cell.q,
+      r: cell.r,
+      x: cell.position.x,
+      y: cell.position.y,
+      depth: cell.position.depth,
+      mask,
+      hillside,
     };
   });
-}
-
-export function getRoadTileVariant(mask: number, hillside: boolean): RoadTileVariant {
-  const branchCount = [1, 2, 4, 8].filter((direction) => (mask & direction) !== 0).length;
-  if (mask < 1 || mask > 15 || branchCount === 0) {
-    throw new Error(`Invalid road connection mask: ${mask}`);
-  }
-  if (branchCount === 1) {
-    return {
-      atlas: "connectors",
-      atlasColumn: (mask & 5) !== 0 ? 0 : 1,
-      orientation: mask === 4 || mask === 8 ? "flip-both" : "none",
-    };
-  }
-  if (branchCount === 2 && (mask === 5 || mask === 10)) {
-    return hillside
-      ? {
-          atlas: "connectors",
-          atlasColumn: 4,
-          orientation: mask === 10 ? "flip-x" : "none",
-        }
-      : { atlas: "roads", atlasColumn: mask === 5 ? 0 : 1, orientation: "none" };
-  }
-  if (branchCount === 2) {
-    return mask === 9 || mask === 6
-      ? {
-          atlas: "connectors",
-          atlasColumn: 2,
-          orientation: mask === 6 ? "flip-both" : "none",
-        }
-      : {
-          atlas: "roads",
-          atlasColumn: 2,
-          orientation: mask === 12 ? "flip-both" : "none",
-        };
-  }
-  if (branchCount === 3) {
-    return {
-      atlas: "connectors",
-      atlasColumn: 3,
-      orientation:
-        mask === 14 ? "none" : mask === 7 ? "flip-x" : mask === 13 ? "flip-y" : "flip-both",
-    };
-  }
-  return { atlas: "roads", atlasColumn: 4, orientation: "none" };
 }

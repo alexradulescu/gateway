@@ -94,7 +94,17 @@ import {
   type Resources,
   type Staffing,
 } from "./game";
-import { getMapLayout, getRoadTiles, mapPosition, type PlotTrait, type RoadTile } from "./map";
+import {
+  HEX_DIRECTIONS,
+  getMapLayout,
+  getRoadDirections,
+  getRoadTiles,
+  mapPosition,
+  type CityMapLayout,
+  type HexDirection,
+  type PlotTrait,
+  type RoadTile,
+} from "./map";
 
 const SAVE_KEY = "aegean-polis.city.v1";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
@@ -248,10 +258,12 @@ function terrainAtlasIndex(
   cellId: number,
   kind: "plot" | "nature" | "town-hall" | "harbour",
 ) {
-  if (kind === "town-hall") return 3;
-  const base = trait === "plain" ? 0 : trait === "fertile" ? 4 : trait === "hillside" ? 8 : 12;
   const variation = Math.abs(Math.imul(seed + 17, 31) + Math.imul(cellId + 5, 13)) % 4;
-  return base + variation;
+  if (kind === "town-hall") return 14;
+  if (kind === "harbour") return 12 + variation;
+  if (trait === "hillside") return kind === "plot" ? 11 : 8 + variation;
+  if (trait === "fertile") return 5 + (variation % 3);
+  return variation;
 }
 
 function TerrainSprite({ atlasIndex }: { atlasIndex: number }) {
@@ -264,18 +276,40 @@ function TerrainSprite({ atlasIndex }: { atlasIndex: number }) {
   );
 }
 
+function roadAxisColumn(direction: HexDirection) {
+  return direction === 0 || direction === 3 ? 0 : direction === 1 || direction === 4 ? 1 : 2;
+}
+
 function RoadSprite({ tile, level }: { tile: RoadTile; level: number }) {
-  const atlasIndex = (Math.max(1, Math.min(4, level)) - 1) * 5 + tile.atlasColumn;
+  const atlasRow = Math.max(1, Math.min(4, level)) - 1;
+  const roadDirections = getRoadDirections(tile.mask);
   return (
-    <span
-      className={`road-tile road-tile--${tile.atlas} road-tile--${tile.orientation}`}
-      style={gridSpriteStyle(atlasIndex, 5, 4, "--road-x", "--road-y")}
-      aria-hidden="true"
-    />
+    <span className="road-tile" aria-hidden="true">
+      {roadDirections.map((direction) => (
+        <span className={`road-arm-clip road-arm-clip--${direction}`} key={`arm-${direction}`}>
+          <span
+            className="road-atlas-sprite"
+            style={gridSpriteStyle(
+              atlasRow * 4 + roadAxisColumn(direction),
+              4,
+              4,
+              "--road-x",
+              "--road-y",
+            )}
+          />
+        </span>
+      ))}
+      <span className="road-hub-clip">
+        <span
+          className="road-atlas-sprite"
+          style={gridSpriteStyle(atlasRow * 4 + 3, 4, 4, "--road-x", "--road-y")}
+        />
+      </span>
+    </span>
   );
 }
 
-type SpriteOrientation = RoadTile["orientation"];
+type SpriteOrientation = "none" | "flip-x" | "flip-y" | "flip-both";
 
 function MapDetailSprite({
   atlasIndex,
@@ -293,124 +327,116 @@ function MapDetailSprite({
   );
 }
 
-function coastlineSprite(
-  row: number,
-  column: number,
-  seed: number,
-  cellId: number,
-): { atlasIndex: number; orientation: SpriteOrientation } | null {
-  const right = column === 7;
-  const bottom = row === 6;
-  if (!right && !bottom) return null;
-
-  const rocky = Math.abs(Math.imul(seed + 19, 17) + cellId * 11) % 3 === 0;
-  if (bottom) return { atlasIndex: rocky ? 13 : 11, orientation: "none" };
-  if (right) return { atlasIndex: rocky ? 12 : 10, orientation: "none" };
-  return null;
+function HexRimSprite({ row, variation }: { row: number; variation: number }) {
+  return (
+    <span
+      className="hex-rim-sprite"
+      style={gridSpriteStyle(row * 4 + variation, 4, 4, "--rim-x", "--rim-y")}
+      aria-hidden="true"
+    />
+  );
 }
 
-function boundaryOffset(row: number, column: number) {
-  let x = 0;
-  let y = 0;
-  if (row === 0) {
-    x += 41;
-    y -= 20.5;
-  }
-  if (row === 6) {
-    x -= 41;
-    y += 20.5;
-  }
-  if (column === 0) {
-    x -= 41;
-    y -= 20.5;
-  }
-  if (column === 7) {
-    x += 41;
-    y += 20.5;
-  }
-  return { x, y };
+function HexRimEdge({
+  row,
+  variation,
+  direction,
+}: {
+  row: number;
+  variation: number;
+  direction: HexDirection;
+}) {
+  return (
+    <span className={`hex-rim-clip hex-rim-clip--${direction}`}>
+      <HexRimSprite row={row} variation={variation} />
+    </span>
+  );
 }
 
-const WALL_SEGMENTS: ReadonlyArray<{ row: number; column: number; direction: 0 | 1 }> = [
-  ...Array.from({ length: 6 }, (_, index) => ({
-    row: 0,
-    column: index + 1,
-    direction: 1 as const,
-  })),
-  ...Array.from({ length: 6 }, (_, index) => ({
-    row: 6,
-    column: index + 1,
-    direction: 1 as const,
-  })),
-  ...Array.from({ length: 5 }, (_, index) => ({
-    row: index + 1,
-    column: 0,
-    direction: 0 as const,
-  })),
-  ...Array.from({ length: 5 }, (_, index) => ({
-    row: index + 1,
-    column: 7,
-    direction: 0 as const,
-  })),
-];
+function edgeOffset(q: number, r: number, direction: HexDirection, share = 0.42) {
+  const origin = mapPosition(q, r);
+  const neighbour = HEX_DIRECTIONS[direction];
+  const outside = mapPosition(q + neighbour.q, r + neighbour.r);
+  return {
+    x: (outside.x - origin.x) * share,
+    y: (outside.y - origin.y) * share,
+  };
+}
 
-const WALL_CORNERS = [
-  { row: 0, column: 0, orientation: "none" },
-  { row: 0, column: 7, orientation: "flip-x" },
-  { row: 6, column: 7, orientation: "flip-both" },
-  { row: 6, column: 0, orientation: "flip-y" },
-] as const;
-
-function CityWalls({ level }: { level: number }) {
+function CityWalls({ level, layout }: { level: number; layout: CityMapLayout }) {
   if (level <= 0) return null;
   const fortified = level >= 2;
+  const gateDirection =
+    layout.exposedEdges
+      .get(layout.harbour.cellId)
+      ?.find((direction) => direction === 4 || direction === 5) ??
+    layout.exposedEdges.get(layout.harbour.cellId)?.[0];
+  const gateOffset =
+    gateDirection === undefined
+      ? { x: 0, y: 0 }
+      : edgeOffset(layout.harbour.q, layout.harbour.r, gateDirection, 0.48);
+  const towerCells =
+    level < 3
+      ? []
+      : layout.landCells.reduce<typeof layout.landCells>((cells, cell) => {
+          if (
+            (layout.exposedEdges.get(cell.cellId)?.length ?? 0) >= 2 &&
+            (cell.q - cell.r + 12) % 2 === 0
+          ) {
+            cells.push(cell);
+          }
+          return cells;
+        }, []);
   return (
     <div className={`city-walls city-walls--${level}`} aria-hidden="true">
-      {WALL_SEGMENTS.map((piece, index) => {
-        if (fortified && piece.row === 6 && piece.column === 3) return null;
-        const position = mapPosition(piece.row, piece.column);
-        const offset = boundaryOffset(piece.row, piece.column);
-        return (
-          <span
-            className={`city-wall-piece city-wall-piece--direction-${piece.direction}`}
-            style={{
-              left: position.x + offset.x,
-              top: position.y + offset.y,
-              zIndex: 67 + position.depth,
-            }}
-            key={`wall-${index}`}
-          >
-            <MapDetailSprite atlasIndex={(fortified ? 5 : 0) + piece.direction} />
-          </span>
-        );
-      })}
-      {WALL_CORNERS.map((piece, index) => {
-        const position = mapPosition(piece.row, piece.column);
-        const offset = boundaryOffset(piece.row, piece.column);
-        return (
-          <span
-            className={`city-wall-piece city-wall-piece--${piece.orientation}`}
-            style={{
-              left: position.x + offset.x,
-              top: position.y + offset.y,
-              zIndex: 68 + position.depth,
-            }}
-            key={`corner-${index}`}
-          >
-            <MapDetailSprite atlasIndex={level >= 3 ? 9 : fortified ? 7 : 2} />
-          </span>
-        );
-      })}
-      {fortified && (
+      {layout.landCells.flatMap((cell) =>
+        (layout.exposedEdges.get(cell.cellId) ?? []).map((direction) => {
+          if (fortified && cell.cellId === layout.harbour.cellId && direction === gateDirection) {
+            return null;
+          }
+          const frontEdge = direction === 4 || direction === 5;
+          return (
+            <span
+              className="city-wall-edge"
+              style={{
+                left: cell.position.x,
+                top: cell.position.y,
+                zIndex: (frontEdge ? 134 : 64) + cell.position.depth,
+              }}
+              key={`wall-${cell.cellId}-${direction}`}
+            >
+              <HexRimEdge
+                row={fortified ? 3 : 2}
+                variation={(cell.cellId + level) % 4}
+                direction={direction}
+              />
+            </span>
+          );
+        }),
+      )}
+      {towerCells.map((cell) => (
+        <span
+          className="city-wall-piece city-wall-piece--tower"
+          style={{
+            left: cell.position.x,
+            top: cell.position.y,
+            zIndex: 145 + cell.position.depth,
+          }}
+          key={`tower-${cell.cellId}`}
+        >
+          <MapDetailSprite atlasIndex={9} />
+        </span>
+      ))}
+      {fortified && gateDirection !== undefined && (
         <span
           className="city-wall-piece city-wall-piece--gate"
           style={{
-            left: mapPosition(6, 3).x + boundaryOffset(6, 3).x,
-            top: mapPosition(6, 3).y + boundaryOffset(6, 3).y,
-            zIndex: 77,
+            left: layout.harbour.position.x + gateOffset.x,
+            top: layout.harbour.position.y + gateOffset.y,
+            zIndex: 150 + layout.harbour.position.depth,
           }}
         >
-          <MapDetailSprite atlasIndex={8} />
+          <MapDetailSprite atlasIndex={8} orientation={gateDirection === 4 ? "flip-x" : "none"} />
         </span>
       )}
     </div>
@@ -483,7 +509,13 @@ function Drawer({
       className="drawer"
       aria-labelledby="drawer-title"
       onPointerDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const outsidePanel =
+          event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom;
+        if (event.target === event.currentTarget && outsidePanel) onClose();
       }}
       onCancel={(event) => {
         event.preventDefault();
@@ -941,18 +973,19 @@ export function App() {
           <div className={`island-ground roads-${city.roadLevel} walls-${city.wallLevel}`} />
           <div className="coast-shadow" />
 
-          {mapLayout.cells.map((cell) => {
+          {mapLayout.landCells.map((cell) => {
             const trait =
               cell.kind === "plot" || cell.kind === "nature"
                 ? cell.trait
                 : cell.kind === "harbour"
                   ? "coastal"
                   : "plain";
-            const coast = coastlineSprite(cell.row, cell.column, city.seed, cell.cellId);
             const visualTrait = trait === "coastal" ? "plain" : trait;
+            const exposedEdges = mapLayout.exposedEdges.get(cell.cellId) ?? [];
+            const rockyCoast = Math.abs(Math.imul(city.seed + 19, 17) + cell.cellId * 11) % 3 === 0;
             return (
               <span
-                className={`terrain-art terrain-art--${coast ? "coast" : visualTrait}`}
+                className={`terrain-art terrain-art--${visualTrait}`}
                 style={{
                   left: cell.position.x,
                   top: cell.position.y,
@@ -961,13 +994,18 @@ export function App() {
                 key={`terrain-${cell.cellId}`}
                 aria-hidden="true"
               >
-                {coast ? (
-                  <MapDetailSprite atlasIndex={coast.atlasIndex} orientation={coast.orientation} />
-                ) : (
-                  <TerrainSprite
-                    atlasIndex={terrainAtlasIndex(visualTrait, city.seed, cell.cellId, cell.kind)}
+                <span className="hex-land-underlay" />
+                <TerrainSprite
+                  atlasIndex={terrainAtlasIndex(visualTrait, city.seed, cell.cellId, cell.kind)}
+                />
+                {exposedEdges.map((direction) => (
+                  <HexRimEdge
+                    row={rockyCoast ? 1 : 0}
+                    variation={(cell.cellId + city.seed) % 4}
+                    direction={direction}
+                    key={`coast-${direction}`}
                   />
-                )}
+                ))}
               </span>
             );
           })}
@@ -987,9 +1025,9 @@ export function App() {
                 ].join(" ")}
                 style={
                   {
-                    left: cell.position.x - 72,
-                    top: cell.position.y - 36,
-                    zIndex: 10 + cell.position.depth,
+                    left: cell.position.x - 91,
+                    top: cell.position.y - 66,
+                    zIndex: 22 + cell.position.depth,
                     "--district": cell.district,
                   } as CSSProperties
                 }
@@ -1041,8 +1079,7 @@ export function App() {
               key={`nature-${cell.cellId}`}
               aria-hidden="true"
               hidden={
-                city.wallLevel > 0 &&
-                (cell.row === 0 || cell.row === 6 || cell.column === 0 || cell.column === 7)
+                city.wallLevel > 0 && (mapLayout.exposedEdges.get(cell.cellId)?.length ?? 0) > 0
               }
             >
               {(cell.cellId + city.seed) % 3 === 0 ? (
@@ -1053,13 +1090,13 @@ export function App() {
             </span>
           ))}
 
-          <CityWalls level={city.wallLevel} />
+          <CityWalls level={city.wallLevel} layout={mapLayout} />
 
           <div
             className="harbour-pier"
             style={{
               left: mapLayout.harbour.position.x,
-              top: mapLayout.harbour.position.y + 28,
+              top: mapLayout.harbour.position.y + 20,
               zIndex: 62 + mapLayout.harbour.position.depth,
             }}
             aria-hidden="true"
