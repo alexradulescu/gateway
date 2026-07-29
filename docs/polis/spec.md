@@ -12,12 +12,12 @@ punishing loss.
 ## Solution
 
 Aegean Polis is a single-city, fixed-angle isometric game at `/polis/`. The player develops a
-handcrafted 36-plot Aegean island through building, upgrading, research, civic specialisation,
+handcrafted 24-plot Aegean island through building, upgrading, research, civic specialisation,
 defence, beautification, and land clearance. The simulation rewards multiple viable city identities,
 including industrial, scholarly, maritime, civic, cultural, resort, and balanced development.
 
-The first playable release is a polished vertical slice. It begins with 12 open plots and expands
-through three 8-plot districts. It includes 12 placeable building types with three visible levels,
+The first playable release is a polished vertical slice. It begins with eight open plots and expands
+through two further 8-plot districts. It includes 12 placeable building types with three visible levels,
 fixed Town Hall and harbour landmarks, six resources, four city conditions, research, road and wall
 upgrades, defensive crises, minor events, safe offline progress, import/export, and developer
 controls.
@@ -35,9 +35,9 @@ controls.
    touch.
 6. As a small-screen player, I want management panels to become modals, so that controls remain
    usable.
-7. As a player, I want 12 plots available at the start, so that early planning is meaningful without
+7. As a player, I want eight plots available at the start, so that early planning is meaningful without
    feeling cramped.
-8. As a player, I want to unlock three further districts of eight plots each, so that land expansion
+8. As a player, I want to unlock two further districts of eight plots each, so that land expansion
    becomes a long-term goal.
 9. As a player, I want district clearance to cost resources and time, so that expansion is earned.
 10. As a player, I want a bounded variable reward when clearing land, so that expansion retains an
@@ -161,19 +161,20 @@ controls.
 - The visual direction is a fixed three-quarter isometric, sunlit classical Aegean scene: warm
   limestone, white plaster, terracotta roofs, restrained cobalt accents, marble civic structures,
   olive and cypress trees, bright water, and soft painterly shadows.
-- The visible map is the fixed `thalassa-01` authored stage at `1536 × 1024`. Coast, terrain,
+- The visible map is the fixed `thalassa-02` authored stage at `1536 × 1024`. Coast, terrain,
   streams, permanent vegetation, empty clearings, plazas, and the complete road network are painted
   as one coherent scene. The player never sees a tile boundary.
 - Four registered AVIF stage plates share the same composition and building anchors. Road upgrades
-  swap the whole plate: packed earth, restrained stone, broad fitted limestone, then landscaped
-  civic avenues. There are no procedural road, junction, coast, or wall pieces in the visible map.
+  swap the whole plate: packed earth roads and plots; stone roads; stone roads and plots with a few
+  lamps; then refined stone, sidewalks, more lamps, benches, and small street trees. There are no
+  procedural road, junction, coast, or wall pieces in the visible map.
 - Buildings and landmarks are ordinary absolutely positioned HTML controls over the stage. Each
   uses a fixed ground-contact anchor and vertical depth order. The camera is one CSS transform with
   pointer panning, cursor-centred zoom, and large accessible hit areas.
-- `thalassa-01` defines 36 stable building anchors, a fixed Town Hall, and a fixed harbour. Twelve
-  sites begin available and three eight-site districts unlock separately. Terrain traits and the
-  existing axial adjacency model may remain invisible simulation data; they do not control the
-  visible ground geometry.
+- `thalassa-02` defines 24 adjustable building anchors, a fixed Town Hall, and a fixed harbour. The
+  sites form three eight-site districts: one begins available and the other two unlock separately.
+  Terrain traits and the existing axial adjacency model may remain invisible simulation data; they
+  do not control the visible ground geometry.
 - Future island art may vary coast, fields, and permanent scenery, but a compatible plate keeps the
   same stage dimensions and anchor contract. A developer placement editor exposes one district at a
   time and exports calibrated anchor JSON.
@@ -195,6 +196,9 @@ controls.
   economic rules.
 - Saved state is versioned and stored in local browser storage. Export and import use the same public
   serialisation format. Imported data is validated before replacing the active city.
+- The 24-plot prototype uses save format and browser key version 2. It intentionally does not
+  migrate the unused 36-plot prototype format; incompatible local data starts a new city and old
+  exports are rejected.
 - Only the active local city receives capped offline progress. Exported files are frozen snapshots
   because their last-active timestamp is reset when imported.
 - Production, population, conditions, research, construction, expansion, event scheduling, damage,
@@ -228,7 +232,7 @@ controls.
 - Pure simulation tests use worked examples with fixed elapsed times and seeded random input. They
   cover affordability, production, capped offline progress, construction completion, land
   expansion, adjacency, crisis bounds, and saved-state round trips.
-- Stage tests cover all 36 unique anchors, the four road-level plates, landmark separation,
+- Stage tests cover all 24 unique anchors, the four road-level plates, landmark separation,
   reversible camera projection, and cursor-anchored zoom.
 - Tests assert observable state and visible outcomes, not React component structure, private helper
   calls, CSS class names, or implementation-specific timers.

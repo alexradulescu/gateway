@@ -53,7 +53,9 @@ Making the sprites smaller does not fix this. Adding a pavement hex strengthens 
 
 ### 1. Authored city stage — recommended
 
-Use one large Mediterranean island scene with 36 irregular building sites.
+The original proposal used one large Mediterranean island scene with 36 irregular building sites.
+The implemented prototype later reduced this to 24 so the detailed building sprites have enough
+visual room.
 
 - Paint the coastline, elevation, fields, central civic space, harbour, streams, main roads, footpaths, and permanent vegetation as one coherent base.
 - Store sites as `slotId`, `x`, `y`, `depthY`, `hitPolygon`, `kind`, and `district`; do not store or render a tile shape.
@@ -133,7 +135,8 @@ Prototype one authored town section instead:
 3. one dirt-road and one limestone-road background state;
 4. empty-site, hover, and selection treatments with no visible cell.
 
-If that small section feels like a place rather than a board, extend the method to the 36-site island.
+The original next step was a 36-site island. The implemented `thalassa-02` plate instead uses 24
+sites after full-map visual testing showed that 36 would crowd the authored scenery.
 
 ## Implemented decision
 
@@ -142,8 +145,8 @@ Status: accepted and implemented on 29 July 2026.
 The prototype question is: **does a continuous authored city stage make Polis feel like a
 Mediterranean settlement rather than a board game while preserving the existing play loop?**
 
-- The main Polis route now uses the fixed `1536 × 1024` `thalassa-01` authored island stage.
-- All 36 building sites are stable, irregular HTML hit areas; twelve begin available.
+- The main Polis route now uses the fixed `1536 × 1024` `thalassa-02` authored island stage.
+- All 24 building sites are adjustable, irregular HTML hit areas; eight begin available.
 - Site markers appear only while placing a building or hovering an empty site.
 - Existing building, simulation, construction, research, road, wall, crisis, save, and camera logic
   remains active.
@@ -152,7 +155,7 @@ Mediterranean settlement rather than a board game while preserving the existing 
 - Buildings and landmarks are positioned as HTML controls over the stage, with camera panning and
   zoom applied through one parent transform.
 - The developer placement editor shows one district at a time, permits anchor calibration, and
-  exports all 36 coordinates as JSON.
+  exports all 24 coordinates as JSON.
 
 Runtime assets:
-`apps/polis/public/assets/thalassa-01-road-{1,2,3,4}.avif`.
+`apps/polis/public/assets/thalassa-02-road-{1,2,3,4}.avif`.

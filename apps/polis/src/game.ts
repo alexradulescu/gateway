@@ -1,5 +1,5 @@
-import { getPlotDistance, getPlotTrait, PLOT_DISTRICTS } from "./map";
-export { getPlotDistance, getPlotTrait, PLOT_DISTRICTS } from "./map";
+import { getPlotDistance, getPlotTrait, PLOT_COUNT, PLOT_DISTRICTS } from "./map";
+export { getPlotDistance, getPlotTrait, PLOT_COUNT, PLOT_DISTRICTS } from "./map";
 export type { PlotTrait } from "./map";
 
 export type ResourceKey = "food" | "timber" | "stone" | "coin" | "goods" | "knowledge";
@@ -89,7 +89,7 @@ export type EventLogEntry = {
 };
 
 export type CityState = {
-  version: 1;
+  version: 2;
   name: string;
   seed: number;
   foundedAt: number;
@@ -275,13 +275,12 @@ export const RESOURCE_LABELS: Record<ResourceKey, string> = {
   knowledge: "Knowledge",
 };
 
-export const DISTRICT_NAMES = ["Civic heart", "Olive ridge", "Harbour ward", "Sunset terraces"];
+export const DISTRICT_NAMES = ["Civic heart", "Olive ridge", "Harbour ward"];
 
 export const DISTRICT_COSTS: Resources[] = [
   cost({}),
   cost({ timber: 320, stone: 220, coin: 300 }),
   cost({ timber: 460, stone: 360, coin: 480, goods: 40 }),
-  cost({ timber: 680, stone: 540, coin: 720, goods: 90 }),
 ];
 
 export const RESEARCH_DEFINITIONS = [
@@ -401,7 +400,7 @@ export function createCity(
 ): CityState {
   const now = Date.now();
   return {
-    version: 1,
+    version: 2,
     name: name.trim() || "Thalassa",
     seed,
     foundedAt: now,
@@ -418,10 +417,10 @@ export function createCity(
     },
     population: 24,
     buildings: [
-      starterBuilding("building-1", "house", 13),
-      starterBuilding("building-2", "farm", 14),
-      starterBuilding("building-3", "lumber", 19),
-      starterBuilding("building-4", "park", 20),
+      starterBuilding("building-1", "house", 0),
+      starterBuilding("building-2", "farm", 1),
+      starterBuilding("building-3", "lumber", 2),
+      starterBuilding("building-4", "park", 3),
     ],
     unlockedDistricts: [0],
     construction: null,
@@ -443,7 +442,7 @@ export function createCity(
       {
         id: "founded",
         title: "A new polis",
-        detail: "Twelve plots are cleared. The first households are ready to build.",
+        detail: "Eight plots are cleared. The first households are ready to build.",
         tone: "good",
       },
     ],
@@ -645,7 +644,7 @@ export function startResearch(city: CityState, researchId: string): CityState {
 }
 
 export function startExpansion(city: CityState, district: number): CityState {
-  if (district < 1 || district > 3) throw new Error("Unknown district.");
+  if (district < 1 || district >= PLOT_DISTRICTS.length) throw new Error("Unknown district.");
   if (city.unlockedDistricts.includes(district)) throw new Error("District already cleared.");
   if (city.expansion) throw new Error("A district is already being cleared.");
   const price = DISTRICT_COSTS[district];
@@ -694,7 +693,7 @@ function productionMultiplier(city: CityState, building: Building) {
   }
   if (city.doctrine === "pastoral" && building.type === "farm") multiplier *= 1.12;
 
-  const trait = getPlotTrait(city.seed, building.plotId);
+  const trait = getPlotTrait(building.plotId);
   if (trait === "fertile" && building.type === "farm") multiplier *= 1.15;
   if (trait === "hillside" && ["quarry", "barracks"].includes(building.type)) multiplier *= 1.15;
   if (trait === "coastal" && ["market", "warehouse"].includes(building.type)) multiplier *= 1.1;
@@ -1305,7 +1304,9 @@ function isValidProject(value: unknown, identityKey: "targetBuildingId" | "id" |
     isFiniteNumber(value.totalSeconds) &&
     isFiniteNumber(value.remainingSeconds) &&
     (identityKey === "district"
-      ? isFiniteNumber(value[identityKey])
+      ? Number.isInteger(value[identityKey]) &&
+        Number(value[identityKey]) >= 1 &&
+        Number(value[identityKey]) < PLOT_DISTRICTS.length
       : typeof value[identityKey] === "string")
   );
 }
@@ -1326,7 +1327,7 @@ export function parseCity(serialized: string): CityState {
   const crises = Object.keys(CRISIS_DEFINITIONS) as CrisisType[];
   if (
     !isRecord(value) ||
-    value.version !== 1 ||
+    value.version !== 2 ||
     typeof value.name !== "string" ||
     !isFiniteNumber(value.seed) ||
     !isFiniteNumber(value.foundedAt) ||
@@ -1343,7 +1344,7 @@ export function parseCity(serialized: string): CityState {
         BUILDING_ORDER.includes(building.type as BuildingType) &&
         isFiniteNumber(building.plotId) &&
         (building.plotId as number) >= 0 &&
-        (building.plotId as number) < 36 &&
+        (building.plotId as number) < PLOT_COUNT &&
         isFiniteNumber(building.level) &&
         (building.level as number) >= 1 &&
         (building.level as number) <= 3 &&
@@ -1355,7 +1356,7 @@ export function parseCity(serialized: string): CityState {
     ) ||
     !Array.isArray(value.unlockedDistricts) ||
     !value.unlockedDistricts.every(
-      (district) => Number.isInteger(district) && district >= 0 && district <= 3,
+      (district) => Number.isInteger(district) && district >= 0 && district < PLOT_DISTRICTS.length,
     ) ||
     !isValidProject(value.construction, "targetBuildingId") ||
     !isValidProject(value.research, "id") ||

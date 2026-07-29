@@ -19,24 +19,22 @@ const viewport: StageViewport = { width: 1440, height: 900 };
 const camera: StageCamera = { x: 18, y: 24, zoom: 0.82 };
 
 describe("Thalassa fixed city stage", () => {
-  test("defines one stable 1536 by 1024 layout with 36 unique building sites", () => {
-    expect(THALASSA_LAYOUT.id).toBe("thalassa-01");
+  test("defines one stable 1536 by 1024 layout with 24 unique building sites", () => {
+    expect(THALASSA_LAYOUT.id).toBe("thalassa-02");
     expect(CITY_STAGE_WIDTH).toBe(1536);
     expect(CITY_STAGE_HEIGHT).toBe(1024);
-    expect(THALASSA_LAYOUT.sites).toHaveLength(36);
-    expect(new Set(THALASSA_LAYOUT.sites.map((site) => site.plotId)).size).toBe(36);
-    expect(new Set(THALASSA_LAYOUT.sites.map((site) => site.district))).toEqual(
-      new Set([0, 1, 2, 3]),
-    );
+    expect(THALASSA_LAYOUT.sites).toHaveLength(24);
+    expect(new Set(THALASSA_LAYOUT.sites.map((site) => site.plotId)).size).toBe(24);
+    expect(new Set(THALASSA_LAYOUT.sites.map((site) => site.district))).toEqual(new Set([0, 1, 2]));
   });
 
   test("selects a complete authored background for every supported road level", () => {
-    expect(getRoadBackground(1)).toBe("/polis/assets/thalassa-01-road-1.avif");
-    expect(getRoadBackground(2)).toBe("/polis/assets/thalassa-01-road-2.avif");
-    expect(getRoadBackground(3)).toBe("/polis/assets/thalassa-01-road-3.avif");
-    expect(getRoadBackground(4)).toBe("/polis/assets/thalassa-01-road-4.avif");
-    expect(getRoadBackground(99)).toBe("/polis/assets/thalassa-01-road-4.avif");
-    expect(getRoadBackground(-3)).toBe("/polis/assets/thalassa-01-road-1.avif");
+    expect(getRoadBackground(1)).toBe("/polis/assets/thalassa-02-road-1.avif");
+    expect(getRoadBackground(2)).toBe("/polis/assets/thalassa-02-road-2.avif");
+    expect(getRoadBackground(3)).toBe("/polis/assets/thalassa-02-road-3.avif");
+    expect(getRoadBackground(4)).toBe("/polis/assets/thalassa-02-road-4.avif");
+    expect(getRoadBackground(99)).toBe("/polis/assets/thalassa-02-road-4.avif");
+    expect(getRoadBackground(-3)).toBe("/polis/assets/thalassa-02-road-1.avif");
   });
 
   test("keeps landmarks distinct from normal building sites", () => {

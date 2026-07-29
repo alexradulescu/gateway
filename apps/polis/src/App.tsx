@@ -92,7 +92,7 @@ import {
   type Staffing,
 } from "./game";
 
-const SAVE_KEY = "aegean-polis.city.v1";
+const SAVE_KEY = "aegean-polis.city.v2";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
 const DOCTRINES: { value: Doctrine; label: string; detail: string }[] = [
   { value: "balanced", label: "Balanced", detail: "Steady growth across the whole polis." },
@@ -437,7 +437,7 @@ function FoundingDialog({ onFound }: { onFound: (name: string) => void }) {
         <span className="eyebrow">A new island awaits</span>
         <h1 id="founding-title">Found your polis</h1>
         <p>
-          Twelve plots are cleared around a small starter settlement. Name the city you will help
+          Eight plots are cleared around a small starter settlement. Name the city you will help
           grow.
         </p>
         <label>
@@ -1225,10 +1225,10 @@ export function App() {
                     {city.roadLevel === 1
                       ? "Packed earth lanes connect occupied plots."
                       : city.roadLevel === 2
-                        ? "Broad limestone paving makes travel easier."
+                        ? "Practical stone paving follows the original routes."
                         : city.roadLevel === 3
-                          ? "Fine fitted stone gives the polis civic grandeur."
-                          : "Tree-lined ceremonial avenues shade the city."}
+                          ? "Stone plots and a few lamps give the city order."
+                          : "Refined paving, sidewalks and trees shade the city."}
                   </p>
                 </div>
                 <button

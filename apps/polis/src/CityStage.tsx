@@ -370,7 +370,7 @@ export function CityStage({
       {editorEnabled && (
         <aside className="stage-editor parchment" aria-label="Layout placement editor">
           <span>
-            <strong>Thalassa-01 placement</strong>
+            <strong>Thalassa-02 placement</strong>
             <small>{editorStatus}</small>
           </span>
           <button

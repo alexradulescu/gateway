@@ -4,6 +4,7 @@ import { describe, expect, test } from "bun:test";
 import {
   HEX_CELL_COUNT,
   PLOT_DISTRICTS,
+  PLOT_TRAITS,
   axialDistance,
   axialNeighbours,
   exposedHexEdges,
@@ -32,17 +33,17 @@ describe("Aegean Polis map", () => {
     expect(exposedHexEdges(land, { q: 1, r: 0 })).toEqual([0, 1, 2, 5]);
   });
 
-  test("each seeded island has 36 plots, 18 natural blockers, two landmarks and five inlets", () => {
+  test("each seeded island has 24 plots, 30 natural areas, two landmarks and five inlets", () => {
     for (const seed of [1, 42, 99, 12_345]) {
       const layout = getMapLayout(seed);
 
       expect(layout.cells).toHaveLength(HEX_CELL_COUNT);
-      expect(layout.cells.filter((cell) => cell.kind === "plot")).toHaveLength(36);
-      expect(layout.cells.filter((cell) => cell.kind === "nature")).toHaveLength(18);
+      expect(layout.cells.filter((cell) => cell.kind === "plot")).toHaveLength(24);
+      expect(layout.cells.filter((cell) => cell.kind === "nature")).toHaveLength(30);
       expect(layout.cells.filter((cell) => cell.kind === "town-hall")).toHaveLength(1);
       expect(layout.cells.filter((cell) => cell.kind === "harbour")).toHaveLength(1);
       expect(layout.cells.filter((cell) => cell.kind === "water")).toHaveLength(5);
-      expect(new Set(layout.plotCells.keys()).size).toBe(36);
+      expect(new Set(layout.plotCells.keys()).size).toBe(24);
       expect(new Set(layout.cells.map((cell) => `${cell.q},${cell.r}`)).size).toBe(HEX_CELL_COUNT);
       expect(
         layout.cells.every(
@@ -60,6 +61,15 @@ describe("Aegean Polis map", () => {
       expect(
         [...layout.plotCells.values()].filter((cell) => cell.district === district),
       ).toHaveLength(plotIds.length);
+    }
+  });
+
+  test("authored plot traits stay stable across simulation seeds", () => {
+    for (const seed of [1, 42, 99]) {
+      const layout = getMapLayout(seed);
+      for (const [plotId, expectedTrait] of PLOT_TRAITS.entries()) {
+        expect(layout.plotCells.get(plotId)?.trait).toBe(expectedTrait);
+      }
     }
   });
 

@@ -5,7 +5,7 @@
 Edit building placement in:
 
 - `apps/polis/src/cityStageLayout.ts`
-- `POSITIONS` controls the 36 normal building anchors.
+- `POSITIONS` controls the 24 normal building anchors.
 - `THALASSA_LAYOUT.townHall.position` controls the Town Hall.
 - `THALASSA_LAYOUT.harbour.position` controls the harbour.
 
@@ -16,7 +16,7 @@ visual depth order.
 ## Recommended calibration workflow
 
 1. Run Polis and open **Tools → Open placement editor**.
-2. Use **District 1 / 4** to cycle through the four groups of anchors.
+2. Use **District 1 / 3** to cycle through the three groups of anchors.
 3. Drag each numbered anchor to the centre-front of its intended clearing.
 4. Select **Export JSON**.
 5. Copy the exported coordinates into `POSITIONS` in `cityStageLayout.ts`, keeping plot order
@@ -32,51 +32,39 @@ placement changes into the city save.
 Plot numbers below match the player-facing plot number. Source arrays are zero-indexed, so Plot 1 is
 the first entry in `POSITIONS`.
 
-| Plot | District        | Terrain          |    X |   Y |
-| ---: | --------------- | ---------------- | ---: | --: |
-|    1 | Olive ridge     | Hillside         |  230 | 210 |
-|    2 | Olive ridge     | Hillside         |  420 | 185 |
-|    3 | Olive ridge     | Plain            |  585 | 178 |
-|    4 | Olive ridge     | Plain            |  785 | 180 |
-|    5 | Olive ridge     | Fertile          |  980 | 188 |
-|    6 | Olive ridge     | Hillside         | 1180 | 205 |
-|    7 | Olive ridge     | Coastal          | 1350 | 285 |
-|    8 | Civic heart     | Hillside         |  365 | 275 |
-|    9 | Civic heart     | Plain            |  650 | 286 |
-|   10 | Civic heart     | Fertile          | 1162 | 298 |
-|   11 | Civic heart     | Plain            |  315 | 410 |
-|   12 | Olive ridge     | Hillside         | 1330 | 390 |
-|   13 | Harbour ward    | Coastal          |  215 | 590 |
-|   14 | Civic heart     | Plain            |  610 | 610 |
-|   15 | Civic heart     | Fertile          |  430 | 710 |
-|   16 | Civic heart     | Fertile · large  | 1085 | 420 |
-|   17 | Civic heart     | Hillside · large | 1240 | 535 |
-|   18 | Harbour ward    | Coastal          |  300 | 675 |
-|   19 | Harbour ward    | Fertile          |  560 | 760 |
-|   20 | Civic heart     | Plain            |  338 | 520 |
-|   21 | Civic heart     | Fertile          |  720 | 690 |
-|   22 | Civic heart     | Plain            |  970 | 520 |
-|   23 | Civic heart     | Fertile          |  905 | 305 |
-|   24 | Harbour ward    | Coastal          |  760 | 810 |
-|   25 | Harbour ward    | Coastal          |  900 | 760 |
-|   26 | Harbour ward    | Coastal          | 1050 | 710 |
-|   27 | Sunset terraces | Coastal          |  220 | 795 |
-|   28 | Sunset terraces | Plain            |  380 | 850 |
-|   29 | Sunset terraces | Plain            |  555 | 875 |
-|   30 | Sunset terraces | Coastal          |  735 | 900 |
-|   31 | Harbour ward    | Coastal          | 1230 | 650 |
-|   32 | Harbour ward    | Hillside         | 1330 | 585 |
-|   33 | Sunset terraces | Plain            |  915 | 870 |
-|   34 | Sunset terraces | Hillside         | 1080 | 835 |
-|   35 | Sunset terraces | Coastal          | 1230 | 790 |
-|   36 | Sunset terraces | Coastal          | 1360 | 715 |
+| Plot | District     | Terrain         |    X |   Y |
+| ---: | ------------ | --------------- | ---: | --: |
+|    1 | Civic heart  | Plain           |  365 | 360 |
+|    2 | Civic heart  | Coastal         |  245 | 455 |
+|    3 | Civic heart  | Plain           |  480 | 450 |
+|    4 | Civic heart  | Fertile         |  350 | 538 |
+|    5 | Civic heart  | Plain           |  535 | 605 |
+|    6 | Civic heart  | Plain           |  700 | 675 |
+|    7 | Civic heart  | Coastal · large |  390 | 730 |
+|    8 | Civic heart  | Coastal         |  550 | 740 |
+|    9 | Olive ridge  | Plain           |  490 | 286 |
+|   10 | Olive ridge  | Hillside        |  610 | 165 |
+|   11 | Olive ridge  | Hillside        |  808 | 138 |
+|   12 | Olive ridge  | Hillside        |  950 | 170 |
+|   13 | Olive ridge  | Hillside        | 1080 | 145 |
+|   14 | Olive ridge  | Fertile         | 1215 | 175 |
+|   15 | Olive ridge  | Hillside        | 1360 | 235 |
+|   16 | Olive ridge  | Fertile         |  700 | 260 |
+|   17 | Harbour ward | Plain           |  860 | 280 |
+|   18 | Harbour ward | Hillside        | 1195 | 295 |
+|   19 | Harbour ward | Coastal · large | 1350 | 362 |
+|   20 | Harbour ward | Hillside        | 1135 | 410 |
+|   21 | Harbour ward | Plain           | 1300 | 495 |
+|   22 | Harbour ward | Coastal         | 1225 | 595 |
+|   23 | Harbour ward | Coastal         | 1370 | 630 |
+|   24 | Harbour ward | Fertile         |  875 | 578 |
 
 ## Fixed landmarks
 
 | Landmark  |    X |   Y | Scale |
 | --------- | ---: | --: | ----: |
-| Town Hall |  750 | 470 |  1.16 |
-| Harbour   | 1180 | 715 |  1.06 |
+| Town Hall |  720 | 470 |  1.08 |
+| Harbour   | 1100 | 735 |     1 |
 
 ## Practical placement checks
 
@@ -85,6 +73,8 @@ the first entry in `POSITIONS`.
 - Inspect both a small house and a tall academy on each adjusted site.
 - Test levels 1–3 because upgraded sprites have different silhouettes.
 - Check road levels 1–4; all four background plates must keep the same anchors.
+- The isolated beach clearing near the bottom edge is reserved for a future sanctuary landmark and
+  is intentionally not one of the 24 normal plots.
 - If two sprites overlap, the one with the greater `y` appears in front.
 - Adjust `radiusX` and `radiusY` in `cityStageLayout.ts` only when the clickable clearing is wrong;
   those values do not move the building.

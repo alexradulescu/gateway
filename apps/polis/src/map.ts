@@ -22,10 +22,36 @@ export const HEX_RADIUS = 4;
 export const HEX_CELL_COUNT = 1 + 3 * HEX_RADIUS * (HEX_RADIUS + 1);
 
 export const PLOT_DISTRICTS: number[][] = [
-  [7, 8, 9, 10, 13, 14, 15, 16, 19, 20, 21, 22],
-  [0, 1, 2, 3, 4, 5, 6, 11],
-  [12, 17, 18, 23, 24, 25, 30, 31],
-  [26, 27, 28, 29, 32, 33, 34, 35],
+  [0, 1, 2, 3, 4, 5, 6, 7],
+  [8, 9, 10, 11, 12, 13, 14, 15],
+  [16, 17, 18, 19, 20, 21, 22, 23],
+];
+export const PLOT_COUNT = PLOT_DISTRICTS.reduce((total, district) => total + district.length, 0);
+export const PLOT_TRAITS: ReadonlyArray<PlotTrait> = [
+  "plain",
+  "coastal",
+  "plain",
+  "fertile",
+  "plain",
+  "plain",
+  "coastal",
+  "coastal",
+  "plain",
+  "hillside",
+  "hillside",
+  "hillside",
+  "hillside",
+  "fertile",
+  "hillside",
+  "fertile",
+  "plain",
+  "hillside",
+  "coastal",
+  "hillside",
+  "plain",
+  "coastal",
+  "coastal",
+  "fertile",
 ];
 
 export const HEX_DIRECTIONS: ReadonlyArray<AxialCoordinate> = [
@@ -361,9 +387,7 @@ export function getMapLayout(seed: number): CityMapLayout {
     normalizedSeed + 23,
   );
   harbourCells.forEach((cellId) => connectedCells.add(cellId));
-  const harbourCellSet = new Set(harbourCells);
-  remaining = remaining.filter((cellId) => !harbourCellSet.has(cellId));
-  const districtCells = [initialCells, ridgeCells, harbourCells, remaining];
+  const districtCells = [initialCells, ridgeCells, harbourCells];
   const plotByCell = new Map<number, { plotId: number; district: number }>();
 
   districtCells.forEach((cellIds, district) => {
@@ -384,7 +408,7 @@ export function getMapLayout(seed: number): CityMapLayout {
     if (cellId === harbourId) return { ...base, kind: "harbour" };
     const plot = plotByCell.get(cellId);
     const trait = traitForCell(normalizedSeed, cellId, landCoordinates);
-    if (plot) return { ...base, ...plot, kind: "plot", trait };
+    if (plot) return { ...base, ...plot, kind: "plot", trait: PLOT_TRAITS[plot.plotId] };
     const atlasIndex = Math.floor(seededValue(normalizedSeed + 37, cellId) * NATURE_KINDS.length);
     return {
       ...base,
@@ -418,8 +442,8 @@ export function getMapLayout(seed: number): CityMapLayout {
   return layout;
 }
 
-export function getPlotTrait(seed: number, plotId: number): PlotTrait {
-  return getMapLayout(seed).plotCells.get(plotId)?.trait ?? "plain";
+export function getPlotTrait(plotId: number): PlotTrait {
+  return PLOT_TRAITS[plotId] ?? "plain";
 }
 
 export function getPlotDistance(seed: number, leftPlotId: number, rightPlotId: number) {

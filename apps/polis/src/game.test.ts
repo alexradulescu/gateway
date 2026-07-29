@@ -22,11 +22,12 @@ import {
 } from "./game";
 
 describe("Aegean Polis simulation", () => {
-  test("a new city opens one-third of its plots with a useful starter settlement", () => {
+  test("a new city opens one-third of its 24 plots with a useful starter settlement", () => {
     const city = createCity("Thalassa", 42);
 
     expect(city.name).toBe("Thalassa");
     expect(city.unlockedDistricts).toEqual([0]);
+    expect(city.buildings.every((building) => building.plotId < 8)).toBe(true);
     expect(city.buildings.map((building) => building.type)).toEqual([
       "house",
       "farm",
@@ -38,17 +39,15 @@ describe("Aegean Polis simulation", () => {
   test("placing and completing a building changes only observable city state", () => {
     const city = createCity("Thalassa", 42);
     const timberBefore = city.resources.timber;
-    const queued = placeBuilding(city, "academy", 15);
+    const queued = placeBuilding(city, "academy", 4);
 
     expect(queued.construction?.kind).toBe("build");
     expect(queued.resources.timber).toBeLessThan(timberBefore);
-    expect(queued.buildings.find((building) => building.plotId === 15)?.status).toBe(
-      "constructing",
-    );
+    expect(queued.buildings.find((building) => building.plotId === 4)?.status).toBe("constructing");
 
     const completed = advanceCity(queued, 60, 1);
     expect(completed.construction).toBeNull();
-    expect(completed.buildings.find((building) => building.plotId === 15)?.status).toBe("active");
+    expect(completed.buildings.find((building) => building.plotId === 4)?.status).toBe("active");
   });
 
   test("offline progress is safe and capped at eight real hours", () => {
@@ -117,9 +116,23 @@ describe("Aegean Polis simulation", () => {
     expect(() => parseCity(malformed)).toThrow("valid Aegean Polis");
   });
 
+  test("a 24-plot city rejects expansion into a removed fourth district", () => {
+    const malformed = JSON.stringify({
+      ...createCity("Thalassa", 42),
+      expansion: {
+        district: 3,
+        label: "Clear removed district",
+        totalSeconds: 120,
+        remainingSeconds: 120,
+      },
+    });
+
+    expect(() => parseCity(malformed)).toThrow("valid Aegean Polis");
+  });
+
   test("developer completion finishes timers without simulating a day", () => {
     const queued = startResearch(
-      placeBuilding(createCity("Thalassa", 42), "academy", 15),
+      placeBuilding(createCity("Thalassa", 42), "academy", 4),
       "irrigation",
     );
     const resourcesBefore = queued.resources;
@@ -179,11 +192,11 @@ describe("Aegean Polis simulation", () => {
   test("research opens specialised buildings and civic doctrines", () => {
     const city = createCity("Thalassa", 42);
 
-    expect(() => placeBuilding(city, "workshop", 15)).toThrow("Stonecraft");
+    expect(() => placeBuilding(city, "workshop", 4)).toThrow("Stonecraft");
     expect(() => setDoctrine(city, "industrial")).toThrow("Stonecraft");
 
     const learned = finishAllProjects(startResearch(city, "stonecraft"));
-    expect(placeBuilding(learned, "workshop", 15).construction?.kind).toBe("build");
+    expect(placeBuilding(learned, "workshop", 4).construction?.kind).toBe("build");
     expect(setDoctrine(learned, "industrial").doctrine).toBe("industrial");
   });
 
