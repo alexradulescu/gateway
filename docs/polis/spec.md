@@ -165,10 +165,16 @@ controls.
   footprint, and visual progression. Separate production atlases cover buildings, terrain,
   directional roads and junctions, road endpoints and hillside ramps, coastline pieces, walls, and
   permanent natural blockers.
+- The map renderer is one high-DPI Canvas inside the React interface. It uses one world coordinate
+  system, one camera transform, inverse-transform hit testing, cursor-anchored zoom, and painter's
+  order for scenery and buildings. This prevents per-element CSS rounding, layer drift, random gaps,
+  and floating buildings. React continues to render the HUD, panels, dialogs, and accessible map
+  actions.
 - The renderer uses a radius-four axial hex field. Six-way road masks are composed from directional
   road arms and a centre hub, allowing every endpoint, bend, junction, crossroads, landscaped avenue,
   and hillside route without a separate sprite for every combination. Coast and wall rims are clipped
-  to the exposed edges of each land hex.
+  to the exposed edges of each land hex. The illustrated isometric atlas cells are masked over an
+  exact six-sided ground mesh, so adjacent cells always share the same geometric seam.
 - Each city uses a seeded 61-position pointy-top hex composition: 36 normal building plots, 18
   permanent natural blockers, a fixed Town Hall, a fixed harbour, and five water cuts that create
   bays and irregular headlands. Twelve central plots begin available. Three eight-plot districts
@@ -206,14 +212,16 @@ controls.
 
 ## Testing Decisions
 
-- Tests observe the game through two public seams: the rendered `/polis/` application and the
-  serialisable simulation-state transition boundary.
+- Tests observe the game through three public seams: the rendered `/polis/` application, the
+  serialisable simulation-state transition boundary, and the Canvas camera/hit-testing interface.
 - Browser-level checks cover the visible player journey: founding or loading a city, placing and
   upgrading a building, opening management surfaces, expanding land, responding to an event, using
   developer controls, and exporting/importing a save.
 - Pure simulation tests use worked examples with fixed elapsed times and seeded random input. They
   cover affordability, production, capped offline progress, construction completion, land
   expansion, adjacency, crisis bounds, and saved-state round trips.
+- Canvas geometry tests use worked world and screen coordinates to cover reversible projection,
+  cursor-anchored zoom, and selecting the displayed hex after pan and zoom.
 - Tests assert observable state and visible outcomes, not React component structure, private helper
   calls, CSS class names, or implementation-specific timers.
 - Gateway's existing Bun-test approach is the prior art for pure domain behavior. Production build,

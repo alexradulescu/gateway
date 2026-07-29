@@ -7,6 +7,6 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b",
-    "test": "bun test src/game.test.ts"
+    "test": "bun test src"
   }
 }

@@ -163,7 +163,7 @@ function cellIdAt(coordinate: AxialCoordinate) {
 export function mapPosition(q: number, r: number): MapPosition {
   return {
     x: 660 + q * 142 + r * 71,
-    y: 360 + r * 60,
+    y: 500 + r * 90,
     depth: (r + HEX_RADIUS) * 16 + q + HEX_RADIUS,
   };
 }

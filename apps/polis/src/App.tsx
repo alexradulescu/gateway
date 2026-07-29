@@ -36,14 +36,8 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { CityCanvas } from "./CityCanvas";
 import {
   BUILDING_DEFINITIONS,
   BUILDING_ORDER,
@@ -94,17 +88,7 @@ import {
   type Resources,
   type Staffing,
 } from "./game";
-import {
-  HEX_DIRECTIONS,
-  getMapLayout,
-  getRoadDirections,
-  getRoadTiles,
-  mapPosition,
-  type CityMapLayout,
-  type HexDirection,
-  type PlotTrait,
-  type RoadTile,
-} from "./map";
+import { getMapLayout, getRoadTiles } from "./map";
 
 const SAVE_KEY = "aegean-polis.city.v1";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
@@ -219,227 +203,6 @@ function AtlasSprite({
       }
       aria-hidden="true"
     />
-  );
-}
-
-function environmentStyle(index: number): CSSProperties {
-  const column = index % 4;
-  const row = Math.floor(index / 4);
-  return {
-    "--environment-x": `${column * (100 / 3)}%`,
-    "--environment-y": `${row * 100}%`,
-  } as CSSProperties;
-}
-
-function EnvironmentSprite({ atlasIndex }: { atlasIndex: number }) {
-  return (
-    <span className="environment-sprite" style={environmentStyle(atlasIndex)} aria-hidden="true" />
-  );
-}
-
-function gridSpriteStyle(
-  index: number,
-  columns: number,
-  rows: number,
-  xVariable: string,
-  yVariable: string,
-): CSSProperties {
-  const column = index % columns;
-  const row = Math.floor(index / columns);
-  return {
-    [xVariable]: `${column * (100 / (columns - 1))}%`,
-    [yVariable]: `${row * (100 / (rows - 1))}%`,
-  } as CSSProperties;
-}
-
-function terrainAtlasIndex(
-  trait: PlotTrait,
-  seed: number,
-  cellId: number,
-  kind: "plot" | "nature" | "town-hall" | "harbour",
-) {
-  const variation = Math.abs(Math.imul(seed + 17, 31) + Math.imul(cellId + 5, 13)) % 4;
-  if (kind === "town-hall") return 14;
-  if (kind === "harbour") return 12 + variation;
-  if (trait === "hillside") return kind === "plot" ? 11 : 8 + variation;
-  if (trait === "fertile") return 5 + (variation % 3);
-  return variation;
-}
-
-function TerrainSprite({ atlasIndex }: { atlasIndex: number }) {
-  return (
-    <span
-      className="terrain-sprite"
-      style={gridSpriteStyle(atlasIndex, 4, 4, "--terrain-x", "--terrain-y")}
-      aria-hidden="true"
-    />
-  );
-}
-
-function roadAxisColumn(direction: HexDirection) {
-  return direction === 0 || direction === 3 ? 0 : direction === 1 || direction === 4 ? 1 : 2;
-}
-
-function RoadSprite({ tile, level }: { tile: RoadTile; level: number }) {
-  const atlasRow = Math.max(1, Math.min(4, level)) - 1;
-  const roadDirections = getRoadDirections(tile.mask);
-  return (
-    <span className="road-tile" aria-hidden="true">
-      {roadDirections.map((direction) => (
-        <span className={`road-arm-clip road-arm-clip--${direction}`} key={`arm-${direction}`}>
-          <span
-            className={`road-atlas-sprite ${tile.hillside ? "road-atlas-sprite--ramp" : ""}`}
-            style={gridSpriteStyle(
-              atlasRow * (tile.hillside ? 3 : 4) + roadAxisColumn(direction),
-              tile.hillside ? 3 : 4,
-              4,
-              "--road-x",
-              "--road-y",
-            )}
-          />
-        </span>
-      ))}
-      <span className="road-hub-clip">
-        <span
-          className="road-atlas-sprite"
-          style={gridSpriteStyle(atlasRow * 4 + 3, 4, 4, "--road-x", "--road-y")}
-        />
-      </span>
-    </span>
-  );
-}
-
-type SpriteOrientation = "none" | "flip-x" | "flip-y" | "flip-both";
-
-function MapDetailSprite({
-  atlasIndex,
-  orientation = "none",
-}: {
-  atlasIndex: number;
-  orientation?: SpriteOrientation;
-}) {
-  return (
-    <span
-      className={`map-detail-sprite map-detail-sprite--${orientation}`}
-      style={gridSpriteStyle(atlasIndex, 5, 4, "--detail-x", "--detail-y")}
-      aria-hidden="true"
-    />
-  );
-}
-
-function HexRimSprite({ row, variation }: { row: number; variation: number }) {
-  return (
-    <span
-      className="hex-rim-sprite"
-      style={gridSpriteStyle(row * 4 + variation, 4, 4, "--rim-x", "--rim-y")}
-      aria-hidden="true"
-    />
-  );
-}
-
-function HexRimEdge({
-  row,
-  variation,
-  direction,
-}: {
-  row: number;
-  variation: number;
-  direction: HexDirection;
-}) {
-  return (
-    <span className={`hex-rim-clip hex-rim-clip--${direction}`}>
-      <HexRimSprite row={row} variation={variation} />
-    </span>
-  );
-}
-
-function edgeOffset(q: number, r: number, direction: HexDirection, share = 0.42) {
-  const origin = mapPosition(q, r);
-  const neighbour = HEX_DIRECTIONS[direction];
-  const outside = mapPosition(q + neighbour.q, r + neighbour.r);
-  return {
-    x: (outside.x - origin.x) * share,
-    y: (outside.y - origin.y) * share,
-  };
-}
-
-function CityWalls({ level, layout }: { level: number; layout: CityMapLayout }) {
-  if (level <= 0) return null;
-  const fortified = level >= 2;
-  const gateDirection =
-    layout.exposedEdges
-      .get(layout.harbour.cellId)
-      ?.find((direction) => direction === 4 || direction === 5) ??
-    layout.exposedEdges.get(layout.harbour.cellId)?.[0];
-  const gateOffset =
-    gateDirection === undefined
-      ? { x: 0, y: 0 }
-      : edgeOffset(layout.harbour.q, layout.harbour.r, gateDirection, 0.48);
-  const towerCells =
-    level < 3
-      ? []
-      : layout.landCells.reduce<typeof layout.landCells>((cells, cell) => {
-          if (
-            (layout.exposedEdges.get(cell.cellId)?.length ?? 0) >= 2 &&
-            (cell.q - cell.r + 12) % 2 === 0
-          ) {
-            cells.push(cell);
-          }
-          return cells;
-        }, []);
-  return (
-    <div className={`city-walls city-walls--${level}`} aria-hidden="true">
-      {layout.landCells.flatMap((cell) =>
-        (layout.exposedEdges.get(cell.cellId) ?? []).map((direction) => {
-          if (fortified && cell.cellId === layout.harbour.cellId && direction === gateDirection) {
-            return null;
-          }
-          const frontEdge = direction === 4 || direction === 5;
-          return (
-            <span
-              className="city-wall-edge"
-              style={{
-                left: cell.position.x,
-                top: cell.position.y,
-                zIndex: (frontEdge ? 134 : 64) + cell.position.depth,
-              }}
-              key={`wall-${cell.cellId}-${direction}`}
-            >
-              <HexRimEdge
-                row={fortified ? 3 : 2}
-                variation={(cell.cellId + level) % 4}
-                direction={direction}
-              />
-            </span>
-          );
-        }),
-      )}
-      {towerCells.map((cell) => (
-        <span
-          className="city-wall-piece city-wall-piece--tower"
-          style={{
-            left: cell.position.x,
-            top: cell.position.y,
-            zIndex: 145 + cell.position.depth,
-          }}
-          key={`tower-${cell.cellId}`}
-        >
-          <MapDetailSprite atlasIndex={9} />
-        </span>
-      ))}
-      {fortified && gateDirection !== undefined && (
-        <span
-          className="city-wall-piece city-wall-piece--gate"
-          style={{
-            left: layout.harbour.position.x + gateOffset.x,
-            top: layout.harbour.position.y + gateOffset.y,
-            zIndex: 150 + layout.harbour.position.depth,
-          }}
-        >
-          <MapDetailSprite atlasIndex={8} orientation={gateDirection === 4 ? "flip-x" : "none"} />
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -677,22 +440,10 @@ export function App() {
   const [toast, setToast] = useState("Welcome to the sunlit island of Thalassa.");
   const [camera, setCamera] = useState({ x: 0, y: 8, zoom: 0.84 });
   const fileInput = useRef<HTMLInputElement>(null);
-  const drag = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    x: number;
-    y: number;
-  } | null>(null);
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
   const defenceForces = useMemo(() => getDefenceForces(city), [city]);
   const mapLayout = useMemo(() => getMapLayout(city.seed), [city.seed]);
-  const plotCells = useMemo(() => [...mapLayout.plotCells.values()], [mapLayout]);
-  const natureCells = useMemo(
-    () => mapLayout.cells.filter((cell) => cell.kind === "nature"),
-    [mapLayout],
-  );
   const roadTiles = useMemo(
     () =>
       getRoadTiles(
@@ -817,31 +568,6 @@ export function App() {
     setToast(`Choose an open plot for ${BUILDING_DEFINITIONS[type].name}.`);
   }
 
-  function startPan(event: ReactPointerEvent<HTMLDivElement>) {
-    if ((event.target as HTMLElement).closest("button")) return;
-    drag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      x: camera.x,
-      y: camera.y,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function pan(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!drag.current || drag.current.pointerId !== event.pointerId) return;
-    setCamera((current) => ({
-      ...current,
-      x: drag.current!.x + event.clientX - drag.current!.startX,
-      y: drag.current!.y + event.clientY - drag.current!.startY,
-    }));
-  }
-
-  function stopPan(event: ReactPointerEvent<HTMLDivElement>) {
-    if (drag.current?.pointerId === event.pointerId) drag.current = null;
-  }
-
   function zoomBy(amount: number) {
     setCamera((current) => ({
       ...current,
@@ -953,237 +679,21 @@ export function App() {
 
       <section
         className={`city-viewport ${buildMode || moveMode ? "city-viewport--placing" : ""}`}
-        onPointerDown={startPan}
-        onPointerMove={pan}
-        onPointerUp={stopPan}
-        onPointerCancel={stopPan}
-        onWheel={(event) => {
-          event.preventDefault();
-          zoomBy(event.deltaY > 0 ? -0.08 : 0.08);
-        }}
         aria-label="Isometric city view"
       >
         <div className="water-lines" aria-hidden="true" />
-        <div
-          className="camera-stage"
-          style={{
-            transform: `translate(calc(-50% + ${camera.x}px), calc(-50% + ${camera.y}px)) scale(${camera.zoom})`,
-          }}
-        >
-          <div className={`island-ground roads-${city.roadLevel} walls-${city.wallLevel}`} />
-          <div className="coast-shadow" />
-
-          {mapLayout.landCells.map((cell) => {
-            const trait =
-              cell.kind === "plot" || cell.kind === "nature"
-                ? cell.trait
-                : cell.kind === "harbour"
-                  ? "coastal"
-                  : "plain";
-            const visualTrait = trait === "coastal" ? "plain" : trait;
-            const exposedEdges = mapLayout.exposedEdges.get(cell.cellId) ?? [];
-            const rockyCoast = Math.abs(Math.imul(city.seed + 19, 17) + cell.cellId * 11) % 3 === 0;
-            return (
-              <span
-                className={`terrain-art terrain-art--${visualTrait}`}
-                style={{
-                  left: cell.position.x,
-                  top: cell.position.y,
-                  zIndex: 10 + cell.position.depth,
-                }}
-                key={`terrain-${cell.cellId}`}
-                aria-hidden="true"
-              >
-                <span className="hex-land-underlay" />
-                <TerrainSprite
-                  atlasIndex={terrainAtlasIndex(visualTrait, city.seed, cell.cellId, cell.kind)}
-                />
-                {exposedEdges.map((direction) => (
-                  <HexRimEdge
-                    row={rockyCoast ? 1 : 0}
-                    variation={(cell.cellId + city.seed) % 4}
-                    direction={direction}
-                    key={`coast-${direction}`}
-                  />
-                ))}
-              </span>
-            );
-          })}
-
-          {plotCells.map((cell) => {
-            const unlocked = isPlotUnlocked(city, cell.plotId);
-            const occupied = city.buildings.some((building) => building.plotId === cell.plotId);
-            return (
-              <button
-                type="button"
-                key={cell.plotId}
-                className={[
-                  "plot",
-                  unlocked ? "plot--open" : "plot--locked",
-                  occupied ? "plot--occupied" : "",
-                  (buildMode || moveMode) && unlocked && !occupied ? "plot--target" : "",
-                ].join(" ")}
-                style={
-                  {
-                    left: cell.position.x - 91,
-                    top: cell.position.y - 66,
-                    zIndex: 22 + cell.position.depth,
-                    "--district": cell.district,
-                  } as CSSProperties
-                }
-                onClick={() => handlePlot(cell.plotId)}
-                aria-label={
-                  unlocked
-                    ? occupied
-                      ? `Occupied ${cell.trait} plot ${cell.plotId + 1}`
-                      : `Open ${cell.trait} plot ${cell.plotId + 1}`
-                    : `Locked ${cell.trait} plot in ${DISTRICT_NAMES[cell.district]}`
-                }
-              >
-                {!unlocked && (
-                  <span className="plot-lock">
-                    <LockKeyhole size={12} />
-                  </span>
-                )}
-                {unlocked && !occupied && (
-                  <span className={`plot-trait plot-trait--${cell.trait}`}>{cell.trait}</span>
-                )}
-              </button>
-            );
-          })}
-
-          <div className={`road-network road-network--${city.roadLevel}`} aria-hidden="true">
-            {roadTiles.map((tile) => (
-              <span
-                className="road-tile-position"
-                key={tile.key}
-                style={{
-                  left: tile.x,
-                  top: tile.y,
-                  zIndex: 34 + tile.depth,
-                }}
-              >
-                <RoadSprite tile={tile} level={city.roadLevel} />
-              </span>
-            ))}
-          </div>
-
-          {natureCells.map((cell) => (
-            <span
-              className={`environment-prop environment-prop--${cell.nature}`}
-              style={{
-                left: cell.position.x,
-                top: cell.position.y,
-                zIndex: 58 + cell.position.depth,
-              }}
-              key={`nature-${cell.cellId}`}
-              aria-hidden="true"
-              hidden={
-                city.wallLevel > 0 && (mapLayout.exposedEdges.get(cell.cellId)?.length ?? 0) > 0
-              }
-            >
-              {(cell.cellId + city.seed) % 3 === 0 ? (
-                <MapDetailSprite atlasIndex={15 + ((cell.atlasIndex + cell.cellId) % 5)} />
-              ) : (
-                <EnvironmentSprite atlasIndex={cell.atlasIndex} />
-              )}
-            </span>
-          ))}
-
-          <CityWalls level={city.wallLevel} layout={mapLayout} />
-
-          <div
-            className="harbour-pier"
-            style={{
-              left: mapLayout.harbour.position.x,
-              top: mapLayout.harbour.position.y + 20,
-              zIndex: 62 + mapLayout.harbour.position.depth,
-            }}
-            aria-hidden="true"
-          >
-            <span />
-            <i />
-          </div>
-          <button
-            className="landmark-building town-hall"
-            style={{
-              left: mapLayout.townHall.position.x,
-              top: mapLayout.townHall.position.y,
-              zIndex: 90 + mapLayout.townHall.position.depth,
-            }}
-            type="button"
-            onClick={() => setPanel("city")}
-            aria-label={`Town Hall, level ${city.townHallLevel}`}
-          >
-            <AtlasSprite type="academy" />
-            <span>Town Hall · {city.townHallLevel}</span>
-          </button>
-          <button
-            className="landmark-building harbour"
-            style={{
-              left: mapLayout.harbour.position.x,
-              top: mapLayout.harbour.position.y,
-              zIndex: 90 + mapLayout.harbour.position.depth,
-            }}
-            type="button"
-            onClick={() => setPanel("city")}
-            aria-label={`Harbour, level ${city.harbourLevel}`}
-          >
-            <AtlasSprite type="warehouse" />
-            <span>Harbour · {city.harbourLevel}</span>
-          </button>
-
-          {city.buildings.map((building) => {
-            const position = mapLayout.plotCells.get(building.plotId)?.position;
-            if (!position) return null;
-            const definition = BUILDING_DEFINITIONS[building.type];
-            const selected = building.id === selectedBuildingId;
-            const underConstruction =
-              city.construction?.targetBuildingId === building.id && building.status !== "active";
-            return (
-              <button
-                className={[
-                  "placed-building",
-                  selected ? "placed-building--selected" : "",
-                  building.condition < 100 ? "placed-building--damaged" : "",
-                  underConstruction ? "placed-building--constructing" : "",
-                ].join(" ")}
-                style={
-                  {
-                    left: position.x,
-                    top: position.y,
-                    zIndex: 88 + position.depth,
-                    "--building-scale": 0.72 + building.level * 0.035,
-                  } as CSSProperties
-                }
-                type="button"
-                key={building.id}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  selectBuilding(building);
-                }}
-                aria-label={`${definition.name}, level ${building.level}, ${building.condition}% condition`}
-              >
-                <AtlasSprite type={building.type} level={building.level} />
-                {underConstruction && (
-                  <span className="scaffolding">
-                    <Construction size={18} />
-                  </span>
-                )}
-                {building.condition < 100 && (
-                  <span className="damage-mark">
-                    {building.condition === 0 ? "Ruined" : "Repair"}
-                  </span>
-                )}
-                <span className="building-level" aria-hidden="true">
-                  {Array.from({ length: building.level }, (_, index) => (
-                    <i key={index} />
-                  ))}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <CityCanvas
+          city={city}
+          layout={mapLayout}
+          roadTiles={roadTiles}
+          camera={camera}
+          selectedBuildingId={selectedBuildingId}
+          placementActive={Boolean(buildMode || moveMode)}
+          onCameraChange={setCamera}
+          onPlot={handlePlot}
+          onBuilding={selectBuilding}
+          onLandmark={() => setPanel("city")}
+        />
         <div className="night-wash" style={{ opacity: nightStrength }} aria-hidden="true" />
       </section>
 
