@@ -83,16 +83,6 @@ export type CityMapLayout = {
   harbour: LandmarkMapCell;
 };
 
-export type RoadTile = AxialCoordinate & {
-  key: string;
-  cellId: number;
-  x: number;
-  y: number;
-  depth: number;
-  mask: number;
-  hillside: boolean;
-};
-
 const TOWN_HALL_COORDINATE = { q: 0, r: 0 } as const;
 const HARBOUR_COORDINATE = { q: 1, r: 3 } as const;
 const NATURE_KINDS: NatureKind[] = [
@@ -133,15 +123,6 @@ export function exposedHexEdges(
     if (!landCoordinates.has(axialKey(neighbour))) exposed.push(direction as HexDirection);
   });
   return exposed;
-}
-
-export function getRoadDirections(mask: number): HexDirection[] {
-  if (!Number.isInteger(mask) || mask < 1 || mask > 63) {
-    throw new Error(`Invalid six-way road connection mask: ${mask}`);
-  }
-  return HEX_DIRECTIONS.map((_, direction) => direction as HexDirection).filter(
-    (direction) => (mask & (1 << direction)) !== 0,
-  );
 }
 
 const HEX_COORDINATES: AxialCoordinate[] = [];
@@ -447,85 +428,4 @@ export function getPlotDistance(seed: number, leftPlotId: number, rightPlotId: n
   const right = layout.plotCells.get(rightPlotId);
   if (!left || !right) return Number.POSITIVE_INFINITY;
   return axialDistance(left, right);
-}
-
-function findRoadPath(layout: CityMapLayout, fromCellId: number, passable: Set<number>) {
-  const queue = [fromCellId];
-  const previous = new Map<number, number | null>([[fromCellId, null]]);
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    if (current === layout.townHall.cellId) break;
-    for (const coordinate of axialNeighbours(layout.cells[current])) {
-      const next = layout.cellByCoordinate.get(axialKey(coordinate));
-      if (next && passable.has(next.cellId) && !previous.has(next.cellId)) {
-        previous.set(next.cellId, current);
-        queue.push(next.cellId);
-      }
-    }
-  }
-  if (!previous.has(layout.townHall.cellId)) return [];
-  const path = [layout.townHall.cellId];
-  let current = layout.townHall.cellId;
-  while (current !== fromCellId) {
-    current = previous.get(current)!;
-    path.push(current);
-  }
-  return path.reverse();
-}
-
-function getRoadEdges(seed: number, occupiedPlotIds: number[], _unlockedDistricts: number[]) {
-  const layout = getMapLayout(seed);
-  const passable = new Set<number>([layout.townHall.cellId, layout.harbour.cellId]);
-  for (const cell of layout.plotCells.values()) passable.add(cell.cellId);
-  const edges = new Map<string, [number, number]>();
-  for (const plotId of occupiedPlotIds) {
-    const cell = layout.plotCells.get(plotId);
-    if (!cell) continue;
-    const path = findRoadPath(layout, cell.cellId, passable);
-    for (let index = 1; index < path.length; index += 1) {
-      const left = Math.min(path[index - 1], path[index]);
-      const right = Math.max(path[index - 1], path[index]);
-      edges.set(`${left}-${right}`, [left, right]);
-    }
-  }
-  return edges;
-}
-
-export function getRoadTiles(
-  seed: number,
-  occupiedPlotIds: number[],
-  unlockedDistricts: number[],
-): RoadTile[] {
-  const layout = getMapLayout(seed);
-  const connections = new Map<number, number>();
-  const connect = (cellId: number, direction: HexDirection) => {
-    connections.set(cellId, (connections.get(cellId) ?? 0) | (1 << direction));
-  };
-
-  for (const [fromId, toId] of getRoadEdges(seed, occupiedPlotIds, unlockedDistricts).values()) {
-    const from = layout.cells[fromId];
-    const to = layout.cells[toId];
-    const direction = HEX_DIRECTIONS.findIndex(
-      (candidate) => from.q + candidate.q === to.q && from.r + candidate.r === to.r,
-    ) as HexDirection;
-    if (direction < 0) throw new Error("Road edge does not join neighbouring hexes.");
-    connect(fromId, direction);
-    connect(toId, ((direction + 3) % 6) as HexDirection);
-  }
-
-  return [...connections.entries()].map(([cellId, mask]) => {
-    const cell = layout.cells[cellId];
-    const hillside = "trait" in cell && cell.trait === "hillside";
-    return {
-      key: `road-${cellId}`,
-      cellId,
-      q: cell.q,
-      r: cell.r,
-      x: cell.position.x,
-      y: cell.position.y,
-      depth: cell.position.depth,
-      mask,
-      hillside,
-    };
-  });
 }

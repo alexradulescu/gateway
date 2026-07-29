@@ -37,7 +37,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { CityCanvas } from "./CityCanvas";
+import { CityStage } from "./CityStage";
 import {
   BUILDING_DEFINITIONS,
   BUILDING_ORDER,
@@ -88,7 +88,6 @@ import {
   type Resources,
   type Staffing,
 } from "./game";
-import { getMapLayout, getRoadTiles } from "./map";
 
 const SAVE_KEY = "aegean-polis.city.v1";
 const STAFFING_LEVELS: Staffing[] = [0, 0.5, 1, 1.25];
@@ -438,21 +437,12 @@ export function App() {
   const [buildMode, setBuildMode] = useState<BuildingType | null>(null);
   const [moveMode, setMoveMode] = useState<string | null>(null);
   const [toast, setToast] = useState("Welcome to the sunlit island of Thalassa.");
-  const [camera, setCamera] = useState({ x: 0, y: 8, zoom: 0.62 });
+  const [camera, setCamera] = useState({ x: 0, y: -28, zoom: 0.78 });
+  const [layoutEditorEnabled, setLayoutEditorEnabled] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
   const defenceForces = useMemo(() => getDefenceForces(city), [city]);
-  const mapLayout = useMemo(() => getMapLayout(city.seed), [city.seed]);
-  const roadTiles = useMemo(
-    () =>
-      getRoadTiles(
-        city.seed,
-        city.buildings.map((building) => building.plotId),
-        city.unlockedDistricts,
-      ),
-    [city.buildings, city.seed, city.unlockedDistricts],
-  );
   const selectedBuilding = city.buildings.find((building) => building.id === selectedBuildingId);
   const newestEvent = city.eventLog[0];
   const unlockedDistricts = new Set(city.unlockedDistricts);
@@ -571,7 +561,7 @@ export function App() {
   function zoomBy(amount: number) {
     setCamera((current) => ({
       ...current,
-      zoom: Math.max(0.48, Math.min(1.5, current.zoom + amount)),
+      zoom: Math.max(0.45, Math.min(1.45, current.zoom + amount)),
     }));
   }
 
@@ -632,7 +622,11 @@ export function App() {
   const cityYear = Math.max(1, Math.floor(city.activeSeconds / 1200) + 1);
 
   return (
-    <main className={`game-shell game-shell--${city.doctrine}`}>
+    <main
+      className={`game-shell game-shell--${city.doctrine} ${
+        layoutEditorEnabled ? "game-shell--layout-editor" : ""
+      }`}
+    >
       <header className="top-bar">
         <button className="city-mark" type="button" onClick={() => setPanel("city")}>
           <span className="city-seal">
@@ -645,7 +639,7 @@ export function App() {
           <ChevronRight size={16} />
         </button>
 
-        <div className="resource-ribbon" aria-label="City resources">
+        <section className="resource-ribbon" aria-label="City resources">
           {(Object.keys(city.resources) as ResourceKey[]).map((key) => {
             const Icon = RESOURCE_ICONS[key];
             return (
@@ -658,7 +652,7 @@ export function App() {
               </div>
             );
           })}
-        </div>
+        </section>
 
         <nav className="top-actions" aria-label="City controls">
           <button type="button" onClick={() => setPanel("research")} aria-label="Research">
@@ -681,18 +675,17 @@ export function App() {
         className={`city-viewport ${buildMode || moveMode ? "city-viewport--placing" : ""}`}
         aria-label="Isometric city view"
       >
-        <div className="water-lines" aria-hidden="true" />
-        <CityCanvas
+        <CityStage
           city={city}
-          layout={mapLayout}
-          roadTiles={roadTiles}
           camera={camera}
           selectedBuildingId={selectedBuildingId}
           placementActive={Boolean(buildMode || moveMode)}
+          editorEnabled={layoutEditorEnabled}
           onCameraChange={setCamera}
           onPlot={handlePlot}
           onBuilding={selectBuilding}
           onLandmark={() => setPanel("city")}
+          onEditorClose={() => setLayoutEditorEnabled(false)}
         />
         <div className="night-wash" style={{ opacity: nightStrength }} aria-hidden="true" />
       </section>
@@ -800,13 +793,14 @@ export function App() {
         <p>{newestEvent.detail}</p>
       </aside>
 
-      <div className="camera-controls parchment" aria-label="Camera controls">
+      <fieldset className="camera-controls parchment">
+        <legend className="visually-hidden">Camera controls</legend>
         <button type="button" onClick={() => zoomBy(0.12)} aria-label="Zoom in">
           <ZoomIn size={20} />
         </button>
         <button
           type="button"
-          onClick={() => setCamera({ x: 0, y: 8, zoom: 0.62 })}
+          onClick={() => setCamera({ x: 0, y: -28, zoom: 0.78 })}
           aria-label="Reset camera"
         >
           <RotateCcw size={18} />
@@ -814,9 +808,10 @@ export function App() {
         <button type="button" onClick={() => zoomBy(-0.12)} aria-label="Zoom out">
           <ZoomOut size={20} />
         </button>
-      </div>
+      </fieldset>
 
-      <div className="speed-control parchment" aria-label="Simulation speed">
+      <fieldset className="speed-control parchment">
+        <legend className="visually-hidden">Simulation speed</legend>
         {[0, 1, 2].map((value) => (
           <button
             type="button"
@@ -833,7 +828,7 @@ export function App() {
             20×
           </button>
         )}
-      </div>
+      </fieldset>
 
       <section className="build-dock parchment" aria-label="Construction">
         <header>
@@ -893,115 +888,123 @@ export function App() {
       </section>
 
       {selectedBuilding && (
-        <aside className="building-panel parchment">
-          <header>
-            <span className="eyebrow">Plot {selectedBuilding.plotId + 1}</span>
-            <button
-              className="bare-close"
-              type="button"
-              onClick={() => setSelectedBuildingId(null)}
-              aria-label="Close building details"
-            >
-              <X size={17} />
-            </button>
-            <AtlasSprite type={selectedBuilding.type} level={selectedBuilding.level} />
-            <div>
-              <h2>{BUILDING_DEFINITIONS[selectedBuilding.type].name}</h2>
-              <p>
-                Level {selectedBuilding.level} · {selectedBuilding.condition}% condition
-              </p>
-            </div>
-          </header>
-          <p className="building-description">
-            {BUILDING_DEFINITIONS[selectedBuilding.type].description}
-          </p>
-          {BUILDING_DEFINITIONS[selectedBuilding.type].workers > 0 && (
-            <label className="staffing-row">
-              <span>Work priority</span>
-              <select
-                value={selectedBuilding.staffing}
-                onChange={(event) =>
-                  updateCity((current) =>
-                    setStaffing(
-                      current,
-                      selectedBuilding.id,
-                      Number(event.target.value) as Staffing,
-                    ),
-                  )
-                }
+        <>
+          <button
+            type="button"
+            className="building-panel-backdrop"
+            aria-label="Close building details"
+            onClick={() => setSelectedBuildingId(null)}
+          />
+          <aside className="building-panel parchment">
+            <header>
+              <span className="eyebrow">Plot {selectedBuilding.plotId + 1}</span>
+              <button
+                className="bare-close"
+                type="button"
+                onClick={() => setSelectedBuildingId(null)}
+                aria-label="Close building details"
               >
-                {STAFFING_LEVELS.map((level) => (
-                  <option value={level} key={level}>
-                    {level === 0
-                      ? "Closed"
-                      : level === 0.5
-                        ? "Low"
-                        : level === 1
-                          ? "Normal"
-                          : "High"}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <div className="panel-actions">
-            {selectedBuilding.condition < 100 && (
+                <X size={17} />
+              </button>
+              <AtlasSprite type={selectedBuilding.type} level={selectedBuilding.level} />
+              <div>
+                <h2>{BUILDING_DEFINITIONS[selectedBuilding.type].name}</h2>
+                <p>
+                  Level {selectedBuilding.level} · {selectedBuilding.condition}% condition
+                </p>
+              </div>
+            </header>
+            <p className="building-description">
+              {BUILDING_DEFINITIONS[selectedBuilding.type].description}
+            </p>
+            {BUILDING_DEFINITIONS[selectedBuilding.type].workers > 0 && (
+              <label className="staffing-row">
+                <span>Work priority</span>
+                <select
+                  value={selectedBuilding.staffing}
+                  onChange={(event) =>
+                    updateCity((current) =>
+                      setStaffing(
+                        current,
+                        selectedBuilding.id,
+                        Number(event.target.value) as Staffing,
+                      ),
+                    )
+                  }
+                >
+                  {STAFFING_LEVELS.map((level) => (
+                    <option value={level} key={level}>
+                      {level === 0
+                        ? "Closed"
+                        : level === 0.5
+                          ? "Low"
+                          : level === 1
+                            ? "Normal"
+                            : "High"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <div className="panel-actions">
+              {selectedBuilding.condition < 100 && (
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={() =>
+                    updateCity(
+                      (current) => queueRepair(current, selectedBuilding.id),
+                      "Repairs queued.",
+                    )
+                  }
+                >
+                  <Hammer size={17} /> Repair
+                </button>
+              )}
               <button
                 type="button"
                 className="primary-action"
+                disabled={selectedBuilding.level >= 3 || selectedBuilding.condition < 100}
                 onClick={() =>
                   updateCity(
-                    (current) => queueRepair(current, selectedBuilding.id),
-                    "Repairs queued.",
+                    (current) => queueUpgrade(current, selectedBuilding.id),
+                    "Upgrade queued.",
                   )
                 }
               >
-                <Hammer size={17} /> Repair
+                <Plus size={17} /> Upgrade
               </button>
-            )}
-            <button
-              type="button"
-              className="primary-action"
-              disabled={selectedBuilding.level >= 3 || selectedBuilding.condition < 100}
-              onClick={() =>
-                updateCity(
-                  (current) => queueUpgrade(current, selectedBuilding.id),
-                  "Upgrade queued.",
-                )
-              }
-            >
-              <Plus size={17} /> Upgrade
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMoveMode(selectedBuilding.id);
-                setSelectedBuildingId(null);
-                setToast("Choose an empty plot. Moving costs 25 coin and 10 timber.");
-              }}
-            >
-              <Menu size={17} /> Move
-            </button>
-            <button
-              type="button"
-              className="danger-action"
-              onClick={() => {
-                if (
-                  !window.confirm("Demolish this building and recover 35% of its base materials?")
-                ) {
-                  return;
-                }
-                updateCity(
-                  (current) => demolishBuilding(current, selectedBuilding.id),
-                  "Building demolished.",
-                );
-                setSelectedBuildingId(null);
-              }}
-            >
-              <Minus size={17} /> Demolish
-            </button>
-          </div>
-        </aside>
+              <button
+                type="button"
+                onClick={() => {
+                  setMoveMode(selectedBuilding.id);
+                  setSelectedBuildingId(null);
+                  setToast("Choose an empty plot. Moving costs 25 coin and 10 timber.");
+                }}
+              >
+                <Menu size={17} /> Move
+              </button>
+              <button
+                type="button"
+                className="danger-action"
+                onClick={() => {
+                  if (
+                    !window.confirm("Demolish this building and recover 35% of its base materials?")
+                  ) {
+                    return;
+                  }
+                  updateCity(
+                    (current) => demolishBuilding(current, selectedBuilding.id),
+                    "Building demolished.",
+                  );
+                  setSelectedBuildingId(null);
+                }}
+              >
+                <Minus size={17} /> Demolish
+              </button>
+            </div>
+          </aside>
+        </>
       )}
 
       {panel === "research" && (
@@ -1337,6 +1340,22 @@ export function App() {
           <section className="admin-section">
             <span className="eyebrow">Simulation</span>
             <div className="tool-grid">
+              <button
+                type="button"
+                aria-pressed={layoutEditorEnabled}
+                onClick={() => {
+                  setLayoutEditorEnabled((enabled) => !enabled);
+                  setPanel(null);
+                  setToast(
+                    layoutEditorEnabled
+                      ? "Placement editor closed."
+                      : "Placement editor opened. Drag numbered anchors to calibrate sites.",
+                  );
+                }}
+              >
+                <Construction size={18} />{" "}
+                {layoutEditorEnabled ? "Close placement editor" : "Open placement editor"}
+              </button>
               <button
                 type="button"
                 onClick={() => {

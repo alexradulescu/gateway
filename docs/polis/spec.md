@@ -161,24 +161,25 @@ controls.
 - The visual direction is a fixed three-quarter isometric, sunlit classical Aegean scene: warm
   limestone, white plaster, terracotta roofs, restrained cobalt accents, marble civic structures,
   olive and cypress trees, bright water, and soft painterly shadows.
-- All map artwork is original, high-resolution raster art with a coherent camera, lighting, base
-  footprint, and visual progression. Separate production atlases cover buildings, terrain,
-  directional roads and junctions, road endpoints and hillside ramps, coastline pieces, walls, and
-  permanent natural blockers.
-- The map renderer is one high-DPI Canvas inside the React interface. It uses one world coordinate
-  system, one camera transform, inverse-transform hit testing, cursor-anchored zoom, and painter's
-  order for scenery and buildings. This prevents per-element CSS rounding, layer drift, random gaps,
-  and floating buildings. React continues to render the HUD, panels, dialogs, and accessible map
-  actions.
-- The renderer uses a radius-four axial hex field. Six-way road masks are composed from directional
-  road arms and a centre hub, allowing every endpoint, bend, junction, crossroads, landscaped avenue,
-  and hillside route without a separate sprite for every combination. Coast and wall rims are clipped
-  to the exposed edges of each land hex. The illustrated isometric atlas cells are masked over an
-  exact six-sided ground mesh, so adjacent cells always share the same geometric seam.
-- Each city uses a seeded 61-position pointy-top hex composition: 36 normal building plots, 18
-  permanent natural blockers, a fixed Town Hall, a fixed harbour, and five water cuts that create
-  bays and irregular headlands. Twelve central plots begin available. Three eight-plot districts
-  unlock separately.
+- The visible map is the fixed `thalassa-01` authored stage at `1536 × 1024`. Coast, terrain,
+  streams, permanent vegetation, empty clearings, plazas, and the complete road network are painted
+  as one coherent scene. The player never sees a tile boundary.
+- Four registered AVIF stage plates share the same composition and building anchors. Road upgrades
+  swap the whole plate: packed earth, restrained stone, broad fitted limestone, then landscaped
+  civic avenues. There are no procedural road, junction, coast, or wall pieces in the visible map.
+- Buildings and landmarks are ordinary absolutely positioned HTML controls over the stage. Each
+  uses a fixed ground-contact anchor and vertical depth order. The camera is one CSS transform with
+  pointer panning, cursor-centred zoom, and large accessible hit areas.
+- `thalassa-01` defines 36 stable building anchors, a fixed Town Hall, and a fixed harbour. Twelve
+  sites begin available and three eight-site districts unlock separately. Terrain traits and the
+  existing axial adjacency model may remain invisible simulation data; they do not control the
+  visible ground geometry.
+- Future island art may vary coast, fields, and permanent scenery, but a compatible plate keeps the
+  same stage dimensions and anchor contract. A developer placement editor exposes one district at a
+  time and exports calibrated anchor JSON.
+- All map artwork is original, high-resolution raster art with a coherent camera, lighting,
+  ground scale, and visual progression. Transparent building atlases remain separate from the
+  authored stage plates.
 - Plot placement has local effects. Residential appeal benefits from parks and selected services;
   workshops, barracks, and extraction buildings impose nearby penalties. Coastal and hillside traits
   provide specialised advantages.
@@ -213,15 +214,15 @@ controls.
 ## Testing Decisions
 
 - Tests observe the game through three public seams: the rendered `/polis/` application, the
-  serialisable simulation-state transition boundary, and the Canvas camera/hit-testing interface.
+  serialisable simulation-state transition boundary, and the fixed-stage layout/camera contract.
 - Browser-level checks cover the visible player journey: founding or loading a city, placing and
   upgrading a building, opening management surfaces, expanding land, responding to an event, using
   developer controls, and exporting/importing a save.
 - Pure simulation tests use worked examples with fixed elapsed times and seeded random input. They
   cover affordability, production, capped offline progress, construction completion, land
   expansion, adjacency, crisis bounds, and saved-state round trips.
-- Canvas geometry tests use worked world and screen coordinates to cover reversible projection,
-  cursor-anchored zoom, and selecting the displayed hex after pan and zoom.
+- Stage tests cover all 36 unique anchors, the four road-level plates, landmark separation,
+  reversible camera projection, and cursor-anchored zoom.
 - Tests assert observable state and visible outcomes, not React component structure, private helper
   calls, CSS class names, or implementation-specific timers.
 - Gateway's existing Bun-test approach is the prior art for pure domain behavior. Production build,

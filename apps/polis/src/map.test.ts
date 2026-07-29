@@ -9,8 +9,6 @@ import {
   exposedHexEdges,
   getMapLayout,
   getPlotDistance,
-  getRoadDirections,
-  getRoadTiles,
 } from "./map";
 
 describe("Aegean Polis map", () => {
@@ -65,46 +63,11 @@ describe("Aegean Polis map", () => {
     }
   });
 
-  test("occupied plots automatically form reciprocal six-way routes to the town hall", () => {
-    for (let seed = 1; seed <= 250; seed += 1) {
-      for (const [district, plotIds] of PLOT_DISTRICTS.entries()) {
-        for (const plotId of plotIds) {
-          const layout = getMapLayout(seed);
-          const roads = getRoadTiles(seed, [plotId], [0, district]);
-          const roadByCell = new Map(roads.map((road) => [road.cellId, road]));
-          const occupiedCell = layout.plotCells.get(plotId)!;
-          expect(roadByCell.has(occupiedCell.cellId)).toBe(true);
-          expect(roadByCell.has(layout.townHall.cellId)).toBe(true);
-
-          for (const road of roads) {
-            expect(road.mask).toBeGreaterThan(0);
-            expect(road.mask).toBeLessThan(64);
-            axialNeighbours(road).forEach((coordinate, direction) => {
-              if ((road.mask & (1 << direction)) === 0) return;
-              const neighbour = roads.find(
-                (candidate) => candidate.q === coordinate.q && candidate.r === coordinate.r,
-              );
-              expect(neighbour).toBeDefined();
-              expect(neighbour!.mask & (1 << ((direction + 3) % 6))).not.toBe(0);
-            });
-          }
-        }
-      }
-    }
-  });
-
   test("neighbourhood distance follows the displayed seeded layout", () => {
     const layout = getMapLayout(42);
     const left = layout.plotCells.get(7)!;
     const right = layout.plotCells.get(8)!;
 
     expect(getPlotDistance(42, 7, 8)).toBe(axialDistance(left, right));
-  });
-
-  test("the road mask supports every combination of six directions", () => {
-    expect(getRoadDirections(1)).toEqual([0]);
-    expect(getRoadDirections(21)).toEqual([0, 2, 4]);
-    expect(getRoadDirections(42)).toEqual([1, 3, 5]);
-    expect(getRoadDirections(63)).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
