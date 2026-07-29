@@ -1,12 +1,14 @@
-import type { CityMapLayout, MapCell, MapPosition } from "./map";
+import { axialKey, type CityMapLayout, type MapCell, type MapPosition } from "./map";
 import type { Building } from "./game";
+import {
+  CITY_WORLD_CENTER,
+  CITY_WORLD_HEIGHT,
+  CITY_WORLD_WIDTH,
+  HEX_SIZE,
+  worldToAxial,
+} from "./hexGeometry";
 
-export const CITY_WORLD_WIDTH = 1320;
-export const CITY_WORLD_HEIGHT = 1000;
-export const CITY_WORLD_CENTER = { x: CITY_WORLD_WIDTH / 2, y: CITY_WORLD_HEIGHT / 2 };
-export const HEX_HALF_WIDTH = 71;
-export const HEX_HALF_HEIGHT = 73;
-export const HEX_SIDE_HALF_HEIGHT = 17;
+export { CITY_WORLD_CENTER, CITY_WORLD_HEIGHT, CITY_WORLD_WIDTH };
 
 export type Point = {
   x: number;
@@ -72,8 +74,8 @@ export function zoomCameraAt(
 export function pointInMapHex(point: Point, center: MapPosition) {
   const x = Math.abs(point.x - center.x);
   const y = Math.abs(point.y - center.y);
-  if (x > HEX_HALF_WIDTH || y > HEX_HALF_HEIGHT) return false;
-  return y <= HEX_HALF_HEIGHT - ((HEX_HALF_HEIGHT - HEX_SIDE_HALF_HEIGHT) / HEX_HALF_WIDTH) * x;
+  if (x > (Math.sqrt(3) / 2) * HEX_SIZE || y > HEX_SIZE) return false;
+  return Math.sqrt(3) * y + x <= Math.sqrt(3) * HEX_SIZE;
 }
 
 export function hitTestMap(
@@ -83,18 +85,7 @@ export function hitTestMap(
   layout: CityMapLayout,
 ): MapCell | null {
   const worldPoint = screenToWorld(screenPoint, camera, viewport);
-  let closest: MapCell | null = null;
-  let closestDistance = Number.POSITIVE_INFINITY;
-  for (const cell of layout.cells) {
-    if (!pointInMapHex(worldPoint, cell.position)) continue;
-    const distance =
-      Math.abs(worldPoint.x - cell.position.x) + Math.abs(worldPoint.y - cell.position.y);
-    if (distance < closestDistance) {
-      closest = cell;
-      closestDistance = distance;
-    }
-  }
-  return closest;
+  return layout.cellByCoordinate.get(axialKey(worldToAxial(worldPoint))) ?? null;
 }
 
 export function hitTestBuilding(

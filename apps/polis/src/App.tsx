@@ -438,7 +438,7 @@ export function App() {
   const [buildMode, setBuildMode] = useState<BuildingType | null>(null);
   const [moveMode, setMoveMode] = useState<string | null>(null);
   const [toast, setToast] = useState("Welcome to the sunlit island of Thalassa.");
-  const [camera, setCamera] = useState({ x: 0, y: 8, zoom: 0.84 });
+  const [camera, setCamera] = useState({ x: 0, y: 8, zoom: 0.62 });
   const fileInput = useRef<HTMLInputElement>(null);
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
@@ -571,7 +571,7 @@ export function App() {
   function zoomBy(amount: number) {
     setCamera((current) => ({
       ...current,
-      zoom: Math.max(0.66, Math.min(1.5, current.zoom + amount)),
+      zoom: Math.max(0.48, Math.min(1.5, current.zoom + amount)),
     }));
   }
 
@@ -806,7 +806,7 @@ export function App() {
         </button>
         <button
           type="button"
-          onClick={() => setCamera({ x: 0, y: 8, zoom: 0.84 })}
+          onClick={() => setCamera({ x: 0, y: 8, zoom: 0.62 })}
           aria-label="Reset camera"
         >
           <RotateCcw size={18} />

@@ -1,3 +1,5 @@
+import { axialToWorld } from "./hexGeometry";
+
 export type PlotTrait = "plain" | "fertile" | "hillside" | "coastal";
 export type NatureKind =
   | "olive-grove"
@@ -161,10 +163,10 @@ function cellIdAt(coordinate: AxialCoordinate) {
 }
 
 export function mapPosition(q: number, r: number): MapPosition {
+  const point = axialToWorld({ q, r });
   return {
-    x: 660 + q * 142 + r * 71,
-    y: 500 + r * 90,
-    depth: (r + HEX_RADIUS) * 16 + q + HEX_RADIUS,
+    ...point,
+    depth: point.y * 10 + point.x,
   };
 }
 

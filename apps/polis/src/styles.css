@@ -417,7 +417,6 @@ a:focus-visible {
   display: block;
   width: 204px;
   height: 153px;
-  background-image: url("/polis/assets/hex-terrain-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--terrain-x) var(--terrain-y);
   background-size: 400% 400%;
@@ -439,7 +438,6 @@ a:focus-visible {
   display: block;
   width: 204px;
   height: 136px;
-  background-image: url("/polis/assets/hex-rims-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--rim-x) var(--rim-y);
   background-size: 400% 400%;
@@ -600,14 +598,12 @@ a:focus-visible {
   display: block;
   width: 204px;
   height: 136px;
-  background-image: url("/polis/assets/hex-roads-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--road-x) var(--road-y);
   background-size: 400% 400%;
 }
 
 .road-atlas-sprite--ramp {
-  background-image: url("/polis/assets/hex-road-ramps-atlas.png");
   background-size: 300% 400%;
 }
 
@@ -657,7 +653,6 @@ a:focus-visible {
   display: block;
   width: 178px;
   height: 226px;
-  background-image: url("/polis/assets/environment-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--environment-x) var(--environment-y);
   background-size: 400% 200%;
@@ -668,7 +663,6 @@ a:focus-visible {
   display: block;
   width: 184px;
   height: 154px;
-  background-image: url("/polis/assets/map-details-atlas.png");
   background-repeat: no-repeat;
   background-position: var(--detail-x) var(--detail-y);
   background-size: 500% 400%;
