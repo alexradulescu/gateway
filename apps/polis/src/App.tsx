@@ -58,9 +58,12 @@ import {
   demolishBuilding,
   developerDamage,
   developerGrant,
+  developerUnlockAllResearch,
+  estimateHoursToAfford,
   finishAllProjects,
   getCityMetrics,
   getDefenceForces,
+  getResourceFlowPerHour,
   isPlotUnlocked,
   maybeTriggerScheduledCrisis,
   moveBuilding,
@@ -157,6 +160,38 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainder = Math.ceil(seconds % 60);
   return `${minutes}m ${remainder}s`;
+}
+
+function formatHourlyRate(value: number) {
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+  return `${sign}${formatNumber(Math.abs(value))}/h`;
+}
+
+function formatAffordability(hours: number | null) {
+  if (hours === null) return "Needs production";
+  if (hours <= 0) return "Ready now";
+  const minutes = Math.ceil(hours * 60);
+  if (minutes < 60) return `About ${minutes}m`;
+  if (hours < 24) {
+    const wholeHours = Math.floor(hours);
+    const remainingMinutes = Math.ceil((hours - wholeHours) * 60);
+    return remainingMinutes > 0
+      ? `About ${wholeHours}h ${remainingMinutes}m`
+      : `About ${wholeHours}h`;
+  }
+  return `About ${Math.ceil(hours / 24)}d`;
+}
+
+function singleResourceCost(key: ResourceKey, value: number): Resources {
+  return {
+    food: 0,
+    timber: 0,
+    stone: 0,
+    coin: 0,
+    goods: 0,
+    knowledge: 0,
+    [key]: value,
+  };
 }
 
 function costParts(resources: Resources) {
@@ -439,10 +474,13 @@ export function App() {
   const [toast, setToast] = useState("Welcome to the sunlit island of Thalassa.");
   const [camera, setCamera] = useState({ x: 0, y: -28, zoom: 0.78 });
   const [layoutEditorEnabled, setLayoutEditorEnabled] = useState(false);
+  const [developerGrantAmount, setDeveloperGrantAmount] = useState(500);
+  const [developerInstantProjects, setDeveloperInstantProjects] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const metrics = useMemo(() => getCityMetrics(city), [city]);
   const defenceForces = useMemo(() => getDefenceForces(city), [city]);
+  const resourceFlow = useMemo(() => getResourceFlowPerHour(city), [city]);
   const selectedBuilding = city.buildings.find((building) => building.id === selectedBuildingId);
   const newestEvent = city.eventLog[0];
   const unlockedDistricts = new Set(city.unlockedDistricts);
@@ -501,7 +539,8 @@ export function App() {
 
   function updateCity(action: (current: CityState) => CityState, success?: string) {
     try {
-      const next = action(city);
+      const changed = action(city);
+      const next = developerInstantProjects ? finishAllProjects(changed) : changed;
       setCity(next);
       if (success) setToast(success);
     } catch (error) {
@@ -642,12 +681,22 @@ export function App() {
         <section className="resource-ribbon" aria-label="City resources">
           {(Object.keys(city.resources) as ResourceKey[]).map((key) => {
             const Icon = RESOURCE_ICONS[key];
+            const flow = resourceFlow.net[key];
             return (
-              <div className="resource" key={key} title={RESOURCE_LABELS[key]}>
+              <div
+                className="resource"
+                key={key}
+                title={`${RESOURCE_LABELS[key]}: ${formatHourlyRate(flow)} net · ${formatNumber(resourceFlow.produced[key])}/h produced · ${formatNumber(resourceFlow.used[key])}/h used`}
+              >
                 <Icon size={17} />
                 <span>
                   <small>{RESOURCE_LABELS[key]}</small>
                   <strong>{formatNumber(city.resources[key])}</strong>
+                  <em
+                    className={flow < 0 ? "resource-rate resource-rate--negative" : "resource-rate"}
+                  >
+                    {formatHourlyRate(flow)}
+                  </em>
                 </span>
               </div>
             );
@@ -849,6 +898,11 @@ export function App() {
             const requiredResearch = RESEARCH_DEFINITIONS.find(
               (research) => research.id === requirement,
             );
+            const affordability = estimateHoursToAfford(
+              city.resources,
+              definition.cost,
+              resourceFlow.net,
+            );
             const Icon = BUILDING_ICONS[type];
             return (
               <button
@@ -874,7 +928,14 @@ export function App() {
                     <Icon size={13} /> {definition.shortName}
                   </span>
                   {unlocked ? (
-                    <CostLine resources={definition.cost} />
+                    <>
+                      <CostLine resources={definition.cost} />
+                      {!affordable && (
+                        <small className="affordability-note">
+                          {formatAffordability(affordability)}
+                        </small>
+                      )}
+                    </>
                   ) : (
                     <small className="research-lock">
                       <LockKeyhole size={10} /> {requiredResearch?.label}
@@ -1025,6 +1086,11 @@ export function App() {
           <div className="research-list">
             {RESEARCH_DEFINITIONS.map((research) => {
               const complete = city.completedResearch.includes(research.id);
+              const affordability = estimateHoursToAfford(
+                city.resources,
+                singleResourceCost("knowledge", research.knowledge),
+                resourceFlow.net,
+              );
               return (
                 <article
                   className={complete ? "research-card research-card--complete" : "research-card"}
@@ -1038,6 +1104,12 @@ export function App() {
                     <p>{research.detail}</p>
                     <small>
                       {research.knowledge} knowledge · {formatTime(research.seconds)}
+                      {!complete && city.resources.knowledge < research.knowledge && (
+                        <em className="affordability-note">
+                          {" "}
+                          · {formatAffordability(affordability)}
+                        </em>
+                      )}
                     </small>
                   </div>
                   <button
@@ -1263,6 +1335,11 @@ export function App() {
               {DISTRICT_NAMES.map((name, district) => {
                 const unlocked = city.unlockedDistricts.includes(district);
                 const active = city.expansion?.district === district;
+                const affordability = estimateHoursToAfford(
+                  city.resources,
+                  DISTRICT_COSTS[district],
+                  resourceFlow.net,
+                );
                 return (
                   <article key={name} className={unlocked ? "district district--open" : "district"}>
                     <span>{district + 1}</span>
@@ -1273,7 +1350,16 @@ export function App() {
                           ? `${PLOT_DISTRICTS[district].length} plots open`
                           : "Eight plots and a variable find"}
                       </p>
-                      {!unlocked && <CostLine resources={DISTRICT_COSTS[district]} />}
+                      {!unlocked && (
+                        <>
+                          <CostLine resources={DISTRICT_COSTS[district]} />
+                          {!canAfford(city.resources, DISTRICT_COSTS[district]) && (
+                            <small className="affordability-note">
+                              {formatAffordability(affordability)}
+                            </small>
+                          )}
+                        </>
+                      )}
                     </div>
                     {unlocked ? (
                       <Check size={18} />
@@ -1338,6 +1424,63 @@ export function App() {
             </p>
           </div>
           <section className="admin-section">
+            <span className="eyebrow">Resource grants</span>
+            <label className="developer-grant-amount">
+              <span>Amount to add</span>
+              <input
+                type="number"
+                min="1"
+                max="50000"
+                step="50"
+                value={developerGrantAmount}
+                onChange={(event) =>
+                  setDeveloperGrantAmount(
+                    Math.max(1, Math.min(50000, Number(event.target.value) || 1)),
+                  )
+                }
+              />
+            </label>
+            <div className="resource-grant-grid">
+              {(Object.keys(RESOURCE_LABELS) as ResourceKey[]).map((key) => {
+                const Icon = RESOURCE_ICONS[key];
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    onClick={() =>
+                      updateCity(
+                        (current) => developerGrant(current, developerGrantAmount, key),
+                        `${formatNumber(developerGrantAmount)} ${RESOURCE_LABELS[key].toLowerCase()} added.`,
+                      )
+                    }
+                  >
+                    <Icon size={17} />
+                    <span>
+                      <strong>{RESOURCE_LABELS[key]}</strong>
+                      <small>+{formatNumber(developerGrantAmount)}</small>
+                    </span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                className="resource-grant-all"
+                onClick={() =>
+                  updateCity(
+                    (current) => developerGrant(current, developerGrantAmount),
+                    `${formatNumber(developerGrantAmount)} of every resource added.`,
+                  )
+                }
+              >
+                <Plus size={17} />
+                <span>
+                  <strong>All resources</strong>
+                  <small>+{formatNumber(developerGrantAmount)} each</small>
+                </span>
+              </button>
+            </div>
+          </section>
+          <section className="admin-section">
             <span className="eyebrow">Simulation</span>
             <div className="tool-grid">
               <button
@@ -1358,6 +1501,24 @@ export function App() {
               </button>
               <button
                 type="button"
+                className={developerInstantProjects ? "active" : ""}
+                aria-pressed={developerInstantProjects}
+                onClick={() => {
+                  const enabled = !developerInstantProjects;
+                  setDeveloperInstantProjects(enabled);
+                  if (enabled) setCity((current) => finishAllProjects(current));
+                  setToast(
+                    enabled
+                      ? "Instant projects enabled. Building, research and land clearance complete immediately."
+                      : "Instant projects disabled.",
+                  );
+                }}
+              >
+                <Sparkles size={18} />
+                Instant projects · {developerInstantProjects ? "On" : "Off"}
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   setSpeed(20);
                   setToast("Developer speed set to 20×.");
@@ -1374,13 +1535,10 @@ export function App() {
               <button
                 type="button"
                 onClick={() =>
-                  updateCity(
-                    (current) => developerGrant(current, 500),
-                    "500 of every resource added.",
-                  )
+                  updateCity(developerUnlockAllResearch, "All research subjects unlocked.")
                 }
               >
-                <Plus size={18} /> Add resources
+                <BookOpen size={18} /> Unlock all research
               </button>
               <button
                 type="button"

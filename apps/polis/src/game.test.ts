@@ -5,7 +5,11 @@ import {
   advanceCity,
   advanceOffline,
   createCity,
+  developerGrant,
+  developerUnlockAllResearch,
+  estimateHoursToAfford,
   finishAllProjects,
+  getResourceFlowPerHour,
   parseCity,
   placeBuilding,
   resolveHarbourMission,
@@ -128,6 +132,48 @@ describe("Aegean Polis simulation", () => {
     expect(finished.completedResearch).toContain("irrigation");
     expect(finished.activeSeconds).toBe(activeSecondsBefore);
     expect(finished.resources).toEqual(resourcesBefore);
+  });
+
+  test("resource flow reports current production, upkeep and net change per hour", () => {
+    const city = createCity("Thalassa", 42);
+    const flow = getResourceFlowPerHour(city);
+    const afterOneHour = advanceCity(city, 60 * 60, 1, false);
+
+    expect(flow.produced.food).toBeGreaterThan(0);
+    expect(flow.produced.timber).toBeGreaterThan(0);
+    expect(flow.used.coin).toBeGreaterThan(0);
+    expect(flow.net.food).toBe(flow.produced.food - flow.used.food);
+    expect(flow.net.coin).toBe(flow.produced.coin - flow.used.coin);
+    expect(afterOneHour.resources.food - city.resources.food).toBeCloseTo(flow.net.food, 2);
+    expect(afterOneHour.resources.coin - city.resources.coin).toBeCloseTo(flow.net.coin, 2);
+  });
+
+  test("time to afford is governed by the slowest missing resource", () => {
+    const current = {
+      food: 0,
+      timber: 20,
+      stone: 30,
+      coin: 100,
+      goods: 0,
+      knowledge: 0,
+    };
+    const price = { ...current, timber: 120, stone: 80 };
+    const hourlyNet = { ...current, timber: 25, stone: 10 };
+
+    expect(estimateHoursToAfford(current, price, hourlyNet)).toBe(5);
+    expect(estimateHoursToAfford(price, price, hourlyNet)).toBe(0);
+    expect(estimateHoursToAfford(current, { ...price, goods: 1 }, hourlyNet)).toBeNull();
+  });
+
+  test("developer controls can grant one resource and unlock every research subject", () => {
+    const city = createCity("Thalassa", 42);
+    const granted = developerGrant(city, 250, "stone");
+    const unlocked = developerUnlockAllResearch(granted);
+
+    expect(granted.resources.stone).toBe(city.resources.stone + 250);
+    expect(granted.resources.food).toBe(city.resources.food);
+    expect(unlocked.completedResearch).toHaveLength(4);
+    expect(unlocked.research).toBeNull();
   });
 
   test("research opens specialised buildings and civic doctrines", () => {

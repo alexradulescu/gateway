@@ -177,6 +177,13 @@ controls.
 - Future island art may vary coast, fields, and permanent scenery, but a compatible plate keeps the
   same stage dimensions and anchor contract. A developer placement editor exposes one district at a
   time and exports calibrated anchor JSON.
+- The resource ribbon shows each current balance and net hourly flow. Exact produced and consumed
+  rates remain available in the resource description, while unaffordable buildings, research, and
+  district clearance show the approximate wait at the current net rates or state that production is
+  missing.
+- Developer Tools can grant a chosen amount of one resource or every resource, unlock all research,
+  finish active projects, or enable instant building, research, repair, upgrade, and land-clearance
+  projects. These controls never change normal-game balance.
 - All map artwork is original, high-resolution raster art with a coherent camera, lighting,
   ground scale, and visual progression. Transparent building atlases remain separate from the
   authored stage plates.

@@ -30,6 +30,12 @@ export type Doctrine =
   | "pastoral";
 export type HarbourMission = "fishing" | "trade" | "patrol";
 
+export type ResourceFlow = {
+  produced: Resources;
+  used: Resources;
+  net: Resources;
+};
+
 export type BuildingDefinition = {
   type: BuildingType;
   name: string;
@@ -718,6 +724,56 @@ function workforceFactors(city: CityState) {
   return factors;
 }
 
+export function getResourceFlowPerHour(city: CityState): ResourceFlow {
+  const produced = zeroResources();
+  const used = zeroResources();
+  const workFactors = workforceFactors(city);
+
+  for (const building of city.buildings) {
+    if (building.status !== "active" || building.condition <= 0 || building.staffing === 0) {
+      continue;
+    }
+    const definition = BUILDING_DEFINITIONS[building.type];
+    if (!definition.output) continue;
+    const conditionFactor = building.condition / 100;
+    const levelFactor = 1 + (building.level - 1) * 0.65;
+    const factor =
+      60 *
+      (workFactors.get(building.id) ?? 1) *
+      conditionFactor *
+      levelFactor *
+      productionMultiplier(city, building);
+    for (const [key, amount] of Object.entries(definition.output) as [ResourceKey, number][]) {
+      produced[key] = round(produced[key] + amount * factor);
+    }
+  }
+
+  const forces = getDefenceForces(city);
+  used.food = round((forces.hoplites + forces.archers) * 0.02 * 60);
+  used.coin = round(forces.ships * 0.03 * 60);
+
+  const net = Object.fromEntries(
+    (Object.keys(produced) as ResourceKey[]).map((key) => [key, round(produced[key] - used[key])]),
+  ) as Resources;
+
+  return { produced, used, net };
+}
+
+export function estimateHoursToAfford(
+  current: Resources,
+  price: Resources,
+  hourlyNet: Resources,
+): number | null {
+  let hours = 0;
+  for (const key of Object.keys(price) as ResourceKey[]) {
+    const missing = Math.max(0, price[key] - current[key]);
+    if (missing === 0) continue;
+    if (hourlyNet[key] <= 0) return null;
+    hours = Math.max(hours, missing / hourlyNet[key]);
+  }
+  return hours;
+}
+
 function completeConstruction(city: CityState): CityState {
   const project = city.construction;
   if (!project) return city;
@@ -794,29 +850,8 @@ export function advanceCity(
   const simulationSeconds = Math.max(0, elapsedSeconds * speed);
   if (simulationSeconds === 0) return city;
   const minutes = simulationSeconds / 60;
-  const produced = { ...city.resources };
-  const workFactors = workforceFactors(city);
-  const forces = getDefenceForces(city);
-
-  for (const building of city.buildings) {
-    if (building.status !== "active" || building.condition <= 0 || building.staffing === 0)
-      continue;
-    const definition = BUILDING_DEFINITIONS[building.type];
-    if (!definition.output) continue;
-    const conditionFactor = building.condition / 100;
-    const levelFactor = 1 + (building.level - 1) * 0.65;
-    const factor =
-      minutes *
-      (workFactors.get(building.id) ?? 1) *
-      conditionFactor *
-      levelFactor *
-      productionMultiplier(city, building);
-    for (const [key, amount] of Object.entries(definition.output) as [ResourceKey, number][]) {
-      produced[key] = round(produced[key] + amount * factor);
-    }
-  }
-  produced.food = Math.max(0, produced.food - (forces.hoplites + forces.archers) * 0.02 * minutes);
-  produced.coin = Math.max(0, produced.coin - forces.ships * 0.03 * minutes);
+  const resourceFlow = getResourceFlowPerHour(city);
+  const elapsedHours = simulationSeconds / 3600;
 
   const metrics = getCityMetrics(city);
   const housingHeadroom = metrics.housing - city.population;
@@ -829,7 +864,10 @@ export function advanceCity(
     ...city,
     activeSeconds: city.activeSeconds + simulationSeconds,
     resources: Object.fromEntries(
-      (Object.keys(produced) as ResourceKey[]).map((key) => [key, Math.min(99_999, produced[key])]),
+      (Object.keys(city.resources) as ResourceKey[]).map((key) => [
+        key,
+        clamp(round(city.resources[key] + resourceFlow.net[key] * elapsedHours), 0, 99_999),
+      ]),
     ) as Resources,
     population: round(city.population + populationGrowth),
     construction: city.construction
@@ -1377,15 +1415,29 @@ export function setDoctrine(city: CityState, doctrine: Doctrine): CityState {
   return { ...city, doctrine, resources: spend(city.resources, price) };
 }
 
-export function developerGrant(city: CityState, amount = 500): CityState {
+export function developerGrant(
+  city: CityState,
+  amount = 500,
+  resourceKey?: ResourceKey,
+): CityState {
   return {
     ...city,
     resources: Object.fromEntries(
       (Object.keys(city.resources) as ResourceKey[]).map((key) => [
         key,
-        round(city.resources[key] + amount),
+        round(
+          city.resources[key] + (resourceKey === undefined || resourceKey === key ? amount : 0),
+        ),
       ]),
     ) as Resources,
+  };
+}
+
+export function developerUnlockAllResearch(city: CityState): CityState {
+  return {
+    ...city,
+    completedResearch: RESEARCH_DEFINITIONS.map((research) => research.id),
+    research: null,
   };
 }
 

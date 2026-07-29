@@ -45,6 +45,11 @@ const ROAD_BACKGROUNDS = [
   "/polis/assets/thalassa-01-road-4.avif",
 ] as const;
 
+/**
+ * Manual building-anchor list in player-facing plot order (Plot 1 is index 0).
+ * Each pair is the ground-contact [x, y] on the 1536 × 1024 stage.
+ * Calibration workflow and a labelled table: docs/polis/placement-guide.md.
+ */
 const POSITIONS: ReadonlyArray<readonly [number, number]> = [
   [230, 210],
   [420, 185],

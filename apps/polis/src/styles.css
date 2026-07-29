@@ -245,6 +245,20 @@ a:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.resource-rate {
+  color: #5b7939;
+  font-family: "Avenir Next Condensed", "Segoe UI", sans-serif;
+  font-size: 0.57rem;
+  font-style: normal;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.resource-rate--negative {
+  color: #a54835;
+}
+
 .top-actions {
   display: flex;
   gap: 4px;
@@ -1560,7 +1574,7 @@ a:focus-visible {
 .build-option-copy {
   display: grid;
   min-width: 0;
-  gap: 8px;
+  gap: 4px;
 }
 
 .build-option-copy > span:first-child {
@@ -1581,6 +1595,18 @@ a:focus-visible {
   font-size: 0.58rem;
   font-weight: 800;
   line-height: 1.2;
+}
+
+.affordability-note {
+  display: block;
+  overflow: hidden;
+  color: #9a4a2f;
+  font-size: 0.57rem;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cost-line {
@@ -1963,6 +1989,83 @@ button:disabled {
   font-family: Palatino, Georgia, serif;
   font-size: 0.77rem;
   line-height: 1.4;
+}
+
+.developer-grant-amount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.developer-grant-amount input {
+  width: 120px;
+  min-height: 40px;
+  padding: 6px 9px;
+  border: 1px solid rgba(88, 58, 28, 0.35);
+  border-radius: 5px;
+  color: var(--ink);
+  background: #fffaf0;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-grant-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.resource-grant-grid button {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid rgba(87, 58, 30, 0.3);
+  border-radius: 5px;
+  color: #4e3825;
+  background: rgba(255, 252, 239, 0.72);
+  cursor: pointer;
+  text-align: left;
+}
+
+.resource-grant-grid button:hover {
+  border-color: var(--terracotta);
+  background: #fffaf0;
+}
+
+.resource-grant-grid button > span {
+  display: grid;
+  gap: 1px;
+}
+
+.resource-grant-grid strong {
+  font-size: 0.7rem;
+}
+
+.resource-grant-grid small {
+  color: var(--muted);
+  font-size: 0.61rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-grant-grid .resource-grant-all {
+  grid-column: 1 / -1;
+  border-color: rgba(158, 78, 43, 0.45);
+  background: rgba(182, 92, 48, 0.08);
+}
+
+.tool-grid button.active {
+  border-color: var(--terracotta-deep);
+  color: #fff9e9;
+  background: var(--terracotta);
 }
 
 .section-heading {
