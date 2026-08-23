@@ -1,0 +1,7 @@
+interface:
+  display_name: "Scannable"
+  short_description: "Clear, action-ready replies without fluff"
+  default_prompt: "Use $scannable to make replies easy to scan, understand, and act on."
+
+policy:
+  allow_implicit_invocation: false
