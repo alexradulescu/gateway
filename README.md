@@ -38,3 +38,21 @@ Vercel settings:
 - Build command: `bun run build`
 - Output directory: `dist`
 - Install command: `bun install`
+
+## Agent skills
+
+Reusable skills live in `skills/` so they can be installed without being auto-loaded inside this repository.
+
+Install both globally for Codex:
+
+```sh
+npx skills add alexradulescu/gateway --skill scannable scope-discipline --agent codex --global --yes
+```
+
+Install both for every detected agent:
+
+```sh
+npx skills add alexradulescu/gateway --skill scannable scope-discipline --agent '*' --global --yes
+```
+
+Install one by passing only its name to `--skill`.

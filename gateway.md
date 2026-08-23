@@ -17,6 +17,7 @@
 - `apps/notes` = sample sub-app.
 - `apps.config.ts` = source of truth for visible apps.
 - `scripts/build-all.ts` = production build orchestrator.
+- `skills` = portable agent-skill sources installable with the `skills` CLI.
 - `dist` = generated deploy output. Do not edit by hand.
 
 ## Commands
@@ -62,13 +63,12 @@
 - Do not hand-edit generated `dist`.
 - Test deploy shape with `bun run build` then `bun run preview`.
 
-## Repo-Local Skills
+## Agent Skills
 
-- `.agents/skills` contains repo-local agent skills.
-- `.claude/skills` mirrors same skills for Claude-compatible tooling.
-- Matt Pocock skills are vendored from `mattpocock/skills`.
-- Caveman skill is vendored at `misc/caveman`.
-- Prefer repo-local skills when working in this repo.
+- Matt Pocock skills are installed globally from `mattpocock/skills` and managed with the `skills` CLI.
+- Gateway-owned portable skills live in `skills/` and can be installed with `npx skills add alexradulescu/gateway`.
+- Do not vendor global skills into `.agents/skills` or `.claude/skills`; this avoids duplicate registrations and version drift.
+- Package-specific local guidance is discovered through the intent skill check in `AGENTS.md`.
 
 ## Package Policy
 

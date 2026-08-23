@@ -16,8 +16,7 @@ Before editing files for a substantial task:
 - Gateway = one Vercel project hosting many Vite React apps.
 - `/` is launcher; sub-apps live at stable paths like `/counter/` and `/notes/`.
 - `apps.config.ts` is app registry; `scripts/build-all.ts` builds everything into `dist`.
-- Repo-local skills live in `.agents/skills`; Claude mirror lives in `.claude/skills`.
-- Matt Pocock engineering/productivity skills are vendored from `mattpocock/skills`.
-- Caveman skill is vendored under `misc/caveman` for terse communication mode.
+- Matt Pocock skills are installed globally from `mattpocock/skills` and managed with the `skills` CLI.
+- Do not vendor global skills into `.agents/skills` or `.claude/skills`; this avoids duplicate registrations and version drift.
 
 Read [gateway.md](./gateway.md) first.

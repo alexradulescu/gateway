@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <filter id="contactShadow" x="-30%" y="-80%" width="160%" height="260%">
+      <feGaussianBlur stdDeviation="18" />
+    </filter>
+  </defs>
+
+  <image href="pavement-basic-stone-hex-example.svg" width="1024" height="1024" />
+  <ellipse
+    cx="512"
+    cy="746"
+    rx="228"
+    ry="55"
+    fill="#30261c"
+    opacity=".28"
+    filter="url(#contactShadow)"
+  />
+  <image href="town-hall-compact-hex-example.png" width="1024" height="1024" />
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 900">
+  <defs>
+    <radialGradient id="water" cx=".5" cy=".42" r=".72">
+      <stop offset="0" stop-color="#2d9baa" />
+      <stop offset=".72" stop-color="#16788a" />
+      <stop offset="1" stop-color="#0b5368" />
+    </radialGradient>
+    <filter id="islandShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feGaussianBlur stdDeviation="16" />
+    </filter>
+  </defs>
+
+  <rect width="1024" height="900" fill="url(#water)" />
+  <ellipse
+    cx="512"
+    cy="485"
+    rx="430"
+    ry="350"
+    fill="#173f44"
+    opacity=".36"
+    filter="url(#islandShadow)"
+  />
+
+  <g>
+    <image href="pavement-basic-stone-hex-example.svg" x="209" y="46" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="486" y="46" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="71" y="286" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="348" y="286" width="328" height="328" />
+    <ellipse cx="512" cy="525" rx="70" ry="18" fill="#30261c" opacity=".28" />
+    <image href="town-hall-compact-hex-example.png" x="348" y="286" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="625" y="286" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="209" y="526" width="328" height="328" />
+    <image href="pavement-basic-stone-hex-example.svg" x="486" y="526" width="328" height="328" />
+  </g>
+</svg>

@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <clipPath id="hex">
+      <path d="M512 12 945 262 945 762 512 1012 79 762 79 262Z" />
+    </clipPath>
+    <pattern id="streetCobbles" width="72" height="48" patternUnits="userSpaceOnUse">
+      <rect width="72" height="48" fill="#a98e66" />
+      <path
+        d="M0 1h72M0 24h72M0 47h72M18 1v23M54 1v23M0 24v23M36 24v23M72 24v23"
+        fill="none"
+        stroke="#746044"
+        stroke-opacity=".5"
+        stroke-width="3"
+      />
+      <path
+        d="M2 4h14M21 4h30M57 4h12M3 28h30M40 28h28"
+        fill="none"
+        stroke="#d8c49e"
+        stroke-opacity=".46"
+        stroke-width="2"
+      />
+    </pattern>
+    <pattern id="plazaSlabs" width="112" height="76" patternUnits="userSpaceOnUse">
+      <rect width="112" height="76" fill="#d9c59b" />
+      <path
+        d="M0 1h112M0 38h112M0 75h112M28 1v37M84 1v37M0 38v37M56 38v37M112 38v37"
+        fill="none"
+        stroke="#9b825b"
+        stroke-opacity=".42"
+        stroke-width="3"
+      />
+      <path
+        d="M3 5h22M32 5h48M88 5h20M4 43h48M61 43h47"
+        fill="none"
+        stroke="#f3e6c5"
+        stroke-opacity=".58"
+        stroke-width="2"
+      />
+    </pattern>
+    <linearGradient id="warmLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff3cf" stop-opacity=".34" />
+      <stop offset=".55" stop-color="#fff" stop-opacity="0" />
+      <stop offset="1" stop-color="#5c4931" stop-opacity=".18" />
+    </linearGradient>
+    <filter id="stoneTexture" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency=".035"
+        numOctaves="3"
+        seed="17"
+        result="noise"
+      />
+      <feColorMatrix
+        in="noise"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 .16 0"
+      />
+    </filter>
+  </defs>
+
+  <g clip-path="url(#hex)">
+    <path
+      d="M512 12 945 262 945 762 512 1012 79 762 79 262Z
+         M512 94 874 303 874 721 512 930 150 721 150 303Z"
+      fill="url(#streetCobbles)"
+      fill-rule="evenodd"
+    />
+    <path d="M512 94 874 303 874 721 512 930 150 721 150 303Z" fill="url(#plazaSlabs)" />
+    <path
+      d="M512 94 874 303 874 721 512 930 150 721 150 303Z"
+      fill="none"
+      stroke="#756044"
+      stroke-width="15"
+    />
+    <path
+      d="M512 104 865 308 865 716 512 920 159 716 159 308Z"
+      fill="none"
+      stroke="#f0dfb8"
+      stroke-opacity=".85"
+      stroke-width="5"
+    />
+    <rect width="1024" height="1024" fill="url(#warmLight)" />
+    <rect width="1024" height="1024" filter="url(#stoneTexture)" opacity=".34" />
+  </g>
+
+  <path
+    d="M512 12 945 262 945 762 512 1012 79 762 79 262Z"
+    fill="none"
+    stroke="#66543c"
+    stroke-opacity=".72"
+    stroke-width="3"
+  />
+</svg>
