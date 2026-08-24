@@ -1,6 +1,8 @@
 ---
 name: scannable
-description: Shape replies for fast human scanning and action, using natural language without conversational fluff.
+description: Use only when the user explicitly invokes scannable. Shape replies for fast human scanning and action, using natural language without conversational fluff.
+metadata:
+  opencode/autoinvoke: "false"
 ---
 
 # Scannable

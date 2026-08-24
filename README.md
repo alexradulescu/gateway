@@ -43,16 +43,16 @@ Vercel settings:
 
 Reusable skills live in `skills/` so they can be installed without being auto-loaded inside this repository.
 
-Install both globally for Codex:
+Install all three globally for Codex, Claude Code, and OpenCode:
 
 ```sh
-npx skills add alexradulescu/gateway --skill scannable scope-discipline --agent codex --global --yes
+npx skills add alexradulescu/gateway --skill scannable scope-discipline raise-pr --agent codex --agent claude-code --agent opencode --global --yes
 ```
 
-Install both for every detected agent:
+Install all three for every detected agent:
 
 ```sh
-npx skills add alexradulescu/gateway --skill scannable scope-discipline --agent '*' --global --yes
+npx skills add alexradulescu/gateway --skill scannable scope-discipline raise-pr --agent '*' --global --yes
 ```
 
 Install one by passing only its name to `--skill`.

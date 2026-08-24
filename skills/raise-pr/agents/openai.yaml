@@ -1,0 +1,7 @@
+interface:
+  display_name: "Raise PR"
+  short_description: "Raise focused, scannable GitHub pull requests"
+  default_prompt: "Use $raise-pr to raise the current branch as a focused GitHub pull request."
+
+policy:
+  allow_implicit_invocation: false
