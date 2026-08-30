@@ -66,8 +66,7 @@
 
 - `.agents/skills` contains repo-local agent skills.
 - `.claude/skills` mirrors same skills for Claude-compatible tooling.
-- Matt Pocock skills are vendored from `mattpocock/skills`.
-- Caveman skill is vendored at `misc/caveman`.
+- Caveman is the only repo-local skill and is vendored at `misc/caveman`.
 - Prefer repo-local skills when working in this repo.
 
 ## Package Policy
