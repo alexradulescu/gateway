@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implementation Waves"
+  short_description: "Build features in verified, reviewable waves"
+  default_prompt: "Use $implementation-waves in guided mode to build this feature as small verified waves."

@@ -4,7 +4,7 @@ description: "Use for every coding task to enforce scope discipline: implement o
 license: MIT
 metadata:
   author: Alex Radulescu
-  version: "1.0.0"
+  version: "1.1.0"
   tags: "scope-discipline, YAGNI, KISS, DRY, tracer-bullets, separation-of-concerns, chestertons-fence"
 ---
 
@@ -31,7 +31,7 @@ Make the smallest complete change that satisfies the task.
 - **KISS:** Choose the simplest correct implementation.
 - **DRY:** Reuse an existing helper before creating another.
 - **Rule of Three:** Abstract a pattern when repetition proves it.
-- **Tracer Bullets:** For cross-layer or uncertain work, build one verifiable end-to-end slice and refine it. Make an understood local change directly.
+- **Tracer Bullets:** For work spanning behavioral areas, build the smallest observable slice, verify it, then grow the system one behavior at a time. Make an understood local change directly.
 - **Saint-Exupéry:** Remove anything that does not support required reachable behavior.
 - Add only the configuration and documentation the task requires.
 
