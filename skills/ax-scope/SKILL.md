@@ -14,6 +14,7 @@ Make the smallest complete change that satisfies the task and repository standar
 ## Implement
 
 - Understand existing code before changing it and fix the smallest root cause.
+- Use the domain’s established terminology, and keep business rules with the code that owns them.
 - Handle correctness, security, data-integrity, and recovery failures reachable in the supported system. Trust guarantees owned by the type system, framework, API, or upstream layer.
 - Before adding custom code, check for a suitable existing helper, standard-library function, native platform feature, or installed dependency. Prefer the simplest option that meets the requirement and fits repository conventions.
 - Abstract only when repetition establishes a useful shared pattern. Prefer clear code over minimum line count.
