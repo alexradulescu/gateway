@@ -15,7 +15,8 @@ Make the smallest complete change that satisfies the task and repository standar
 
 - Understand existing code before changing it and fix the smallest root cause.
 - Handle correctness, security, data-integrity, and recovery failures reachable in the supported system. Trust guarantees owned by the type system, framework, API, or upstream layer.
-- Choose the simplest correct implementation. Reuse existing helpers and abstract only when repetition establishes a useful shared pattern.
+- Before adding custom code, check for a suitable existing helper, standard-library function, native platform feature, or installed dependency. Prefer the simplest option that meets the requirement and fits repository conventions.
+- Abstract only when repetition establishes a useful shared pattern. Prefer clear code over minimum line count.
 - For work spanning behavioral areas, implement and verify observable increments. Make an understood local change directly.
 - Add only behavior, configuration, and documentation needed for the request. Record speculative improvements separately.
 - Remove imports, variables, and helpers made unused by your changes. Leave unrelated pre-existing dead code alone unless its removal is part of the request.
