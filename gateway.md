@@ -62,12 +62,12 @@
 - Do not hand-edit generated `dist`.
 - Test deploy shape with `bun run build` then `bun run preview`.
 
-## Repo-Local Skills
+## Reusable Skills
 
-- `.agents/skills` contains repo-local agent skills.
-- `.claude/skills` mirrors same skills for Claude-compatible tooling.
-- Caveman is the only repo-local skill and is vendored at `misc/caveman`.
-- Prefer repo-local skills when working in this repo.
+- `skills/` contains the original four skills and the separate `ax-` revisions.
+- See README for differences, invocation, and installation of either set.
+- These source folders are not automatically loaded as repository skills.
+- `.agents/skills` and `.claude/skills` currently contain no vendored skills.
 
 ## Package Policy
 

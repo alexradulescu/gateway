@@ -1,0 +1,4 @@
+interface:
+  display_name: "AX Scope"
+  short_description: "Keep changes focused on requested, reachable behavior"
+  default_prompt: "Use $ax-scope to keep this change within the requested behavior."

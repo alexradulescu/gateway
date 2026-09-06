@@ -1,0 +1,6 @@
+interface:
+  display_name: "AX PR"
+  short_description: "Prepare or create focused, evidence-backed pull requests"
+  default_prompt: "Use $ax-pr to raise a focused pull request from this branch."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AX Implement"
+  short_description: "Complete coordinated changes in verified increments"
+  default_prompt: "Use $ax-implement to complete this task in small verified increments, proceeding autonomously unless a material decision needs my input."

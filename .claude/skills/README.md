@@ -1,4 +1,3 @@
 # Repo-Local Skills
 
-- Caveman is the only repo-local skill and was copied from local `~/.agents/skills/caveman`.
-- `.agents/skills` mirrors this folder for agent-compatible tooling.
+No skills are currently vendored here. The original and AX sets live in [`skills/`](../../skills/); see the [installation instructions](../../README.md#installation).

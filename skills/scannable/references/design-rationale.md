@@ -8,6 +8,7 @@ Optimize the reader's effort to find, understand, edit, and act on the right inf
 
 ## Primary influences
 
+- **Mannered prose:** Anthropic's Fable 5.1 guidance recommends “Please remove all mannered prose.” The runtime rule pairs the prohibition with a direct, literal writing target. This is a user-selected style preference; effectiveness on Astra and Sonnet 5 still needs behavioral evaluation. [Writing density](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1#writing-density)
 - **BLUF:** put the critical point or requested action in the opening, then amplify it. [U.S. Air Force Handbook 33-337](https://static.e-publishing.af.mil/production/1/administrative_assistant/publication/afh33-337/afh33-337.pdf)
 - **ASD-STE100:** use stable terminology, complete short sentences, active voice, one instruction per sentence, explicit order, gradual disclosure, and vertical lists for complex material. [ASD-STE100 Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf)
 - **Caveman:** remove non-informational language while preserving exact technical payload; let clarity override compression. [Original skill](https://raw.githubusercontent.com/JuliusBrussee/caveman/main/skills/caveman/SKILL.md)
