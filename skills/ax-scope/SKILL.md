@@ -18,6 +18,7 @@ Make the smallest complete change that satisfies the task and repository standar
 - Choose the simplest correct implementation. Reuse existing helpers and abstract only when repetition establishes a useful shared pattern.
 - For work spanning behavioral areas, implement and verify observable increments. Make an understood local change directly.
 - Add only behavior, configuration, and documentation needed for the request. Record speculative improvements separately.
+- Remove imports, variables, and helpers made unused by your changes. Leave unrelated pre-existing dead code alone unless its removal is part of the request.
 
 ## Review and finish
 
