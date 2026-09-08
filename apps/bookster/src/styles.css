@@ -46,8 +46,6 @@
   --bookster-library-line: rgb(58 85 65 / 0.13);
   --bookster-shadow: 0 2px 8px rgb(58 51 40 / 0.1);
   --bookster-chrome-inset: 10px;
-  --bookster-safe-top: max(12px, env(safe-area-inset-top));
-  --bookster-safe-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 :root.dark,
@@ -99,7 +97,11 @@ html {
 
 body.bookster-theme {
   color: var(--bookster-ink);
-  background: var(--bookster-page);
+  background:
+    radial-gradient(circle at 50% -8rem, var(--bookster-green-soft), transparent 31rem),
+    radial-gradient(circle at 88% 92%, var(--bookster-rose-soft), transparent 27rem),
+    var(--bookster-page);
+  background-repeat: no-repeat;
   overscroll-behavior: none;
 }
 
@@ -114,18 +116,6 @@ body.bookster-theme :where(.button, .input, .textarea, .select__trigger, .tabs__
 .bookster-settings *::after {
   box-shadow: none !important;
   text-shadow: none !important;
-}
-
-body.bookster-theme::before {
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% -8rem, var(--bookster-green-soft), transparent 31rem),
-    radial-gradient(circle at 88% 92%, var(--bookster-rose-soft), transparent 27rem);
-  background-repeat: no-repeat;
-  content: "";
-  pointer-events: none;
 }
 
 #root {
@@ -209,22 +199,25 @@ a {
 /* Library chrome */
 
 .bookster-library {
-  position: relative;
+  --app-shell-background: transparent;
+  --app-shell-header-size: 99px;
+  --app-shell-footer-size: 72px;
   width: min(100%, var(--bookster-max-width));
-  height: 100dvh;
   margin-inline: auto;
-  overflow: hidden;
 }
 
-.bookster-library::before {
-  position: fixed;
-  z-index: 0;
+.bookster-library:not(:has(.bookster-category-strip)) {
+  --app-shell-header-size: 57px;
+}
+
+.bookster-library-background {
+  position: absolute;
+  z-index: -1;
   top: 0;
-  bottom: 0;
   left: 50%;
   width: min(100%, var(--bookster-max-width));
+  height: 100%;
   background: var(--bookster-library-line);
-  content: "";
   pointer-events: none;
   transform: translateX(-50%);
   -webkit-mask: url("/bookster/victorian-library-pattern.svg") center top / min(100%, 520px) auto
@@ -234,7 +227,6 @@ a {
 
 .bookster-floating-header,
 .bookster-floating-footer {
-  position: fixed;
   z-index: 40;
   left: 50%;
   width: min(100%, var(--bookster-max-width));
@@ -245,8 +237,7 @@ a {
 }
 
 .bookster-floating-header {
-  top: 0;
-  padding: var(--bookster-safe-top) var(--bookster-chrome-inset) 9px;
+  padding: 0 var(--bookster-chrome-inset) 9px;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--bookster-page) 72%, transparent),
@@ -358,11 +349,10 @@ a {
 }
 
 .bookster-floating-footer {
-  bottom: 0;
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 9px var(--bookster-chrome-inset) var(--bookster-safe-bottom);
+  padding: 9px var(--bookster-chrome-inset) 18px;
   background: linear-gradient(
     to top,
     color-mix(in srgb, var(--bookster-page) 72%, transparent),
@@ -427,14 +417,7 @@ a {
 /* Virtualized library */
 
 .bookster-library-scroll {
-  position: relative;
-  z-index: 1;
   width: 100%;
-  height: 100%;
-  padding: calc(var(--bookster-safe-top) + 96px) 0 calc(var(--bookster-safe-bottom) + 72px);
-  overflow: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-width: thin;
 }
 
 .bookster-virtual-space {
@@ -1032,19 +1015,17 @@ a {
 /* Settings */
 
 .bookster-settings {
+  --app-shell-background: transparent;
+  --app-shell-header-size: 56px;
   width: min(100%, var(--bookster-max-width));
-  min-height: 100dvh;
   margin-inline: auto;
-  padding: calc(var(--bookster-safe-top) + 68px) 16px calc(36px + var(--bookster-safe-bottom));
 }
 
 .bookster-settings-header {
-  position: fixed;
   z-index: 30;
-  top: 0;
   left: 50%;
   width: min(100%, var(--bookster-max-width));
-  padding: var(--bookster-safe-top) 10px 8px;
+  padding: 0 10px 8px;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--bookster-page) 75%, transparent),
@@ -1053,6 +1034,11 @@ a {
   transform: translateX(-50%);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
+}
+
+.bookster-settings-body {
+  padding-inline: 16px;
+  padding-block-end: calc(var(--app-shell-safe-bottom) + 36px);
 }
 
 .bookster-settings-title {
@@ -1253,12 +1239,16 @@ a {
 .bookster-state,
 .bookster-inline-state {
   display: grid;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--app-shell-safe-top) - var(--app-shell-safe-bottom));
   place-content: center;
   justify-items: center;
   gap: 13px;
   padding: 30px;
   text-align: center;
+}
+
+.bookster-state-shell {
+  --app-shell-background: transparent;
 }
 
 .bookster-state h1 {

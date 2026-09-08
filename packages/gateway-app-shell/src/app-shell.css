@@ -2,7 +2,7 @@
   --app-shell-safe-top: env(safe-area-inset-top, 0px);
   --app-shell-safe-bottom: env(safe-area-inset-bottom, 0px);
   min-block-size: 100dvh;
-  background: Canvas;
+  background: var(--app-shell-background, Canvas);
 }
 [data-slot="app-shell"]:has(input:focus, textarea:focus) {
   --app-shell-safe-bottom: 0px;

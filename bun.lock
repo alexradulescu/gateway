@@ -37,11 +37,15 @@
       },
     },
     "apps/app-shell": {
-      "name": "@gateway/app-shell",
+      "name": "@gateway/app-shell-demo",
+      "dependencies": {
+        "@gateway/app-shell": "workspace:*",
+      },
     },
     "apps/bookster": {
       "name": "@gateway/bookster",
       "dependencies": {
+        "@gateway/app-shell": "workspace:*",
         "@gateway/convex": "workspace:*",
         "@tanstack/react-virtual": "^3.13.12",
         "papaparse": "^5.5.3",
@@ -66,6 +70,12 @@
       "name": "@gateway/things",
       "dependencies": {
         "@gateway/convex": "workspace:*",
+      },
+    },
+    "packages/gateway-app-shell": {
+      "name": "@gateway/app-shell",
+      "peerDependencies": {
+        "react": "latest",
       },
     },
     "packages/gateway-convex": {
@@ -197,7 +207,9 @@
 
     "@formatjs/intl-localematcher": ["@formatjs/intl-localematcher@0.6.2", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA=="],
 
-    "@gateway/app-shell": ["@gateway/app-shell@workspace:apps/app-shell"],
+    "@gateway/app-shell": ["@gateway/app-shell@workspace:packages/gateway-app-shell"],
+
+    "@gateway/app-shell-demo": ["@gateway/app-shell-demo@workspace:apps/app-shell"],
 
     "@gateway/bookster": ["@gateway/bookster@workspace:apps/bookster"],
 

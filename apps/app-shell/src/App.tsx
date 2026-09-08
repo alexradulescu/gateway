@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Home, Layers3, ShieldCheck, Smartphone } from "lucide-react";
 import { useState } from "react";
-import { AppBody, AppFooter, AppHeader, AppShell } from "./components/AppShell";
+import { AppBody, AppFooter, AppHeader, AppShell } from "@gateway/app-shell";
 
 const SCROLL_ITEMS = [
   [

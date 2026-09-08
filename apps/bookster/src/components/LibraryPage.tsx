@@ -1,8 +1,9 @@
+import { AppBody, AppFooter, AppHeader, AppShell } from "@gateway/app-shell";
 import { Button, SearchField } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { LayoutGrid, List as ListIcon, Plus, Settings } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { filterBooksByCategories, searchBooks, sortBooks } from "../domain";
 import { useBookster } from "../context/useBookster";
 import type { BooksterBook, BooksterCategoryId } from "../types";
@@ -18,7 +19,8 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     resetCategories,
   } = useBookster();
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const virtualSpaceRef = useRef<HTMLDivElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setDebouncedSearch(searchValue), 150);
@@ -51,22 +53,30 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     selectedCategoryIds,
   ]);
 
-  const virtualizer = useVirtualizer({
+  useLayoutEffect(() => {
+    const measureScrollMargin = () => setScrollMargin(virtualSpaceRef.current?.offsetTop ?? 0);
+    measureScrollMargin();
+    window.addEventListener("resize", measureScrollMargin);
+    return () => window.removeEventListener("resize", measureScrollMargin);
+  }, [library.categories.length, view]);
+
+  const virtualizer = useWindowVirtualizer({
     count: visibleBooks.length,
-    getScrollElement: () => scrollRef.current,
     estimateSize: () =>
       view === "shelf" ? Math.round(Math.min(window.innerWidth, 600) * 0.48 + 60) : 92,
     overscan: 8,
     lanes: view === "shelf" ? 3 : 1,
     getItemKey: (index) => visibleBooks[index]._id,
+    scrollMargin,
   });
 
   const hasCategoryFilter = selectedCategoryIds.size > 0;
   const isSearching = debouncedSearch.trim().length >= 2;
 
   return (
-    <main className="bookster-library">
-      <header className="bookster-floating-header">
+    <AppShell className="bookster-library">
+      <div aria-hidden="true" className="bookster-library-background" />
+      <AppHeader className="bookster-floating-header">
         <div className="bookster-glass bookster-title-bar">
           <h1>Bookster</h1>
           <div className="bookster-title-actions">
@@ -115,10 +125,9 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
             })}
           </div>
         ) : null}
-      </header>
+      </AppHeader>
 
-      <div
-        ref={scrollRef}
+      <AppBody
         className={`bookster-library-scroll${view === "shelf" ? " bookster-library-scroll--shelf" : ""}`}
         id="bookster-library-scroll"
       >
@@ -130,6 +139,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
           />
         ) : (
           <div
+            ref={virtualSpaceRef}
             className={view === "shelf" ? "bookster-shelf-space" : "bookster-virtual-space"}
             style={{ height: virtualizer.getTotalSize() }}
           >
@@ -144,7 +154,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
                     style={
                       {
                         "--bookster-shelf-lane": virtualRow.lane,
-                        transform: `translateY(${virtualRow.start}px)`,
+                        transform: `translateY(${virtualRow.start - scrollMargin}px)`,
                       } as React.CSSProperties
                     }
                   >
@@ -162,7 +172,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
                   ref={virtualizer.measureElement}
                   className="bookster-virtual-row"
                   data-index={virtualRow.index}
-                  style={{ transform: `translateY(${virtualRow.start}px)` }}
+                  style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
                 >
                   <BookRow
                     book={book}
@@ -175,9 +185,9 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
             })}
           </div>
         )}
-      </div>
+      </AppBody>
 
-      <footer className="bookster-floating-footer">
+      <AppFooter className="bookster-floating-footer">
         <SearchField
           aria-label="Search books"
           className="bookster-search"
@@ -198,8 +208,8 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
         >
           <Plus aria-hidden="true" size={20} />
         </Link>
-      </footer>
-    </main>
+      </AppFooter>
+    </AppShell>
   );
 }
 
