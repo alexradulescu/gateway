@@ -67,30 +67,32 @@ export function searchBooks<T extends BooksterBookLike>(books: T[], rawTerm: str
   if (term.length < 2) return books;
 
   return books
-    .filter((book) => {
+    .map((book) => {
       const title = normalizeSearchText(book.title);
       const author = normalizeSearchText(book.author);
-      return fuzzyTextMatch(title, term) || fuzzyTextMatch(author, term);
+      const rank = title.startsWith(term)
+        ? 0
+        : title.includes(term)
+          ? 1
+          : fuzzyTextMatch(title, term)
+            ? 2
+            : author.startsWith(term)
+              ? 3
+              : author.includes(term)
+                ? 4
+                : fuzzyTextMatch(author, term)
+                  ? 5
+                  : -1;
+      return { book, title, rank };
     })
-    .sort((left, right) => {
-      const leftTitle = normalizeSearchText(left.title);
-      const rightTitle = normalizeSearchText(right.title);
-      const rank = (book: T) => {
-        const title = normalizeSearchText(book.title);
-        const author = normalizeSearchText(book.author);
-        if (title.startsWith(term)) return 0;
-        if (title.includes(term)) return 1;
-        if (fuzzyTextMatch(title, term)) return 2;
-        if (author.startsWith(term)) return 3;
-        if (author.includes(term)) return 4;
-        return 5;
-      };
-      return (
-        rank(left) - rank(right) ||
-        leftTitle.localeCompare(rightTitle) ||
-        left._id.localeCompare(right._id)
-      );
-    });
+    .filter(({ rank }) => rank !== -1)
+    .sort(
+      (left, right) =>
+        left.rank - right.rank ||
+        left.title.localeCompare(right.title) ||
+        left.book._id.localeCompare(right.book._id),
+    )
+    .map(({ book }) => book);
 }
 
 export function filterBooksByCategories<T extends BooksterBookLike>(

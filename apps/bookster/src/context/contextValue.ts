@@ -1,25 +1,10 @@
 import { createContext } from "react";
-import type {
-  BooksterBook,
-  BooksterCategory,
-  BooksterCategoryId,
-  BooksterLocation,
-  BooksterSortOrder,
-  BooksterTheme,
-} from "../types";
+import type { FunctionReturnType } from "convex/server";
+import type { api } from "../../../../convex/_generated/api";
+import type { BooksterCategoryId, BooksterTheme } from "../types";
 
 export type BooksterContextValue = {
-  library: {
-    books: BooksterBook[];
-    categories: BooksterCategory[];
-    locations: BooksterLocation[];
-    allLocations: BooksterLocation[];
-    settings: {
-      userId: string;
-      defaultSortOrder: BooksterSortOrder;
-      theme: BooksterTheme;
-    };
-  };
+  library: FunctionReturnType<typeof api.bookster.library>;
   searchValue: string;
   setSearchValue: (value: string) => void;
   selectedCategoryIds: ReadonlySet<BooksterCategoryId>;

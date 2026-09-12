@@ -6,17 +6,13 @@ import type { BooksterCategoryId, BooksterTheme } from "../types";
 import { BooksterContext, type BooksterContextValue } from "./contextValue";
 const THEME_STORAGE_KEY = "bookster-theme";
 
-function useBooksterLibraryQuery() {
-  return useQuery(api.bookster.library);
-}
-
 function storedTheme(): BooksterTheme {
   const value = window.localStorage.getItem(THEME_STORAGE_KEY);
   return value === "light" || value === "dark" || value === "system" ? value : "system";
 }
 
 export function BooksterProvider({ children }: { children: React.ReactNode }) {
-  const library = useBooksterLibraryQuery();
+  const library = useQuery(api.bookster.library);
   const initialize = useMutation(api.bookster.initialize);
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<Set<BooksterCategoryId>>(
