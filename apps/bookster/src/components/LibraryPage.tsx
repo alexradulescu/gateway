@@ -18,6 +18,7 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
     resetCategories,
   } = useBookster();
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const timeout = window.setTimeout(() => setDebouncedSearch(searchValue), 150);
@@ -64,7 +65,7 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
 
   return (
     <main className="bookster-library">
-      <header className="bookster-floating-header">
+      <header className="bookster-floating-header" data-scrolled={hasScrolled}>
         <div className="bookster-title-bar">
           <h1>Bookster</h1>
           <div className="bookster-title-actions">
@@ -115,7 +116,12 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
         ) : null}
       </header>
 
-      <div ref={scrollRef} className="bookster-library-scroll" id="bookster-library-scroll">
+      <div
+        ref={scrollRef}
+        className="bookster-library-scroll"
+        id="bookster-library-scroll"
+        onScroll={(event) => setHasScrolled(event.currentTarget.scrollTop > 0)}
+      >
         {visibleBooks.length === 0 ? (
           <LibraryEmptyState
             hasCategoryFilter={hasCategoryFilter}
