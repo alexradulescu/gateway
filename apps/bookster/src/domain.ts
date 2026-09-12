@@ -67,7 +67,7 @@ export function searchBooks<T extends BooksterBookLike>(books: T[], rawTerm: str
   if (term.length < 2) return books;
 
   return books
-    .map((book) => {
+    .flatMap((book) => {
       const title = normalizeSearchText(book.title);
       const author = normalizeSearchText(book.author);
       const rank = title.startsWith(term)
@@ -83,9 +83,8 @@ export function searchBooks<T extends BooksterBookLike>(books: T[], rawTerm: str
                 : fuzzyTextMatch(author, term)
                   ? 5
                   : -1;
-      return { book, title, rank };
+      return rank === -1 ? [] : [{ book, title, rank }];
     })
-    .filter(({ rank }) => rank !== -1)
     .sort(
       (left, right) =>
         left.rank - right.rank ||

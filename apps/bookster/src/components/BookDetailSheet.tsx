@@ -1,15 +1,15 @@
-import { AlertDialog, Button, toast } from "@heroui/react";
+import { Button, toast } from "@heroui/react";
 import { useBlocker, useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { api } from "../../../../convex/_generated/api";
 import { cleanBooksterText } from "../domain";
 import { useBookster } from "../context/useBookster";
 import { booksterErrorMessage } from "../errors";
-import type { BooksterCategoryId, BooksterLocationId } from "../types";
 import { BookCover } from "./BookCover";
 import { BookIdentityFields, BookMetadataFields, type BookFormValue } from "./BookFields";
 import { BookSheetFrame } from "./BookSheetFrame";
+import { DeleteDialog } from "./DeleteDialog";
 import { DiscardDialog } from "./DiscardDialog";
 
 const booksterDateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -27,21 +27,18 @@ export function BookDetailSheet({
 }) {
   const { library } = useBookster();
   const selected = library.books.find((book) => book._id === bookId);
-  const initial = useMemo<BookFormValue | null>(
-    () =>
-      selected
-        ? {
-            title: selected.title,
-            author: selected.author,
-            categoryIds: selected.categoryIds,
-            locationIds: selected.locationIds,
-            isSample: selected.isSample,
-          }
-        : null,
-    [selected],
+  const [book, setBook] = useState<BookFormValue | null>(() =>
+    selected
+      ? {
+          title: selected.title,
+          author: selected.author,
+          categoryIds: selected.categoryIds,
+          locationIds: selected.locationIds,
+          isSample: selected.isSample,
+        }
+      : null,
   );
-  const [book, setBook] = useState<BookFormValue | null>(initial);
-  const [savedBook, setSavedBook] = useState<BookFormValue | null>(initial);
+  const [savedBook, setSavedBook] = useState(book);
   const [errors, setErrors] = useState<Partial<Record<"title" | "author", string>>>({});
   const [isBusy, setIsBusy] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -82,14 +79,7 @@ export function BookDetailSheet({
         title: cleanBooksterText(book.title),
         author: cleanBooksterText(book.author),
       };
-      await updateBook({
-        id: selected._id,
-        title: normalizedBook.title,
-        author: normalizedBook.author,
-        categoryIds: normalizedBook.categoryIds as BooksterCategoryId[],
-        locationIds: normalizedBook.locationIds as BooksterLocationId[],
-        isSample: normalizedBook.isSample,
-      });
+      await updateBook({ id: selected._id, ...normalizedBook });
       setBook(normalizedBook);
       setSavedBook(normalizedBook);
       toast("Book saved");
@@ -152,35 +142,16 @@ export function BookDetailSheet({
         onCancel={() => blocker.reset?.()}
         onDiscard={() => blocker.proceed?.()}
       />
-      <AlertDialog.Backdrop
-        className="bookster-modal-backdrop"
+      <DeleteDialog
         isOpen={isDeleteDialogOpen}
-        variant="transparent"
+        isBusy={isBusy}
+        title={`Delete “${selected.title}”?`}
+        confirmLabel="Delete Book"
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onConfirm={deleteBook}
       >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="bookster-confirm-dialog">
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>Delete “{selected.title}”?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <p>This book will be permanently removed from your library.</p>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button
-                isDisabled={isBusy}
-                onPress={() => setIsDeleteDialogOpen(false)}
-                variant="tertiary"
-              >
-                Cancel
-              </Button>
-              <Button isPending={isBusy} onPress={deleteBook} variant="danger">
-                Delete Book
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+        This book will be permanently removed from your library.
+      </DeleteDialog>
     </>
   );
 }
