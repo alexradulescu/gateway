@@ -1,22 +1,10 @@
-import {
-  FieldError,
-  Input,
-  Label,
-  ListBox,
-  Select,
-  Switch,
-  TextField,
-  type Key,
-} from "@heroui/react";
-import type { BooksterCategory, BooksterLocation } from "../types";
+import { FieldError, Input, Label, ListBox, Select, Switch, TextField } from "@heroui/react";
+import type { BooksterBook, BooksterCategory, BooksterLocation } from "../types";
 
-export type BookFormValue = {
-  title: string;
-  author: string;
-  categoryIds: string[];
-  locationIds: string[];
-  isSample: boolean;
-};
+export type BookFormValue = Pick<
+  BooksterBook,
+  "title" | "author" | "categoryIds" | "locationIds" | "isSample"
+>;
 
 type BookFieldProps = {
   value: BookFormValue;
@@ -112,7 +100,7 @@ export function BookFields(props: BookFieldProps) {
   );
 }
 
-function BookMultiSelect({
+function BookMultiSelect<Id extends string>({
   label,
   placeholder,
   value,
@@ -121,9 +109,9 @@ function BookMultiSelect({
 }: {
   label: string;
   placeholder: string;
-  value: string[];
-  items: Array<{ _id: string; label: string }>;
-  onChange: (value: string[]) => void;
+  value: Id[];
+  items: Array<{ _id: Id; label: string }>;
+  onChange: (value: Id[]) => void;
 }) {
   return (
     <Select
@@ -131,7 +119,7 @@ function BookMultiSelect({
       placeholder={placeholder}
       selectionMode="multiple"
       value={value}
-      onChange={(keys) => onChange((keys as Key[]).map(String))}
+      onChange={(keys) => onChange(keys as Id[])}
     >
       <Label>{label}</Label>
       <Select.Trigger>

@@ -1,14 +1,4 @@
-import {
-  AlertDialog,
-  Button,
-  Input,
-  Label,
-  ListBox,
-  Select,
-  TextField,
-  toast,
-  type Key,
-} from "@heroui/react";
+import { Button, Input, Label, ListBox, Select, TextField, toast, type Key } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import {
@@ -29,6 +19,7 @@ import { api } from "../../../../convex/_generated/api";
 import { findDuplicateGroups } from "../domain";
 import { useBookster } from "../context/useBookster";
 import { booksterErrorMessage } from "../errors";
+import { DeleteDialog } from "./DeleteDialog";
 import { CsvImportSettings } from "./CsvImportSettings";
 import type {
   BooksterBook,
@@ -282,12 +273,11 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
   const [pendingDelete, setPendingDelete] = useState<ManagedLabel | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const singular = kind === "category" ? "Category" : "Location";
-  const usage = (id: string) =>
-    library.books.filter((book) =>
-      kind === "category"
-        ? book.categoryIds.includes(id as BooksterCategoryId)
-        : book.locationIds.includes(id as BooksterLocationId),
-    ).length;
+  const associationCount = library.books.filter((book) =>
+    kind === "category"
+      ? book.categoryIds.includes(pendingDelete?._id as BooksterCategoryId)
+      : book.locationIds.includes(pendingDelete?._id as BooksterLocationId),
+  ).length;
 
   const saveEdit = async () => {
     if (!editingId || !editValue.trim()) return;
@@ -428,35 +418,16 @@ function LabelSettings({ kind }: { kind: LabelKind }) {
           </Button>
         </form>
       </div>
-      <AlertDialog.Backdrop
-        className="bookster-modal-backdrop"
+      <DeleteDialog
         isOpen={pendingDelete !== null}
-        variant="transparent"
+        isBusy={isBusy}
+        title={`Delete ${pendingDelete?.label}?`}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
       >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="bookster-confirm-dialog">
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>Delete {pendingDelete?.label}?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <p>
-                {usage(pendingDelete?._id ?? "")} book association
-                {usage(pendingDelete?._id ?? "") === 1 ? "" : "s"} will be removed before this label
-                is deleted.
-              </p>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button isDisabled={isBusy} onPress={() => setPendingDelete(null)} variant="tertiary">
-                Cancel
-              </Button>
-              <Button isPending={isBusy} onPress={confirmDelete} variant="danger">
-                Delete
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+        {associationCount} book association{associationCount === 1 ? "" : "s"} will be removed
+        before this label is deleted.
+      </DeleteDialog>
     </div>
   );
 }
@@ -521,12 +492,8 @@ function DuplicateSettings() {
                     <strong>{book.author}</strong>
                     <span>{book.isSample ? "Sample" : "Full book"}</span>
                     <span>
-                      {book.locationIds
-                        .flatMap((id) => {
-                          const label = locationLabels.get(id);
-                          return label ? [label] : [];
-                        })
-                        .join(", ") || "No location"}
+                      {book.locationIds.flatMap((id) => locationLabels.get(id) || []).join(", ") ||
+                        "No location"}
                     </span>
                     <span>{duplicateDateFormatter.format(book.dateAdded)}</span>
                   </div>
@@ -544,33 +511,15 @@ function DuplicateSettings() {
           ))}
         </div>
       ) : null}
-      <AlertDialog.Backdrop
-        className="bookster-modal-backdrop"
+      <DeleteDialog
         isOpen={pendingDelete !== null}
-        variant="transparent"
+        isBusy={isBusy}
+        title="Delete this copy?"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
       >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="bookster-confirm-dialog">
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>Delete this copy?</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body>
-              <p>
-                “{pendingDelete?.title}” by {pendingDelete?.author} will be permanently removed.
-              </p>
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button isDisabled={isBusy} onPress={() => setPendingDelete(null)} variant="tertiary">
-                Cancel
-              </Button>
-              <Button isPending={isBusy} onPress={confirmDelete} variant="danger">
-                Delete
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+        “{pendingDelete?.title}” by {pendingDelete?.author} will be permanently removed.
+      </DeleteDialog>
     </div>
   );
 }

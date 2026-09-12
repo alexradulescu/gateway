@@ -5,7 +5,7 @@ import { LayoutGrid, List as ListIcon, Plus, Settings } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filterBooksByCategories, searchBooks, sortBooks } from "../domain";
 import { useBookster } from "../context/useBookster";
-import type { BooksterBook, BooksterCategoryId } from "../types";
+import type { BooksterBook } from "../types";
 import { BookCover } from "./BookCover";
 
 export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
@@ -104,7 +104,7 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
                   key={category._id}
                   aria-pressed={selected}
                   className="bookster-filter-pill"
-                  onPress={() => toggleCategory(category._id as BooksterCategoryId)}
+                  onPress={() => toggleCategory(category._id)}
                   size="sm"
                   variant={selected ? "primary" : "outline"}
                 >
