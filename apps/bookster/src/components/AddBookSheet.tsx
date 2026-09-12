@@ -19,7 +19,7 @@ const emptyBook = (title = ""): BookFormValue => ({
   isSample: false,
 });
 
-export function AddBookSheet({ returnTo = "/" }: { returnTo?: "/" | "/shelf" }) {
+export function AddBookSheet({ returnTo = "/list" }: { returnTo?: "/list" | "/shelf" }) {
   const { library, searchValue, setSearchValue } = useBookster();
   const capturedTitle = useRef(searchValue);
   const titleInputRef = useRef<HTMLInputElement>(null);

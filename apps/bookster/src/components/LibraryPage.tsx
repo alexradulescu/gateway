@@ -8,7 +8,7 @@ import { useBookster } from "../context/useBookster";
 import type { BooksterBook, BooksterCategoryId } from "../types";
 import { BookCover } from "./BookCover";
 
-export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
+export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
   const {
     library,
     searchValue,
@@ -18,8 +18,8 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     resetCategories,
   } = useBookster();
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     const timeout = window.setTimeout(() => setDebouncedSearch(searchValue), 150);
     return () => window.clearTimeout(timeout);
@@ -51,14 +51,13 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
     selectedCategoryIds,
   ]);
 
+  const columns = view === "shelf" ? 3 : 1;
   const virtualizer = useVirtualizer({
-    count: visibleBooks.length,
+    count: Math.ceil(visibleBooks.length / columns),
     getScrollElement: () => scrollRef.current,
-    estimateSize: () =>
-      view === "shelf" ? Math.round(Math.min(window.innerWidth, 600) * 0.48 + 60) : 92,
-    overscan: 8,
-    lanes: view === "shelf" ? 3 : 1,
-    getItemKey: (index) => visibleBooks[index]._id,
+    estimateSize: () => (view === "shelf" ? 240 : 116),
+    overscan: 5,
+    getItemKey: (index) => `${columns}-${visibleBooks[index * columns]._id}`,
   });
 
   const hasCategoryFilter = selectedCategoryIds.size > 0;
@@ -66,14 +65,14 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
 
   return (
     <main className="bookster-library">
-      <header className="bookster-floating-header">
-        <div className="bookster-glass bookster-title-bar">
+      <header className="bookster-floating-header" data-scrolled={hasScrolled}>
+        <div className="bookster-title-bar">
           <h1>Bookster</h1>
           <div className="bookster-title-actions">
             <Link
               aria-label={view === "shelf" ? "Show book list" : "Show bookshelf"}
               className="bookster-icon-link"
-              to={view === "shelf" ? "/" : "/shelf"}
+              to={view === "shelf" ? "/list" : "/"}
             >
               {view === "shelf" ? (
                 <ListIcon aria-hidden="true" size={20} />
@@ -119,60 +118,50 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
 
       <div
         ref={scrollRef}
-        className={`bookster-library-scroll${view === "shelf" ? " bookster-library-scroll--shelf" : ""}`}
+        className="bookster-library-scroll"
         id="bookster-library-scroll"
+        onScroll={(event) => setHasScrolled(event.currentTarget.scrollTop > 0)}
       >
         {visibleBooks.length === 0 ? (
           <LibraryEmptyState
             hasCategoryFilter={hasCategoryFilter}
             searchValue={searchValue}
             isSearching={isSearching}
+            onReset={() => {
+              setSearchValue("");
+              resetCategories();
+            }}
+            addTo={view === "shelf" ? "/shelf/add" : "/add"}
           />
         ) : (
           <div
             className={view === "shelf" ? "bookster-shelf-space" : "bookster-virtual-space"}
             style={{ height: virtualizer.getTotalSize() }}
           >
-            {virtualizer.getVirtualItems().map((virtualRow) => {
-              const book = visibleBooks[virtualRow.index];
-              if (view === "shelf") {
-                return (
-                  <div
-                    key={book._id}
-                    className="bookster-shelf-item"
-                    data-index={virtualRow.index}
-                    style={
-                      {
-                        "--bookster-shelf-lane": virtualRow.lane,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <BookshelfBook
-                      book={book}
-                      categoryLabels={categoryLabels}
-                      locationLabels={locationLabels}
-                    />
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={book._id}
-                  ref={virtualizer.measureElement}
-                  className="bookster-virtual-row"
-                  data-index={virtualRow.index}
-                  style={{ transform: `translateY(${virtualRow.start}px)` }}
-                >
-                  <BookRow
-                    book={book}
-                    categoryLabels={categoryLabels}
-                    locationLabels={locationLabels}
-                    index={virtualRow.index}
-                  />
-                </div>
-              );
-            })}
+            {virtualizer.getVirtualItems().map((virtualRow) => (
+              <div
+                key={virtualRow.key}
+                ref={virtualizer.measureElement}
+                className={view === "shelf" ? "bookster-shelf-row" : "bookster-virtual-row"}
+                data-index={virtualRow.index}
+                style={{ transform: `translateY(${virtualRow.start}px)` }}
+              >
+                {visibleBooks
+                  .slice(virtualRow.index * columns, (virtualRow.index + 1) * columns)
+                  .map((book) =>
+                    view === "shelf" ? (
+                      <BookshelfBook key={book._id} book={book} />
+                    ) : (
+                      <BookRow
+                        key={book._id}
+                        book={book}
+                        categoryLabels={categoryLabels}
+                        locationLabels={locationLabels}
+                      />
+                    ),
+                  )}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -188,7 +177,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
           <SearchField.Group className="bookster-glass bookster-search__group">
             <SearchField.SearchIcon />
             <SearchField.Input placeholder="Search title or author…" />
-            <SearchField.ClearButton />
+            <SearchField.ClearButton aria-label="Clear search" />
           </SearchField.Group>
         </SearchField>
         <Link
@@ -203,17 +192,7 @@ export function LibraryPage({ view = "list" }: { view?: "list" | "shelf" }) {
   );
 }
 
-function BookshelfBook({
-  book,
-  categoryLabels,
-  locationLabels,
-}: {
-  book: BooksterBook;
-  categoryLabels: ReadonlyMap<string, string>;
-  locationLabels: ReadonlyMap<string, string>;
-}) {
-  const categories = book.categoryIds.flatMap((id) => categoryLabels.get(id) ?? []);
-  const locations = book.locationIds.flatMap((id) => locationLabels.get(id) ?? []);
+function BookshelfBook({ book }: { book: BooksterBook }) {
   return (
     <Link
       aria-label={`${book.title} by ${book.author}`}
@@ -224,25 +203,8 @@ function BookshelfBook({
     >
       <span className="bookster-shelf-book__cover">
         <BookCover large showTitle title={book.title} />
-        <span className="bookster-shelf-book__author">{book.author}</span>
       </span>
-      {book.isSample || categories.length > 0 || locations.length > 0 ? (
-        <span className="bookster-shelf-book__badges">
-          {book.isSample ? (
-            <span className="bookster-badge bookster-badge--sample">Sample</span>
-          ) : null}
-          {locations.map((label) => (
-            <span key={`location-${label}`} className="bookster-badge bookster-badge--location">
-              {label}
-            </span>
-          ))}
-          {categories.map((label) => (
-            <span key={`category-${label}`} className="bookster-badge bookster-badge--category">
-              {label}
-            </span>
-          ))}
-        </span>
-      ) : null}
+      <span className="bookster-shelf-book__author">{book.author}</span>
     </Link>
   );
 }
@@ -251,12 +213,10 @@ function BookRow({
   book,
   categoryLabels,
   locationLabels,
-  index,
 }: {
   book: BooksterBook;
   categoryLabels: ReadonlyMap<string, string>;
   locationLabels: ReadonlyMap<string, string>;
-  index: number;
 }) {
   const categories = book.categoryIds.flatMap((id) => categoryLabels.get(id) ?? []);
   const locations = book.locationIds.flatMap((id) => locationLabels.get(id) ?? []);
@@ -264,7 +224,6 @@ function BookRow({
     <Link
       aria-label={`${book.title} by ${book.author}`}
       className="bookster-book-row"
-      data-stripe={index % 2 === 0 ? "even" : "odd"}
       params={{ bookId: book._id }}
       resetScroll={false}
       to="/books/$bookId"
@@ -299,21 +258,25 @@ function LibraryEmptyState({
   searchValue,
   isSearching,
   hasCategoryFilter,
+  onReset,
+  addTo,
 }: {
   searchValue: string;
   isSearching: boolean;
   hasCategoryFilter: boolean;
+  onReset: () => void;
+  addTo: "/add" | "/shelf/add";
 }) {
   const title = isSearching
-    ? "No matching volume"
+    ? "No books found"
     : hasCategoryFilter
       ? "No books in this view"
       : "Your shelves are ready";
   const message = isSearching
-    ? `No “${searchValue}” book exists yet. Are you buying it?`
+    ? `No titles or authors match “${searchValue}”. Try another search or add it to your library.`
     : hasCategoryFilter
-      ? "The enabled categories do not contain any books. Choose All to reset the view."
-      : "No books here yet. Add one with the button below.";
+      ? "No books match these categories. Clear the filters to see your collection."
+      : "A place for every book you love. Start with your first one.";
   return (
     <div className="bookster-empty-library">
       <span aria-hidden="true" className="bookster-empty-library__mark">
@@ -321,6 +284,15 @@ function LibraryEmptyState({
       </span>
       <h2>{title}</h2>
       <p>{message}</p>
+      {isSearching || hasCategoryFilter ? (
+        <Button onPress={onReset} variant="secondary">
+          Clear filters
+        </Button>
+      ) : (
+        <Link className="bookster-link-button" to={addTo}>
+          Add your first book
+        </Link>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShelfRouteImport } from './routes/shelf'
+import { Route as ListRouteImport } from './routes/list'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
@@ -21,6 +22,11 @@ import { Route as ShelfBooksBookIdRouteImport } from './routes/shelf.books.$book
 const ShelfRoute = ShelfRouteImport.update({
   id: '/shelf',
   path: '/shelf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListRoute = ListRouteImport.update({
+  id: '/list',
+  path: '/list',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddRoute = AddRouteImport.update({
@@ -62,6 +68,7 @@ const ShelfBooksBookIdRoute = ShelfBooksBookIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/list': typeof ListRoute
   '/shelf': typeof ShelfRouteWithChildren
   '/books/$bookId': typeof BooksBookIdRoute
   '/settings/$tab': typeof SettingsTabRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/list': typeof ListRoute
   '/shelf': typeof ShelfRouteWithChildren
   '/books/$bookId': typeof BooksBookIdRoute
   '/settings/$tab': typeof SettingsTabRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/add': typeof AddRoute
+  '/list': typeof ListRoute
   '/shelf': typeof ShelfRouteWithChildren
   '/books/$bookId': typeof BooksBookIdRoute
   '/settings/$tab': typeof SettingsTabRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/add'
+    | '/list'
     | '/shelf'
     | '/books/$bookId'
     | '/settings/$tab'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/add'
+    | '/list'
     | '/shelf'
     | '/books/$bookId'
     | '/settings/$tab'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/add'
+    | '/list'
     | '/shelf'
     | '/books/$bookId'
     | '/settings/$tab'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AddRoute: typeof AddRoute
+  ListRoute: typeof ListRoute
   ShelfRoute: typeof ShelfRouteWithChildren
   BooksBookIdRoute: typeof BooksBookIdRoute
   SettingsTabRoute: typeof SettingsTabRoute
@@ -139,6 +152,13 @@ declare module '@tanstack/react-router' {
       path: '/shelf'
       fullPath: '/shelf'
       preLoaderRoute: typeof ShelfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/list': {
+      id: '/list'
+      path: '/list'
+      fullPath: '/list'
+      preLoaderRoute: typeof ListRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add': {
@@ -208,6 +228,7 @@ const ShelfRouteWithChildren = ShelfRoute._addFileChildren(ShelfRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AddRoute: AddRoute,
+  ListRoute: ListRoute,
   ShelfRoute: ShelfRouteWithChildren,
   BooksBookIdRoute: BooksBookIdRoute,
   SettingsTabRoute: SettingsTabRoute,

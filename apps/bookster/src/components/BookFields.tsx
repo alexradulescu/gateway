@@ -92,7 +92,7 @@ export function BookMetadataFields({
         onChange={(isSample) => onChange({ ...value, isSample })}
       >
         <Switch.Content>
-          <span>Is Sample</span>
+          <span>Sample edition</span>
           {showSampleDescription ? <small>Mark this book as a sample or preview.</small> : null}
         </Switch.Content>
         <Switch.Control>
