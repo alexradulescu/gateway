@@ -45,7 +45,7 @@ const pageLabels: Record<BooksterSettingsTab, string> = {
   config: "Settings",
   categories: "Categories",
   locations: "Locations",
-  duplicates: "Duplicate Books",
+  duplicates: "Duplicate books",
   import: "Import CSV",
 };
 const duplicateDateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
@@ -71,7 +71,7 @@ export function SettingsOverviewPage() {
           <SettingsGroup title="Library">
             <SettingSelect
               description="How books are ordered when you open Bookster."
-              label="Default Sort Order"
+              label="Default sort order"
               onChange={setSort}
               options={SORT_OPTIONS}
               value={library.settings.defaultSortOrder}
@@ -97,7 +97,7 @@ export function SettingsOverviewPage() {
             <SettingsLinkRow
               description="Find repeated titles"
               icon={<Search aria-hidden="true" size={18} />}
-              label="Duplicate Books"
+              label="Duplicate books"
               tab="duplicates"
             />
             <SettingsLinkRow
@@ -154,7 +154,7 @@ function SettingsHeader({
 }) {
   return (
     <header className="bookster-settings-header">
-      <div className="bookster-glass bookster-settings-title">
+      <div className="bookster-settings-title">
         {isBackDisabled ? (
           <Button
             aria-label="Import in progress"

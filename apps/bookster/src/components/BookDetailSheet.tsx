@@ -20,10 +20,10 @@ const booksterDateFormatter = new Intl.DateTimeFormat(undefined, {
 
 export function BookDetailSheet({
   bookId,
-  returnTo = "/",
+  returnTo = "/list",
 }: {
   bookId: string;
-  returnTo?: "/" | "/shelf";
+  returnTo?: "/list" | "/shelf";
 }) {
   const { library } = useBookster();
   const selected = library.books.find((book) => book._id === bookId);
@@ -140,7 +140,7 @@ export function BookDetailSheet({
             <Button
               isPending={isBusy}
               onPress={() => setIsDeleteDialogOpen(true)}
-              variant="outline"
+              variant="danger-soft"
             >
               Delete
             </Button>
