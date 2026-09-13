@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Checkbox, toast } from "@heroui/react";
+import { Button, Checkbox, toast } from "@heroui/react";
 import { GripVertical } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -64,10 +64,13 @@ export function GroupItemRow({
           </Checkbox.Control>
         </Checkbox.Content>
       </Checkbox>
-      <button
+      <Button
+        size="lg"
+        variant="ghost"
+        fullWidth
         className="things-row-main things-item-row__main"
         type="button"
-        onClick={() =>
+        onPress={() =>
           navigate({
             to: "/$groupId/$itemId",
             params: { groupId, itemId: item._id },
@@ -78,19 +81,22 @@ export function GroupItemRow({
           {item.canonicalName}
           {item.quantity ? <span className="things-item-quantity"> × {item.quantity}</span> : null}
         </span>
-      </button>
+      </Button>
       {handle && (
-        <button
+        <Button
           {...handle.attributes}
           {...handle.listeners}
           ref={handle.setActivatorNodeRef}
+          isIconOnly
+          size="lg"
+          variant="ghost"
           className="things-drag-handle"
           type="button"
           aria-label={`Reorder ${item.canonicalName}`}
-          disabled={handle.isDisabled}
+          isDisabled={handle.isDisabled}
         >
           <GripVertical aria-hidden="true" size={18} />
-        </button>
+        </Button>
       )}
       <ThingsBusyOverlay isBusy={isPending} label="Updating item" />
     </div>

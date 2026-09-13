@@ -23,7 +23,7 @@ export function DoneSection({
       <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
         <div className="things-done-section__header">
           <Disclosure.Heading>
-            <Button className="things-done-trigger" slot="trigger" variant="tertiary">
+            <Button size="lg" className="things-done-trigger" slot="trigger" variant="tertiary">
               <Disclosure.Indicator />
               <span>Done ({openedGroup.completedItems.length})</span>
             </Button>
@@ -33,7 +33,7 @@ export function DoneSection({
             description="Completed items will be removed from this group. This cannot be undone."
             confirmLabel="Clear all"
             trigger={(open) => (
-              <Button className="things-clear-all" size="sm" variant="ghost" onPress={open}>
+              <Button className="things-clear-all" size="lg" variant="danger-soft" onPress={open}>
                 Clear all
               </Button>
             )}

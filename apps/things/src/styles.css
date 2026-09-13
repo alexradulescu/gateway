@@ -55,12 +55,10 @@
   --things-glass-shadow: var(--surface-shadow);
   --things-glass-shadow-raised: var(--overlay-shadow);
 
-  /* Subtract the modal inset from the iPhone 15 Pro screen curve to keep both edges parallel. */
   --things-drawer-inset: 8px;
-  --things-screen-corner-radius: 55px;
   --things-drawer-header-height: 60px;
   --things-radius-panel: 24px;
-  --things-radius-drawer: calc(var(--things-screen-corner-radius) - var(--things-drawer-inset));
+  --things-radius-drawer: 32px;
   --things-radius-control: 14px;
 }
 
@@ -161,10 +159,6 @@ input,
 [role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-}
-
-button {
-  color: inherit;
 }
 
 ::selection {
@@ -322,7 +316,7 @@ button {
   position: relative;
   display: grid;
   min-height: 58px;
-  grid-template-columns: minmax(0, 1fr) 52px;
+  grid-template-columns: minmax(0, 1fr) 64px;
   align-items: stretch;
 }
 
@@ -334,18 +328,12 @@ button {
 
 .things-catalogue-visibility {
   display: grid;
-  width: 52px;
-  min-width: 52px;
+  width: 64px;
+  min-width: 64px;
   min-height: 44px;
   place-items: center;
   align-self: center;
   padding: 0;
-}
-
-.things-catalogue-visibility .checkbox__control {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
 }
 
 .things-catalogue-row--editing {
@@ -355,7 +343,7 @@ button {
   padding: 7px 8px;
 }
 
-.things-catalogue-row--editing > .text-field {
+.things-catalogue-row--editing > .textfield {
   min-width: 0;
 }
 
@@ -383,10 +371,6 @@ button {
   min-height: 44px;
 }
 
-.things-catalogue-row-error {
-  padding: 0 12px 10px;
-}
-
 /* Sortable entries are deliberately unstyled wrappers. */
 .things-group-surface > div + div {
   border-top: 1px solid var(--things-glass-separator);
@@ -406,7 +390,10 @@ button {
 .things-group-main,
 .things-row-main {
   min-width: 0;
+  height: auto;
   min-height: 44px;
+  justify-content: flex-start;
+  white-space: normal;
   padding: 8px 6px;
   border: 0;
   background: transparent;
@@ -417,29 +404,29 @@ button {
 .things-group-main {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
   justify-content: center;
   padding-block: 9px;
 }
 
 .things-item-label,
 .things-row-title {
-  overflow: hidden;
   color: var(--things-page-ink);
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 570;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-row-meta {
-  overflow: hidden;
   margin-top: 2px;
   color: var(--things-page-muted);
   font-size: 0.76rem;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-drag-handle {
@@ -494,7 +481,7 @@ button {
   min-width: 0;
 }
 
-.things-add-group > .things-field-error {
+.things-add-group__field .things-field-error {
   padding: 0 5px 7px;
 }
 
@@ -516,7 +503,7 @@ button {
   position: relative;
   display: grid;
   min-width: 0;
-  height: 40px;
+  height: 44px;
   align-items: stretch;
   overflow: visible;
   border: 1px solid var(--things-creation-border);
@@ -536,8 +523,8 @@ button {
 .things-add-group__controls > button,
 .things-add-item__controls > button {
   position: absolute;
-  inset-block: -1px;
-  inset-inline-end: -1px;
+  inset-block: 1px;
+  inset-inline-end: 1px;
   width: 40px;
   height: 40px;
   min-width: 40px;
@@ -546,8 +533,6 @@ button {
   max-height: 40px;
   padding: 0;
   border-radius: 999px;
-  color: var(--things-accent-ink);
-  background: transparent;
 }
 
 .things-add-action-disc {
@@ -556,7 +541,6 @@ button {
   height: 32px;
   place-items: center;
   border-radius: 999px;
-  background: var(--things-accent);
 }
 
 .things-add-item__error {
@@ -570,15 +554,15 @@ button {
 
 .things-add-group__controls > .things-add-group__field {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
 }
 
 .things-add-item__controls > .things-combobox,
 .things-add-item__controls > .things-add-item__quantity {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
   align-self: stretch;
 }
 
@@ -587,8 +571,8 @@ button {
   display: flex;
   width: 100%;
   min-width: 0;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
   align-items: stretch;
   border: 0;
   border-radius: 0;
@@ -639,7 +623,7 @@ button {
 .things-add-item input {
   width: 100%;
   min-width: 0;
-  min-height: 46px;
+  min-height: 44px;
   padding: 0 13px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: var(--things-input-radius);
@@ -849,9 +833,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-drawer > .things-drawer-header {
-  position: absolute;
   z-index: 4;
-  inset: 0 0 auto;
   min-height: var(--things-drawer-header-height);
   padding: 8px 12px;
   background: transparent;
@@ -859,9 +841,14 @@ body .alert-dialog__dialog.things-confirm-dialog {
   backdrop-filter: blur(32px);
 }
 
+.things-group-drawer > .drawer__handle {
+  flex-shrink: 0;
+  padding: 12px 0 0;
+}
+
 .things-drawer-title {
   min-width: 0;
-  overflow: hidden;
+  height: auto;
   margin: 0;
   padding: 9px 4px;
   border: 0;
@@ -871,8 +858,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   font-weight: 660;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-drawer-header > h1,
@@ -880,14 +867,13 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-drawer-header .modal__heading,
 .things-drawer-header .drawer__heading {
   min-width: 0;
-  overflow: hidden;
   margin: 0;
   font-size: 1.05rem;
   font-weight: 660;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-header-spacer {
@@ -912,7 +898,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-drawer-title-wrap input {
   width: 100%;
   min-width: 0;
-  height: 38px;
+  height: 44px;
   padding: 0 30px 0 10px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: var(--things-input-radius);
@@ -950,8 +936,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--things-drawer-header-height) 12px max(10px, env(safe-area-inset-bottom));
-  scroll-padding-top: var(--things-drawer-header-height);
+  padding: 0 12px max(10px, env(safe-area-inset-bottom));
+  scroll-padding-top: 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -977,12 +963,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-item-form__actions > button {
   width: 100%;
-  height: 40px;
-  min-height: 40px;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--foreground) 8%, transparent);
-  font-size: 0.875rem;
-  font-weight: 550;
+  height: auto;
+  min-height: 44px;
 }
 
 .things-delete-item {
@@ -996,7 +978,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   height: 44px;
   min-height: 44px;
   border-radius: 999px;
-  background: transparent;
 }
 
 .things-close-button.button {
@@ -1047,7 +1028,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-toggle {
-  min-height: 36px;
+  min-height: 44px;
   padding-inline: 14px;
   font-size: 0.82rem;
   white-space: nowrap;
@@ -1187,19 +1168,18 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-clear-all {
-  min-height: 30px;
+  min-height: 44px;
   padding: 0 10px;
   border: 0;
   color: var(--things-danger);
-  background: transparent;
   font-size: 0.8rem;
   font-weight: 630;
   cursor: pointer;
 }
 
 .things-clear-all.button {
-  height: 30px;
-  min-height: 30px;
+  height: auto;
+  min-height: 44px;
   border-radius: 999px;
   color: var(--things-danger);
   font-size: 0.75rem;
@@ -1217,7 +1197,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-item-form__field,
-.things-item-form > .text-field,
+.things-item-form > .textfield,
 .things-item-form > [data-slot="base"] {
   display: grid;
   min-width: 0;
@@ -1315,9 +1295,9 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-toast-region .toast__action.things-toast-action {
   width: auto;
-  height: 32px;
-  min-width: 0;
-  min-height: 32px;
+  height: auto;
+  min-width: 44px;
+  min-height: 44px;
   justify-self: end;
   padding-inline: 12px;
   margin: 0;
@@ -1398,6 +1378,23 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding-inline: 12px;
   padding-bottom: var(--things-safe-bottom);
   margin-inline: auto;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .things-group-surface {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  body .drawer__dialog.things-group-drawer,
+  .things-item-modal,
+  body .alert-dialog__dialog.things-confirm-dialog,
+  .things-frosted.popover {
+    background: var(--overlay);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 @keyframes things-spin {

@@ -2,7 +2,9 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import {
   Button,
   Drawer,
+  FieldError,
   Input,
+  Label,
   ScrollShadow,
   TextField,
   ToggleButton,
@@ -40,6 +42,7 @@ export function GroupDrawer({
 }) {
   const navigate = useNavigate({ from: "/$groupId" });
   const reorderItems = useMutation(api.things.reorderGroupItems);
+  const drawerId = useId();
   const [overlayPortal, setOverlayPortal] = useState<HTMLElement | null>(null);
   const [renameName, setRenameName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
@@ -93,13 +96,24 @@ export function GroupDrawer({
         isDismissable={!isPending && !isItemOverlayOpen && !discardGuard.isOpen}
         isKeyboardDismissDisabled={isPending || isItemOverlayOpen || discardGuard.isOpen}
         isOpen
-        onOpenChange={(open) => !open && requestClose()}
+        onOpenChange={(open) => {
+          if (open) return;
+          // A guarded swipe keeps the route open; reset the drawer after its drag gesture.
+          const drawer = document.getElementById(drawerId);
+          if (isDirty && drawer) {
+            drawer.style.transform = "";
+            drawer.style.translate = "";
+          }
+          requestClose();
+        }}
       >
         <Drawer.Content placement="bottom">
           <Drawer.Dialog
+            id={drawerId}
             className="things-frosted things-group-drawer"
             aria-busy={isLoading || undefined}
           >
+            <Drawer.Handle />
             <GroupDrawerHeader
               key={groupId}
               actionGroupId={!isLoading ? openedGroup?.group._id : undefined}
@@ -250,7 +264,7 @@ function GroupDrawerHeader({
       <Button
         isIconOnly
         className="things-close-button"
-        size="sm"
+        size="lg"
         variant="ghost"
         aria-label="Close group"
         isDisabled={isCloseDisabled}
@@ -262,15 +276,14 @@ function GroupDrawerHeader({
         {isEditing ? (
           <form ref={renameFormRef} aria-busy={isSaving || undefined} onSubmit={submitRename}>
             <TextField
-              aria-label="Group name"
               isInvalid={Boolean(error)}
               isDisabled={isSaving}
               value={name}
               onChange={onNameChange}
             >
+              <Label className="sr-only">Group name</Label>
               <Input
                 ref={renameInputRef}
-                aria-label="Group name"
                 aria-describedby={error ? errorId : undefined}
                 autoComplete="off"
                 name="groupName"
@@ -291,26 +304,27 @@ function GroupDrawerHeader({
                   renameFormRef.current?.requestSubmit();
                 }}
               />
+              <FieldError id={errorId} className="things-field-error">
+                {error}
+              </FieldError>
             </TextField>
             <ThingsBusyOverlay isBusy={isSaving} label="Renaming group" />
-            {error && (
-              <p id={errorId} className="things-field-error" role="alert">
-                {error}
-              </p>
-            )}
           </form>
         ) : (
-          <button
+          <Button
+            size="lg"
+            variant="ghost"
+            fullWidth
             className="things-drawer-title"
             type="button"
-            disabled={isDisabled}
-            onClick={() => {
+            isDisabled={isDisabled || isCloseDisabled}
+            onPress={() => {
               onNameChange(groupName);
               onEditingChange(true);
             }}
           >
             <Drawer.Heading>{groupName}</Drawer.Heading>
-          </button>
+          </Button>
         )}
       </div>
       <ConfirmAction
@@ -322,9 +336,9 @@ function GroupDrawerHeader({
             isIconOnly
             aria-label="Delete group"
             className="things-delete-group-button"
-            isDisabled={isDisabled}
-            size="sm"
-            variant="ghost"
+            isDisabled={isDisabled || isCloseDisabled}
+            size="lg"
+            variant="danger-soft"
             onPress={open}
           >
             <Trash2 aria-hidden="true" size={18} />
@@ -362,7 +376,7 @@ function GroupSwitcher({
         disallowEmptySelection
         selectedKeys={new Set([currentGroupId])}
         selectionMode="single"
-        size="sm"
+        size="lg"
         onSelectionChange={(keys) => {
           const nextGroupId = [...keys][0];
           if (typeof nextGroupId !== "string" || nextGroupId === currentGroupId) return;

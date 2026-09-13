@@ -2,8 +2,10 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import {
   Button,
   ButtonGroup,
-  Checkbox,
+  FieldError,
+  Switch,
   Input,
+  Label,
   Spinner,
   Surface,
   TextField,
@@ -42,7 +44,7 @@ export function CatalogueSettings() {
           isIconOnly
           aria-label="Back to Things"
           className="things-page-icon-button"
-          size="sm"
+          size="lg"
           variant="ghost"
           onPress={() => navigate({ to: "/" })}
         >
@@ -184,9 +186,9 @@ function CatalogueRow({
             value={name}
             onChange={setName}
           >
+            <Label className="sr-only">Rename {item.canonicalName}</Label>
             <Input
               ref={inputRef}
-              aria-label={`Rename ${item.canonicalName}`}
               aria-describedby={error ? errorId : undefined}
               autoComplete="off"
               name="catalogueItemName"
@@ -197,16 +199,21 @@ function CatalogueRow({
                 cancel();
               }}
             />
+            <FieldError id={errorId} className="things-field-error">
+              {error}
+            </FieldError>
           </TextField>
           <ButtonGroup
             aria-label={`Editing ${item.canonicalName}`}
             className="things-catalogue-edit-actions"
-            size="sm"
+            size="lg"
             variant="secondary"
           >
             <Button
               isIconOnly
               aria-label={`Save ${item.canonicalName}`}
+              variant="primary"
+              isPending={pendingAction === "rename"}
               isDisabled={pendingAction !== null}
               type="submit"
             >
@@ -229,32 +236,32 @@ function CatalogueRow({
           className="things-catalogue-row"
           aria-busy={pendingAction === "visibility" || undefined}
         >
-          <button className="things-row-main things-catalogue-name" type="button" onClick={onEdit}>
+          <Button
+            size="lg"
+            variant="ghost"
+            fullWidth
+            className="things-row-main things-catalogue-name"
+            type="button"
+            onPress={onEdit}
+          >
             <span className="things-row-title">{item.canonicalName}</span>
-          </button>
-          <Checkbox
+          </Button>
+          <Switch
             aria-label={`Show ${item.canonicalName} in suggestions`}
             className="things-catalogue-visibility"
             isDisabled={pendingAction !== null}
             isSelected={item.isVisible}
             onChange={changeVisibility}
           >
-            <Checkbox.Content>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-            </Checkbox.Content>
-          </Checkbox>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch>
           <ThingsBusyOverlay
             isBusy={pendingAction === "visibility"}
             label="Updating catalogue visibility"
           />
         </div>
-      )}
-      {error && (
-        <p id={errorId} className="things-field-error things-catalogue-row-error" role="alert">
-          {error}
-        </p>
       )}
     </div>
   );
