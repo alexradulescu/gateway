@@ -133,7 +133,11 @@ export function GroupDrawer({
                 <GroupSwitcher currentGroupId={groupId} runOrConfirmDiscard={runOrConfirmDiscard} />
                 {openedGroup ? (
                   <>
-                    <Card aria-label="To do" className="things-list-card things-item-section">
+                    <Card
+                      render={(props) => <section {...props} />}
+                      aria-label="To do"
+                      className="things-list-card things-item-section"
+                    >
                       <Card.Header className="things-list-header">
                         <Card.Title>To do</Card.Title>
                       </Card.Header>

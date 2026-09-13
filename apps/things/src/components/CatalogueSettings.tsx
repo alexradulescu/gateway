@@ -83,11 +83,17 @@ function CatalogueSection({
 }) {
   return (
     <Card
+      render={(props) => <section {...props} />}
       className="things-list-card things-catalogue-section"
       aria-labelledby={`catalogue-${title}`}
     >
       <Card.Header className="things-list-header">
-        <Card.Title id={`catalogue-${title}`}>{title}</Card.Title>
+        <Card.Title
+          id={`catalogue-${title}`}
+          render={(props) => <h2 {...props}>{props.children}</h2>}
+        >
+          {title}
+        </Card.Title>
         <Card.Description className="tabular-nums">{items.length} items</Card.Description>
       </Card.Header>
       <Card.Content className="things-row-list">

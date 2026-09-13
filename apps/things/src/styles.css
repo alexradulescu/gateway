@@ -253,6 +253,10 @@ input,
   border-top: 1px solid var(--separator);
 }
 
+.things-active-list > .things-add-item + div:has(> .things-item-row) {
+  border-top: 1px solid var(--separator);
+}
+
 /* Group list */
 
 .things-row {
