@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Button, Input, Surface, TextField } from "@heroui/react";
+import { Button, Card, FieldError, Input, Label, TextField } from "@heroui/react";
 import { GripVertical, Plus, Settings } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -22,7 +22,7 @@ export function ThingsHome() {
           isIconOnly
           aria-label="Open catalogue settings"
           className="things-page-icon-button"
-          size="sm"
+          size="lg"
           variant="ghost"
           onPress={() => navigate({ to: "/settings" })}
         >
@@ -30,21 +30,25 @@ export function ThingsHome() {
         </Button>
       </header>
 
-      <Surface className="things-frosted things-group-surface things-home-groups">
-        {home.groups.length === 0 ? (
-          <p className="things-empty">Add your first household list below.</p>
-        ) : (
-          <SortableList
-            items={home.groups}
-            failureMessage="Could not save the group order."
-            onReorder={async (groups) => {
-              await reorderGroups({ groupIds: groups.map((group) => group._id) });
-            }}
-            renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
-          />
-        )}
-        <AddGroupRow />
-      </Surface>
+      <Card className="things-list-card">
+        <Card.Content className="things-row-list">
+          {home.groups.length === 0 ? (
+            <p className="things-empty">Add your first household list below.</p>
+          ) : (
+            <SortableList
+              items={home.groups}
+              failureMessage="Could not save the group order."
+              onReorder={async (groups) => {
+                await reorderGroups({ groupIds: groups.map((group) => group._id) });
+              }}
+              renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
+            />
+          )}
+        </Card.Content>
+        <Card.Footer className="things-list-footer">
+          <AddGroupRow />
+        </Card.Footer>
+      </Card>
     </main>
   );
 }
@@ -59,29 +63,35 @@ function GroupRow({ group, handle }: { group: ThingsGroupSummary; handle: Sortab
   ].filter(Boolean);
 
   return (
-    <div className="things-group-row">
+    <div className="things-row">
       <span className="things-order" aria-hidden="true">
         {String(order).padStart(2, "0")}
       </span>
-      <button
-        className="things-row-main things-group-main"
+      <Button
+        size="lg"
+        variant="ghost"
+        fullWidth
+        className="things-row-main"
         type="button"
-        onClick={() => navigate({ to: "/$groupId", params: { groupId: group._id } })}
+        onPress={() => navigate({ to: "/$groupId", params: { groupId: group._id } })}
       >
         <span className="things-row-title">{group.name}</span>
         {counts.length > 0 && <span className="things-row-meta">{counts.join(" · ")}</span>}
-      </button>
-      <button
+      </Button>
+      <Button
         {...handle.attributes}
         {...handle.listeners}
         ref={handle.setActivatorNodeRef}
+        isIconOnly
+        size="lg"
+        variant="ghost"
         className="things-drag-handle"
         type="button"
         aria-label={`Reorder ${group.name}`}
-        disabled={handle.isDisabled}
+        isDisabled={handle.isDisabled}
       >
         <GripVertical aria-hidden="true" size={18} />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -124,16 +134,15 @@ function AddGroupRow() {
     >
       <div className="things-add-group__controls">
         <TextField
-          aria-label="Group name"
           className="things-add-group__field"
           isInvalid={Boolean(error)}
           isDisabled={isPending}
           value={name}
           onChange={setName}
         >
+          <Label className="sr-only">Group name</Label>
           <Input
             ref={inputRef}
-            aria-label="Group name"
             aria-describedby={error ? errorId : undefined}
             autoComplete="off"
             name="groupName"
@@ -145,19 +154,24 @@ function AddGroupRow() {
               formRef.current?.requestSubmit();
             }}
           />
+          <FieldError id={errorId} className="things-field-error">
+            {error}
+          </FieldError>
         </TextField>
-        <Button isIconOnly aria-label="Add group" type="submit" isDisabled={isPending}>
+        <Button
+          isIconOnly
+          size="md"
+          variant="primary"
+          aria-label="Add group"
+          type="submit"
+          isPending={isPending}
+        >
           <span className="things-add-action-disc">
             <Plus aria-hidden="true" size={17} />
           </span>
         </Button>
       </div>
       <ThingsBusyOverlay isBusy={isPending} label="Adding group" />
-      {error && (
-        <p id={errorId} className="things-field-error" role="alert">
-          {error}
-        </p>
-      )}
     </form>
   );
 }
