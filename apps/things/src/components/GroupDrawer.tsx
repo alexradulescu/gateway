@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   Button,
+  Card,
   Drawer,
   FieldError,
   Input,
@@ -132,9 +133,11 @@ export function GroupDrawer({
                 <GroupSwitcher currentGroupId={groupId} runOrConfirmDiscard={runOrConfirmDiscard} />
                 {openedGroup ? (
                   <>
-                    <section aria-label="To do" className="things-item-section">
-                      <h3 className="things-item-section__label">To do</h3>
-                      <div className="things-item-group things-active-list">
+                    <Card aria-label="To do" className="things-list-card things-item-section">
+                      <Card.Header className="things-list-header">
+                        <Card.Title>To do</Card.Title>
+                      </Card.Header>
+                      <Card.Content className="things-row-list things-active-list">
                         <AddGroupItemRow
                           group={openedGroup.group}
                           name={addItemName}
@@ -167,8 +170,8 @@ export function GroupDrawer({
                             )}
                           />
                         )}
-                      </div>
-                    </section>
+                      </Card.Content>
+                    </Card>
                     <DoneSection
                       key={openedGroup.group._id}
                       openedGroup={openedGroup}

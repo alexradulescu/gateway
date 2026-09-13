@@ -44,7 +44,7 @@ export function GroupItemRow({
 
   return (
     <div
-      className="things-item-row"
+      className="things-row things-item-row"
       data-completed={isCompleted || undefined}
       data-pending={isPending || undefined}
       aria-busy={isPending || undefined}
@@ -54,6 +54,7 @@ export function GroupItemRow({
           isCompleted ? `Reactivate ${item.canonicalName}` : `Complete ${item.canonicalName}`
         }
         className="things-item-checkbox"
+        variant="secondary"
         isDisabled={isPending}
         isSelected={isCompleted}
         onChange={toggleCompletion}
@@ -68,7 +69,7 @@ export function GroupItemRow({
         size="lg"
         variant="ghost"
         fullWidth
-        className="things-row-main things-item-row__main"
+        className="things-row-main"
         type="button"
         onPress={() =>
           navigate({

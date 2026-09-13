@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Disclosure, toast } from "@heroui/react";
+import { Button, Card, Disclosure, toast } from "@heroui/react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { OpenedGroup } from "../types";
@@ -19,11 +19,11 @@ export function DoneSection({
   if (openedGroup.completedItems.length === 0) return null;
 
   return (
-    <section className="things-done-section things-item-section">
+    <Card className="things-list-card things-done-section things-item-section">
       <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
-        <div className="things-done-section__header">
+        <Card.Header className="things-list-header things-done-section__header">
           <Disclosure.Heading>
-            <Button size="lg" className="things-done-trigger" slot="trigger" variant="tertiary">
+            <Button size="lg" className="things-done-trigger" slot="trigger" variant="ghost">
               <Disclosure.Indicator />
               <span>Done ({openedGroup.completedItems.length})</span>
             </Button>
@@ -42,21 +42,23 @@ export function DoneSection({
             }}
             onError={(message) => toast.danger(message)}
           />
-        </div>
+        </Card.Header>
         <Disclosure.Content>
-          <Disclosure.Body className="things-done-list things-item-group">
-            {openedGroup.completedItems.map((item) => (
-              <GroupItemRow
-                key={item._id}
-                groupId={openedGroup.group._id}
-                isCompleted
-                item={item}
-                onPendingChange={onItemPendingChange}
-              />
-            ))}
+          <Disclosure.Body className="things-done-list">
+            <Card.Content className="things-row-list">
+              {openedGroup.completedItems.map((item) => (
+                <GroupItemRow
+                  key={item._id}
+                  groupId={openedGroup.group._id}
+                  isCompleted
+                  item={item}
+                  onPendingChange={onItemPendingChange}
+                />
+              ))}
+            </Card.Content>
           </Disclosure.Body>
         </Disclosure.Content>
       </Disclosure>
-    </section>
+    </Card>
   );
 }

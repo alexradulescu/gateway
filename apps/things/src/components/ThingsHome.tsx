@@ -1,5 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from "react";
-import { Button, FieldError, Input, Label, Surface, TextField } from "@heroui/react";
+import { Button, Card, FieldError, Input, Label, TextField } from "@heroui/react";
 import { GripVertical, Plus, Settings } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -30,21 +30,25 @@ export function ThingsHome() {
         </Button>
       </header>
 
-      <Surface className="things-frosted things-group-surface things-home-groups">
-        {home.groups.length === 0 ? (
-          <p className="things-empty">Add your first household list below.</p>
-        ) : (
-          <SortableList
-            items={home.groups}
-            failureMessage="Could not save the group order."
-            onReorder={async (groups) => {
-              await reorderGroups({ groupIds: groups.map((group) => group._id) });
-            }}
-            renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
-          />
-        )}
-        <AddGroupRow />
-      </Surface>
+      <Card className="things-list-card">
+        <Card.Content className="things-row-list">
+          {home.groups.length === 0 ? (
+            <p className="things-empty">Add your first household list below.</p>
+          ) : (
+            <SortableList
+              items={home.groups}
+              failureMessage="Could not save the group order."
+              onReorder={async (groups) => {
+                await reorderGroups({ groupIds: groups.map((group) => group._id) });
+              }}
+              renderItem={(group, handle) => <GroupRow group={group} handle={handle} />}
+            />
+          )}
+        </Card.Content>
+        <Card.Footer className="things-list-footer">
+          <AddGroupRow />
+        </Card.Footer>
+      </Card>
     </main>
   );
 }
@@ -59,7 +63,7 @@ function GroupRow({ group, handle }: { group: ThingsGroupSummary; handle: Sortab
   ].filter(Boolean);
 
   return (
-    <div className="things-group-row">
+    <div className="things-row">
       <span className="things-order" aria-hidden="true">
         {String(order).padStart(2, "0")}
       </span>
@@ -67,7 +71,7 @@ function GroupRow({ group, handle }: { group: ThingsGroupSummary; handle: Sortab
         size="lg"
         variant="ghost"
         fullWidth
-        className="things-row-main things-group-main"
+        className="things-row-main"
         type="button"
         onPress={() => navigate({ to: "/$groupId", params: { groupId: group._id } })}
       >

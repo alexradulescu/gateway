@@ -2,16 +2,16 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import {
   Button,
   ButtonGroup,
+  Card,
   FieldError,
   Switch,
   Input,
   Label,
   Spinner,
-  Surface,
   TextField,
   toast,
 } from "@heroui/react";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, Tag, X } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../../../../convex/_generated/api";
@@ -82,11 +82,15 @@ function CatalogueSection({
   onEditingChange: (itemId: string | null) => void;
 }) {
   return (
-    <section className="things-catalogue-section" aria-labelledby={`catalogue-${title}`}>
-      <h2 id={`catalogue-${title}`}>
-        {title} <span>{items.length}</span>
-      </h2>
-      <Surface className="things-frosted things-group-surface things-catalogue-surface">
+    <Card
+      className="things-list-card things-catalogue-section"
+      aria-labelledby={`catalogue-${title}`}
+    >
+      <Card.Header className="things-list-header">
+        <Card.Title id={`catalogue-${title}`}>{title}</Card.Title>
+        <Card.Description className="tabular-nums">{items.length} items</Card.Description>
+      </Card.Header>
+      <Card.Content className="things-row-list">
         {items.length === 0 ? (
           <p className="things-empty">No {title.toLocaleLowerCase()} catalogue items.</p>
         ) : (
@@ -100,8 +104,8 @@ function CatalogueSection({
             />
           ))
         )}
-      </Surface>
-    </section>
+      </Card.Content>
+    </Card>
   );
 }
 
@@ -176,7 +180,7 @@ function CatalogueRow({
     <div className="things-catalogue-row-wrap">
       {isEditing ? (
         <form
-          className="things-catalogue-row things-catalogue-row--editing"
+          className="things-row things-catalogue-row--editing"
           aria-busy={pendingAction === "rename" || undefined}
           onSubmit={save}
         >
@@ -233,14 +237,17 @@ function CatalogueRow({
         </form>
       ) : (
         <div
-          className="things-catalogue-row"
+          className="things-row things-catalogue-row"
           aria-busy={pendingAction === "visibility" || undefined}
         >
+          <span className="things-row-icon" aria-hidden="true">
+            <Tag size={20} />
+          </span>
           <Button
             size="lg"
             variant="ghost"
             fullWidth
-            className="things-row-main things-catalogue-name"
+            className="things-row-main"
             type="button"
             onPress={onEdit}
           >
