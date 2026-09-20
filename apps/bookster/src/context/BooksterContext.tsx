@@ -8,7 +8,7 @@ const THEME_STORAGE_KEY = "bookster-theme";
 
 function storedTheme(): BooksterTheme {
   const value = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return value === "light" || value === "dark" || value === "system" ? value : "system";
+  return value === "light" || value === "dark" || value === "system" ? value : "dark";
 }
 
 export function BooksterProvider({ children }: { children: React.ReactNode }) {
