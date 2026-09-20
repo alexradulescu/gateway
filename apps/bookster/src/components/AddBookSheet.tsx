@@ -73,7 +73,7 @@ export function AddBookSheet({ returnTo = "/list" }: { returnTo?: "/list" | "/sh
   return (
     <>
       <BookSheetFrame title="Add Book" isBusy={isBusy} onRequestClose={close}>
-        <form className="bookster-form" onSubmit={submit}>
+        <form className="bookster-form bookster-add-form" onSubmit={submit}>
           <BookFields
             categories={library.categories}
             errors={errors}
