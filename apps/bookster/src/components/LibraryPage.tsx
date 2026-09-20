@@ -175,7 +175,6 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
             name="bookster-search"
             onChange={setSearchValue}
             value={searchValue}
-            autoFocus
           >
             <SearchField.Group className="bookster-glass bookster-search__group">
               <SearchField.SearchIcon />

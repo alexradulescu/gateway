@@ -622,8 +622,7 @@ body.bookster-theme :is(a, button):focus-visible {
   content: "";
 }
 .bookster-cover--titled .bookster-cover__pattern {
-  opacity: 0.16;
-  color: white;
+  display: none;
 }
 .bookster-cover__title {
   position: absolute;
@@ -634,12 +633,13 @@ body.bookster-theme :is(a, button):focus-visible {
   padding: 12px 6px;
   border: 1px solid rgb(255 255 255 / 0.4);
   color: white;
-  font-size: 23px;
+  font-size: 21px;
   font-weight: 400;
   line-height: 1.12;
   text-align: center;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 .bookster-cover__title[data-title-size="medium"] {
   font-size: 21px;
@@ -1182,17 +1182,6 @@ body.bookster-theme :is(a, button):focus-visible {
   }
   .bookster-shelf-row {
     gap: 10px;
-  }
-  .bookster-cover__title {
-    right: 6px;
-    left: 6px;
-    font-size: 0.75rem;
-  }
-  .bookster-cover__title[data-title-size="medium"] {
-    font-size: 0.6875rem;
-  }
-  .bookster-cover__title[data-title-size="long"] {
-    font-size: 0.625rem;
   }
 }
 
