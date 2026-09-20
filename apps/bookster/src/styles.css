@@ -202,7 +202,9 @@ a {
 }
 
 .bookster-floating-header[data-scrolled="true"] {
-  background: var(--bookster-page);
+  background: color-mix(in srgb, var(--bookster-page) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  backdrop-filter: blur(12px) saturate(130%);
 }
 
 .bookster-title-bar {
@@ -260,9 +262,9 @@ body.bookster-theme :is(a, button):focus-visible {
 
 .bookster-category-strip {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin-inline: -4px;
-  padding: 2px 4px;
+  padding: 10px 4px 2px;
   overflow-x: auto;
   scrollbar-width: none;
   pointer-events: auto;
@@ -278,17 +280,17 @@ body.bookster-theme :is(a, button):focus-visible {
   height: 44px !important;
   min-width: max-content !important;
   min-height: 44px !important;
-  padding-inline: 12px !important;
+  padding-inline: 16px !important;
   border: 0 !important;
   border-radius: 999px !important;
   background: transparent !important;
-  font-size: 0.75rem !important;
-  font-weight: 550 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 .bookster-filter-pill::before {
   position: absolute;
   z-index: -1;
-  inset: 6px 0;
+  inset: 5px 0;
   border: 1px solid var(--bookster-glass-border);
   border-radius: inherit;
   background: var(--bookster-glass);
@@ -296,35 +298,47 @@ body.bookster-theme :is(a, button):focus-visible {
 }
 .bookster-filter-pill[aria-pressed="true"]::before {
   border-color: transparent;
-  background: var(--accent);
+  background: var(--bookster-ink);
+}
+.bookster-filter-pill[aria-pressed="true"] {
+  color: var(--bookster-page) !important;
 }
 .bookster-filter-pill[aria-pressed="false"] {
-  color: var(--bookster-muted) !important;
+  color: var(--bookster-ink) !important;
 }
 
 .bookster-floating-footer {
   position: absolute;
   z-index: 40;
-  right: 20px;
   bottom: max(20px, env(safe-area-inset-bottom));
-  left: 20px;
+  left: 50%;
+  width: min(calc(100% - 40px), 362px);
+  transform: translateX(-50%);
   display: grid;
   gap: 12px;
   pointer-events: none;
 }
 .bookster-bottom-nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 88px));
+  justify-content: center;
   padding: 4px;
   border: 1px solid var(--bookster-glass-border);
   border-radius: 36px;
   background: var(--bookster-glass-strong);
   pointer-events: auto;
 }
-.bookster-nav-item {
+.bookster-bottom-nav .bookster-nav-item {
   display: flex;
+  width: 100%;
+  max-width: 88px;
+  height: 52px;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  flex-shrink: 1;
   min-width: 0;
-  min-height: 52px;
+  min-height: 52px !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -340,8 +354,8 @@ body.bookster-theme :is(a, button):focus-visible {
   width: 27px;
   height: 27px;
 }
-.bookster-nav-item[aria-current="page"],
-.bookster-nav-item[aria-expanded="true"] {
+.bookster-bottom-nav .bookster-nav-item[aria-current="page"],
+.bookster-bottom-nav .bookster-nav-item[aria-expanded="true"] {
   background: var(--bookster-glass-active);
 }
 .bookster-search {
@@ -350,15 +364,33 @@ body.bookster-theme :is(a, button):focus-visible {
   pointer-events: auto;
 }
 .bookster-search__group {
-  min-height: 44px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 50px;
+  padding-inline: 16px 6px;
   border-radius: 999px !important;
-  background: var(--bookster-glass) !important;
+  background: var(--bookster-glass-strong) !important;
 }
 .bookster-search__group:focus-within {
   outline: 2px solid var(--bookster-green);
   outline-offset: 2px;
 }
+.bookster-search__group > svg {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+}
+.bookster-search__group > button {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
 .bookster-search input {
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  padding: 0;
   border: 0 !important;
   background: transparent !important;
   font-size: 16px !important;
@@ -601,8 +633,13 @@ body.bookster-theme :is(a, button):focus-visible {
 
 .bookster-cover--titled {
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: 4px;
   box-shadow: 0 10px 20px rgb(0 0 0 / 0.2);
+}
+.bookster-cover--titled svg {
+  overflow: hidden;
+  border-radius: inherit;
+  filter: none;
 }
 .bookster-cover--titled::after {
   position: absolute;
@@ -631,7 +668,8 @@ body.bookster-theme :is(a, button):focus-visible {
   flex-direction: column;
   align-items: center;
   padding: 12px 6px;
-  border: 1px solid rgb(255 255 255 / 0.4);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 2px;
   color: white;
   font-size: 21px;
   font-weight: 400;

@@ -28,7 +28,7 @@ export function BookCover({
       <svg viewBox="0 0 60 90" role="presentation">
         <defs>
           <clipPath id={clipId}>
-            <rect {...frame} rx="2.75" />
+            <rect {...frame} rx={showTitle ? 0 : 2.75} />
           </clipPath>
         </defs>
 
@@ -36,7 +36,7 @@ export function BookCover({
           className="bookster-cover__face"
           fill={getBookColor(title)}
           height={frame.height}
-          rx="2.75"
+          rx={showTitle ? 0 : 2.75}
           width={frame.width}
           x={frame.x}
           y={frame.y}
