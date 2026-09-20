@@ -53,7 +53,14 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
     selectedCategoryIds,
   ]);
 
-  const columns = view === "shelf" ? 2 : 1;
+  const [wideShelf, setWideShelf] = useState(() => window.matchMedia("(min-width: 393px)").matches);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 393px)");
+    const update = () => setWideShelf(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const columns = view === "shelf" ? (wideShelf ? 3 : 2) : 1;
   const virtualizer = useVirtualizer({
     count: Math.ceil(visibleBooks.length / columns),
     getScrollElement: () => scrollRef.current,
@@ -145,7 +152,12 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
                 ref={virtualizer.measureElement}
                 className={view === "shelf" ? "bookster-shelf-row" : "bookster-virtual-row"}
                 data-index={virtualRow.index}
-                style={{ transform: `translateY(${virtualRow.start}px)` }}
+                style={{
+                  transform: `translateY(${virtualRow.start}px)`,
+                  ...(view === "shelf"
+                    ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
+                    : {}),
+                }}
               >
                 {visibleBooks
                   .slice(virtualRow.index * columns, (virtualRow.index + 1) * columns)

@@ -13,7 +13,7 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 
-  --accent: oklch(0.48 0.075 150);
+  --accent: #476c91;
   --accent-foreground: oklch(0.985 0.008 90);
   --background: oklch(0.965 0.014 83);
   --foreground: oklch(0.255 0.022 85);
@@ -29,8 +29,8 @@
   --bookster-page: #f6f1e9;
   --bookster-ink: #292a27;
   --bookster-muted: #686a60;
-  --bookster-green: #41674b;
-  --bookster-green-soft: rgb(79 131 89 / 0.15);
+  --bookster-green: #476c91;
+  --bookster-green-soft: rgb(71 108 145 / 0.12);
   --bookster-gold: #9a7338;
   --bookster-glass: rgb(250 247 240 / 0.76);
   --bookster-glass-strong: #faf7f0;
@@ -38,7 +38,7 @@
   --bookster-glass-border: rgb(87 82 72 / 0.11);
   --bookster-field: #fffdf8;
   --bookster-field-border: rgb(87 82 72 / 0.2);
-  --bookster-field-focus: rgb(79 131 89 / 0.68);
+  --bookster-field-focus: rgb(71 108 145 / 0.68);
   --bookster-shadow: 0 2px 8px rgb(58 51 40 / 0.1);
   --bookster-library-line: rgb(70 63 50 / 0.055);
   --bookster-chrome-inset: 32px;
@@ -48,7 +48,7 @@
 
 :root.dark,
 [data-theme="dark"] {
-  --accent: oklch(0.66 0.105 144);
+  --accent: #93b5d6;
   --accent-foreground: oklch(0.19 0.018 145);
   --background: oklch(0.21 0.012 75);
   --foreground: oklch(0.91 0.014 80);
@@ -62,8 +62,8 @@
   --bookster-page: #000;
   --bookster-ink: #f5f5f7;
   --bookster-muted: #8e8e93;
-  --bookster-green: #75ae7c;
-  --bookster-green-soft: rgb(91 147 102 / 0.2);
+  --bookster-green: #93b5d6;
+  --bookster-green-soft: rgb(147 181 214 / 0.14);
   --bookster-gold: #d1ad70;
   --bookster-glass: #202020;
   --bookster-glass-strong: #202020;
@@ -71,7 +71,7 @@
   --bookster-glass-border: rgb(235 229 220 / 0.09);
   --bookster-field: #30322d;
   --bookster-field-border: rgb(235 229 220 / 0.16);
-  --bookster-field-focus: rgb(117 174 124 / 0.72);
+  --bookster-field-focus: rgb(147 181 214 / 0.72);
   --bookster-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
   --bookster-library-line: rgb(226 218 196 / 0.045);
 }
@@ -356,7 +356,8 @@ body.bookster-theme :is(a, button):focus-visible {
 }
 .bookster-bottom-nav .bookster-nav-item[aria-current="page"],
 .bookster-bottom-nav .bookster-nav-item[aria-expanded="true"] {
-  background: var(--bookster-glass-active);
+  background: var(--bookster-green-soft);
+  color: var(--bookster-green);
 }
 .bookster-search {
   min-width: 0;
@@ -452,8 +453,8 @@ body.bookster-theme :is(a, button):focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 24px;
-  padding: 0 0 34px;
+  gap: 16px;
+  padding: 0 0 28px;
 }
 .bookster-shelf-book {
   display: flex;
@@ -632,6 +633,7 @@ body.bookster-theme :is(a, button):focus-visible {
 }
 
 .bookster-cover--titled {
+  container-type: inline-size;
   overflow: hidden;
   border-radius: 4px;
   box-shadow: 0 10px 20px rgb(0 0 0 / 0.2);
@@ -659,19 +661,21 @@ body.bookster-theme :is(a, button):focus-visible {
   content: "";
 }
 .bookster-cover--titled .bookster-cover__pattern {
-  display: none;
+  color: #fff8e9;
+  opacity: 0.12;
+  stroke-width: 0.45;
 }
 .bookster-cover__title {
   position: absolute;
-  inset: 9px 9px 9px 10px;
+  inset: 6px 6px 6px 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 6px;
+  padding: 8cqi 1cqi;
   border: 1px solid rgb(255 255 255 / 0.3);
   border-radius: 2px;
   color: white;
-  font-size: 21px;
+  font-size: clamp(12px, 13cqi, 23px);
   font-weight: 400;
   line-height: 1.12;
   text-align: center;
@@ -680,17 +684,17 @@ body.bookster-theme :is(a, button):focus-visible {
   hyphens: auto;
 }
 .bookster-cover__title[data-title-size="medium"] {
-  font-size: 21px;
+  font-size: clamp(12px, 13cqi, 23px);
 }
 .bookster-cover__title[data-title-size="long"] {
-  font-size: 18px;
+  font-size: clamp(11px, 11cqi, 18px);
 }
 .bookster-cover__author {
   margin-top: auto;
   padding-top: 12px;
-  padding-bottom: 24px;
+  padding-bottom: 10cqi;
   color: rgb(255 255 255 / 0.7);
-  font-size: 16px;
+  font-size: clamp(10px, 9cqi, 16px);
   line-height: 1.2;
 }
 
