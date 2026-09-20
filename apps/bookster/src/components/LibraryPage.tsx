@@ -1,7 +1,7 @@
 import { Button, SearchField } from "@heroui/react";
 import { Link } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { LayoutGrid, List as ListIcon, Plus, Settings } from "lucide-react";
+import { AlignLeft, Library, List as ListIcon, MoreHorizontal, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filterBooksByCategories, searchBooks, sortBooks } from "../domain";
 import { useBookster } from "../context/useBookster";
@@ -18,6 +18,8 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
     resetCategories,
   } = useBookster();
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -51,11 +53,11 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
     selectedCategoryIds,
   ]);
 
-  const columns = view === "shelf" ? 3 : 1;
+  const columns = view === "shelf" ? 2 : 1;
   const virtualizer = useVirtualizer({
     count: Math.ceil(visibleBooks.length / columns),
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => (view === "shelf" ? 240 : 116),
+    estimateSize: () => (view === "shelf" ? 340 : 116),
     overscan: 5,
     getItemKey: (index) => `${columns}-${visibleBooks[index * columns]._id}`,
   });
@@ -64,29 +66,28 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
   const isSearching = debouncedSearch.trim().length >= 2;
 
   return (
-    <main className="bookster-library">
+    <main className="bookster-library" data-filters-open={filtersOpen}>
       <header className="bookster-floating-header" data-scrolled={hasScrolled}>
         <div className="bookster-title-bar">
-          <h1>Bookster</h1>
+          <h1>Library</h1>
           <div className="bookster-title-actions">
-            <Link
-              aria-label={view === "shelf" ? "Show book list" : "Show bookshelf"}
-              className="bookster-icon-link"
-              to={view === "shelf" ? "/list" : "/"}
+            <Button
+              aria-label="Filter books"
+              aria-expanded={filtersOpen}
+              className="bookster-icon-button"
+              isIconOnly
+              onPress={() => setFiltersOpen(!filtersOpen)}
+              variant="secondary"
             >
-              {view === "shelf" ? (
-                <ListIcon aria-hidden="true" size={20} />
-              ) : (
-                <LayoutGrid aria-hidden="true" size={19} />
-              )}
-            </Link>
+              <AlignLeft aria-hidden="true" size={25} />
+            </Button>
             <Link aria-label="Open settings" className="bookster-icon-link" to="/settings">
-              <Settings aria-hidden="true" size={20} />
+              <MoreHorizontal aria-hidden="true" size={25} />
             </Link>
           </div>
         </div>
 
-        {library.categories.length > 0 ? (
+        {filtersOpen && library.categories.length > 0 ? (
           <div className="bookster-category-strip" aria-label="Category filters">
             <Button
               aria-pressed={!hasCategoryFilter}
@@ -167,26 +168,54 @@ export function LibraryPage({ view = "shelf" }: { view?: "list" | "shelf" }) {
       </div>
 
       <footer className="bookster-floating-footer">
-        <SearchField
-          aria-label="Search books"
-          className="bookster-search"
-          name="bookster-search"
-          onChange={setSearchValue}
-          value={searchValue}
-        >
-          <SearchField.Group className="bookster-glass bookster-search__group">
-            <SearchField.SearchIcon />
-            <SearchField.Input placeholder="Search title or author…" />
-            <SearchField.ClearButton aria-label="Clear search" />
-          </SearchField.Group>
-        </SearchField>
-        <Link
-          aria-label="Add book"
-          className="bookster-add-button bookster-add-link"
-          to={view === "shelf" ? "/shelf/add" : "/add"}
-        >
-          <Plus aria-hidden="true" size={20} />
-        </Link>
+        {searchOpen ? (
+          <SearchField
+            aria-label="Search books"
+            className="bookster-search"
+            name="bookster-search"
+            onChange={setSearchValue}
+            value={searchValue}
+            autoFocus
+          >
+            <SearchField.Group className="bookster-glass bookster-search__group">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search title or author…" />
+              <SearchField.ClearButton aria-label="Clear search" />
+            </SearchField.Group>
+          </SearchField>
+        ) : null}
+        <nav className="bookster-bottom-nav" aria-label="Library navigation">
+          <Link
+            to="/"
+            className="bookster-nav-item"
+            aria-current={view === "shelf" ? "page" : undefined}
+          >
+            <Library aria-hidden="true" />
+            <span>Library</span>
+          </Link>
+          <Link
+            to="/list"
+            className="bookster-nav-item"
+            aria-current={view === "list" ? "page" : undefined}
+          >
+            <ListIcon aria-hidden="true" />
+            <span>List</span>
+          </Link>
+          <Link to={view === "shelf" ? "/shelf/add" : "/add"} className="bookster-nav-item">
+            <Plus aria-hidden="true" />
+            <span>Add book</span>
+          </Link>
+          <Button
+            className="bookster-nav-item"
+            aria-label="Search books"
+            aria-expanded={searchOpen}
+            onPress={() => setSearchOpen(!searchOpen)}
+            variant="ghost"
+          >
+            <Search aria-hidden="true" />
+            <span>Search</span>
+          </Button>
+        </nav>
       </footer>
     </main>
   );
@@ -202,9 +231,15 @@ function BookshelfBook({ book }: { book: BooksterBook }) {
       to="/shelf/books/$bookId"
     >
       <span className="bookster-shelf-book__cover">
-        <BookCover large showTitle title={book.title} />
+        <BookCover large showTitle title={book.title} author={book.author} />
       </span>
-      <span className="bookster-shelf-book__author">{book.author}</span>
+      <span className="bookster-shelf-book__metadata">
+        <span className="bookster-shelf-book__copy">
+          <strong>{book.title}</strong>
+          <span className="bookster-shelf-book__author">{book.author}</span>
+        </span>
+        <MoreHorizontal aria-hidden="true" size={20} />
+      </span>
     </Link>
   );
 }

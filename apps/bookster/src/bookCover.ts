@@ -1,21 +1,4 @@
-const PASTEL_COLORS = [
-  "#e8ddd4",
-  "#d4c4b5",
-  "#c9d4c5",
-  "#dde4d5",
-  "#e8d8d4",
-  "#d8c8c4",
-  "#e4d8c8",
-  "#d4d8d4",
-  "#e0d4d8",
-  "#d0dcd4",
-  "#dcd8d0",
-  "#d8d4dc",
-  "#e4dcd4",
-  "#c8d4cc",
-  "#dcd0d4",
-  "#d4dcd8",
-] as const;
+const COVER_COLORS = ["#0058ad", "#008a9a", "#b43f28", "#166849", "#5b4094", "#a53b61"] as const;
 
 function hashString(value: string) {
   let hash = 0;
@@ -38,7 +21,7 @@ export function getBookInitials(title: string) {
 }
 
 export function getBookColor(title: string) {
-  return PASTEL_COLORS[hashString(title) % PASTEL_COLORS.length];
+  return COVER_COLORS[hashString(title) % COVER_COLORS.length];
 }
 
 export function getBookPatternIndex(title: string) {

@@ -3,10 +3,12 @@ import { getBookColor, getBookInitials, getBookPatternIndex } from "../bookCover
 
 export function BookCover({
   title,
+  author,
   large = false,
   showTitle = false,
 }: {
   title: string;
+  author?: string;
   large?: boolean;
   showTitle?: boolean;
 }) {
@@ -53,6 +55,7 @@ export function BookCover({
       {showTitle ? (
         <span className="bookster-cover__title" data-title-size={titleSize}>
           {title}
+          {author ? <span className="bookster-cover__author">{author}</span> : null}
         </span>
       ) : null}
     </span>
