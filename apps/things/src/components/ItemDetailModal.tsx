@@ -136,7 +136,7 @@ function ItemDetailForm({
                 isIconOnly
                 ref={closeButtonRef}
                 className="things-close-button"
-                size="sm"
+                size="lg"
                 type="button"
                 variant="ghost"
                 aria-label="Close item"
@@ -151,7 +151,6 @@ function ItemDetailForm({
             <form ref={formRef} onSubmit={save}>
               <div className="things-item-form">
                 <div className="things-item-form__field">
-                  <Label>Item name</Label>
                   <CatalogueComboBox
                     errorId={error ? errorId : undefined}
                     isDisabled={isPending}
@@ -187,18 +186,20 @@ function ItemDetailForm({
               <div className="things-item-form__actions">
                 <Button
                   className="things-delete-item"
-                  size="sm"
+                  size="lg"
                   type="button"
-                  variant="secondary"
+                  variant="danger-soft"
+                  isPending={pendingAction === "delete"}
                   isDisabled={isPending}
                   onPress={remove}
                 >
                   Delete
                 </Button>
                 <Button
-                  size="sm"
+                  size="lg"
                   type="submit"
-                  variant="secondary"
+                  variant="primary"
+                  isPending={pendingAction === "save"}
                   isDisabled={!isDirty || isPending}
                 >
                   Save
