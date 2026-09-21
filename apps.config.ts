@@ -7,6 +7,12 @@ export type GatewayApp = {
 
 export const gatewayApps = [
   {
+    id: "ui-library",
+    name: "UI Library",
+    description: "Composable iOS patterns, live examples, and reusable React components.",
+    accent: "#0066d6",
+  },
+  {
     id: "app-shell",
     name: "AppShell",
     description: "A full-screen safe-area shell and installable iOS PWA test bench.",
