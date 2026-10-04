@@ -24,4 +24,10 @@ export const gatewayApps = [
     description: "A shared family library with fast search, tidy shelves, and bulk import.",
     accent: "#5d9166",
   },
+  {
+    id: "2048",
+    name: "2048",
+    description: "Slide and stack matching tiles on an isometric board.",
+    accent: "#d98a1f",
+  },
 ] satisfies GatewayApp[];
