@@ -1,0 +1,593 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --paper: #f5efe2;
+  --sky-top: #cfe3ee;
+  --sky-mid: #eef0e6;
+  --ink: #2c2a28;
+  --muted: #7d7365;
+  --zinc: #4f6577;
+  --iron: #2f3438;
+  --gold: #b8913f;
+  --glass: rgb(255 252 245 / 0.62);
+  --hairline: rgb(60 48 30 / 0.12);
+  --shadow: rgb(84 64 34 / 0.2);
+
+  --pave-a: #d9cfbd;
+  --pave-b: #cbbfa9;
+  --curb: #e9e1d1;
+  --curb-side: #b8aa90;
+  --curb-dark: #9d8f76;
+  --walk: #ece4d4;
+  --walk-side: #c9bba1;
+  --walk-dark: #ad9f86;
+  --lawn: #9bb57a;
+  --lawn-2: #8aa86b;
+  --gravel: #d8c7a2;
+  --gravel-2: #c9b68e;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  overscroll-behavior: none;
+}
+
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--zinc);
+  outline-offset: 2px;
+}
+
+.app {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 16px)
+    calc(env(safe-area-inset-bottom) + 16px) calc(env(safe-area-inset-left) + 16px);
+  max-width: 560px;
+  margin: 0 auto;
+  isolation: isolate;
+}
+
+/* Sky: soft gradient with a few slow clouds. Fixed, behind everything. */
+
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 60% at 70% 0%, rgb(255 246 222 / 0.9), transparent 60%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 42%, var(--paper) 72%);
+}
+
+.cloud {
+  position: absolute;
+  width: 220px;
+  height: 56px;
+  border-radius: 999px;
+  background:
+    radial-gradient(closest-side at 30% 60%, rgb(255 255 255 / 0.9), transparent),
+    radial-gradient(closest-side at 62% 42%, rgb(255 255 255 / 0.85), transparent),
+    radial-gradient(closest-side at 50% 72%, rgb(255 255 255 / 0.7), transparent);
+  opacity: 0.75;
+  animation: drift 140s linear infinite;
+}
+
+.c1 {
+  top: 9%;
+  animation-delay: -30s;
+}
+
+.c2 {
+  top: 22%;
+  scale: 0.7;
+  animation-duration: 190s;
+  animation-delay: -120s;
+}
+
+.c3 {
+  top: 4%;
+  scale: 1.3;
+  animation-duration: 240s;
+  animation-delay: -60s;
+  opacity: 0.5;
+}
+
+@keyframes drift {
+  from {
+    translate: -260px 0;
+  }
+  to {
+    translate: calc(100vw + 40px) 0;
+  }
+}
+
+/* Header */
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--iron);
+  margin-right: auto;
+}
+
+.caption {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.caption span {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--zinc);
+}
+
+.scores {
+  display: flex;
+  gap: 6px;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 64px;
+  padding: 5px 10px 6px;
+  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--hairline);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.5),
+    inset 0 0 0 3px rgb(184 145 63 / 0.35),
+    0 1px 2px var(--shadow);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+
+.score-label {
+  font-family: var(--serif);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+
+.score-value {
+  font-size: 17px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--iron);
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  background: var(--glass);
+  color: var(--zinc);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 100ms ease-out;
+}
+
+.icon-button:active {
+  transform: scale(0.92);
+}
+
+/* Stage + isometric board */
+
+.stage {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  touch-action: none;
+  /* Orthographic (no perspective): true isometric, and billboard depth nudges don't rescale. */
+  /* Diagonal of the rotated square must fit the width; buildings need headroom. */
+  --board: min(calc((100vw - 36px) / 1.414), calc((100dvh - 300px) / 1.15), 520px);
+  --gap: calc(var(--board) * 0.03);
+  --size: calc((var(--board) - var(--gap) * 5) / 4);
+  --thick: calc(var(--board) * 0.035);
+  --walk-w: 13%;
+  padding-top: calc(var(--board) * 0.28);
+}
+
+.board {
+  position: relative;
+  width: var(--board);
+  height: var(--board);
+  border-radius: calc(var(--gap) * 1.4);
+  /* Pavé: offset rows of small setts, plus a subtle radial wear. */
+  background:
+    radial-gradient(circle at 50% 50%, rgb(255 250 238 / 0.45), transparent 70%),
+    linear-gradient(90deg, rgb(120 100 70 / 0.18) 1px, transparent 1px) 0 0 / 14px 14px,
+    linear-gradient(90deg, rgb(120 100 70 / 0.18) 1px, transparent 1px) 7px 7px / 14px 14px,
+    repeating-linear-gradient(
+      0deg,
+      rgb(120 100 70 / 0.2) 0 1px,
+      var(--pave-a) 1px 7px,
+      rgb(120 100 70 / 0.2) 7px 8px,
+      var(--pave-b) 8px 14px
+    );
+  transform-style: preserve-3d;
+  transform: rotateX(54.7deg) rotateZ(45deg);
+  box-shadow:
+    inset 0 0 0 calc(var(--gap) * 0.45) var(--curb),
+    inset 0 0 0 calc(var(--gap) * 0.55) rgb(120 100 70 / 0.25),
+    calc(var(--thick) * 0.5) calc(var(--thick) * 0.5) 0 0 var(--curb-side),
+    var(--thick) var(--thick) 0 0 var(--curb-dark),
+    calc(var(--thick) * 2.6) calc(var(--thick) * 2.6) calc(var(--thick) * 2.4) 0 var(--shadow);
+}
+
+.cell,
+.tile {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  left: calc(var(--gap) + var(--col) * (var(--size) + var(--gap)));
+  top: calc(var(--gap) + var(--row) * (var(--size) + var(--gap)));
+}
+
+/* Empty plot: sidewalk frame + raked gravel or fresh lawn, a surveyor stake. */
+
+.cell {
+  border-radius: 3px;
+  background: var(--walk);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.5),
+    1px 1px 0 var(--walk-side);
+}
+
+.cell::before {
+  content: "";
+  position: absolute;
+  inset: var(--walk-w);
+  border-radius: 2px;
+  opacity: 0.55;
+  background: repeating-linear-gradient(90deg, var(--gravel) 0 3px, var(--gravel-2) 3px 5px);
+}
+
+.cell[data-ground="lawn"]::before {
+  background: repeating-linear-gradient(0deg, var(--lawn) 0 4px, var(--lawn-2) 4px 8px);
+}
+
+.cell::after {
+  /* Stake: a tiny post with a gold flag, lying in the plot's corner. */
+  content: "";
+  position: absolute;
+  left: 22%;
+  top: 22%;
+  width: 9%;
+  height: 9%;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.65);
+  opacity: 0.8;
+}
+
+/* Occupied plot: raised foundation with sidewalk + ground. */
+
+.tile {
+  transform-style: preserve-3d;
+  transition:
+    left 120ms ease-out,
+    top 120ms ease-out;
+  --h: calc(var(--size) * 0.025);
+  --ground: var(--gravel);
+  --ground-2: var(--gravel-2);
+}
+
+.tile[data-ground="lawn"] {
+  --ground: var(--lawn);
+  --ground-2: var(--lawn-2);
+}
+
+.block {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.tile[data-new] .block {
+  animation: pop 260ms 100ms cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
+}
+
+.tile[data-merged] .block {
+  animation: bump 320ms 100ms ease-out;
+}
+
+.face {
+  position: absolute;
+  backface-visibility: hidden;
+}
+
+.top {
+  inset: 0;
+  border-radius: 2px;
+  background:
+    linear-gradient(var(--ground), var(--ground)) content-box,
+    var(--walk);
+  padding: var(--walk-w);
+  transform: translateZ(var(--h));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55);
+}
+
+.top::before {
+  content: "";
+  position: absolute;
+  inset: var(--walk-w);
+  background: repeating-linear-gradient(45deg, transparent 0 3px, var(--ground-2) 3px 5px);
+  opacity: 0.6;
+}
+
+.south {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--h);
+  transform-origin: bottom;
+  transform: rotateX(-90deg);
+  background: var(--walk-side);
+}
+
+.east {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--h);
+  transform-origin: right;
+  transform: rotateY(90deg);
+  background: var(--walk-dark);
+}
+
+.puff {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: translateZ(var(--h));
+  background: radial-gradient(
+    closest-side,
+    transparent 55%,
+    rgb(255 248 230 / 0.9) 70%,
+    transparent
+  );
+  pointer-events: none;
+  animation: puff 520ms 120ms ease-out both;
+}
+
+.sprite {
+  --w: calc(var(--size) * 1.41421);
+  position: absolute;
+  left: calc(50% - var(--w) / 2);
+  bottom: 50%;
+  width: var(--w);
+  height: calc(var(--w) * var(--aspect));
+  overflow: visible;
+  transform-origin: 50% 100%;
+  /* Undo the board's rotation + tilt, then drop so the footprint centre meets the tile centre. */
+  /* Final translateZ pulls the billboard toward the viewer so the tilted plot in front of it
+     can't win the depth sort and clip the building's lower half. */
+  transform: translateZ(var(--h)) rotateZ(-45deg) rotateX(-54.7deg)
+    translateY(calc(var(--w) * 0.288675)) translateZ(calc(var(--w) * 0.45));
+  pointer-events: none;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes bump {
+  40% {
+    transform: translateZ(calc(var(--size) * 0.12)) scale(1.05);
+  }
+}
+
+@keyframes puff {
+  from {
+    opacity: 1;
+    scale: 0.6;
+  }
+  to {
+    opacity: 0;
+    scale: 1.5;
+  }
+}
+
+/* Overlay */
+
+.overlay {
+  position: absolute;
+  inset: auto 0;
+  margin: 0 auto;
+  width: min(100%, 320px);
+  padding: 24px 20px 18px;
+  border-radius: 26px;
+  text-align: center;
+  background: var(--glass);
+  border: 1px solid var(--hairline);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: 0 20px 50px var(--shadow);
+  animation: fade 260ms ease-out;
+}
+
+.overlay-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--iron);
+  text-wrap: balance;
+}
+
+.overlay-sub {
+  margin: 6px 0 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.pill {
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 22px;
+  border: none;
+  font-weight: 600;
+  background: var(--zinc);
+  color: #fff;
+}
+
+.pill.secondary {
+  background: rgb(255 255 255 / 0.6);
+  color: var(--iron);
+  border: 1px solid var(--hairline);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* Directional pad: 2x2 grid matching the board's on-screen axes. */
+
+.pad {
+  display: grid;
+  grid-template-columns: repeat(2, 64px);
+  gap: 10px 64px;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.pad-button {
+  display: grid;
+  place-items: center;
+  height: 52px;
+  border-radius: 18px;
+  border: 1px solid var(--hairline);
+  background: var(--glass);
+  color: var(--zinc);
+  box-shadow: 0 1px 2px var(--shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 80ms ease-out;
+}
+
+.pad-button:active {
+  transform: scale(0.92);
+}
+
+/* Wide screens: bigger board, pad beside it. */
+
+@media (min-width: 900px) and (min-height: 640px) {
+  .app {
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto 1fr;
+    column-gap: 32px;
+    padding-top: calc(env(safe-area-inset-top) + 28px);
+  }
+
+  .bar,
+  .caption {
+    grid-column: 1 / -1;
+  }
+
+  .bar h1 {
+    font-size: 44px;
+  }
+
+  .stage {
+    --board: min(calc((100vw - 360px) / 1.42), calc((100dvh - 200px) / 1.4), 640px);
+  }
+
+  .pad {
+    align-self: center;
+    grid-template-columns: repeat(2, 72px);
+    gap: 14px 40px;
+    padding: 0;
+  }
+
+  .pad-button {
+    height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: none;
+  }
+
+  .tile .block,
+  .puff,
+  .cloud,
+  .overlay {
+    animation: none !important;
+  }
+
+  .puff {
+    display: none;
+  }
+}

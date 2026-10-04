@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#e8a33d"/>
+  <polygon points="256,96 432,198 256,300 80,198" fill="#f6c560"/>
+  <polygon points="80,198 256,300 256,404 80,302" fill="#c47f22"/>
+  <polygon points="432,198 256,300 256,404 432,302" fill="#a8681a"/>
+  <text font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="84" font-weight="800" fill="#5a3410" text-anchor="middle" transform="translate(256 222) scale(1 0.62)">2048</text>
+</svg>
