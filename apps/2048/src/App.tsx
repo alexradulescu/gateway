@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type PointerEvent,
 } from "react";
-import { buildingFor, VIEW_HEIGHT, VIEW_WIDTH } from "./art/buildings";
+import { buildingFor, preloadBuildings } from "./buildings";
 import { move, newGame, type Direction, type GameState } from "./game";
 
 const STORAGE_KEY = "gateway-2048:v1";
@@ -70,6 +70,8 @@ export function App() {
   const [{ game, best }, setSaved] = useState(load);
   const start = useRef<{ x: number; y: number } | null>(null);
 
+  useEffect(preloadBuildings, []);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ game, best }));
@@ -101,6 +103,8 @@ export function App() {
 
   const onPointerDown = (e: PointerEvent) => {
     start.current = { x: e.clientX, y: e.clientY };
+    // Keep receiving the pointer when a swipe ends outside the board (mouse/pen drags).
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onPointerUp = (e: PointerEvent) => {
     if (!start.current) return;
@@ -143,6 +147,8 @@ export function App() {
         onPointerCancel={() => (start.current = null)}
       >
         <div className="board">
+          <div className="board-side south" />
+          <div className="board-side east" />
           {Array.from({ length: 16 }, (_, i) => (
             <div
               key={i}
@@ -176,7 +182,7 @@ export function App() {
         {(showWin || game.over) && (
           <div className="overlay" role="status">
             <p className="overlay-title">
-              {showWin ? `You built the ${landmark}` : "The town is full"}
+              {showWin ? `You built ${landmark}` : "The town is full"}
             </p>
             <p className="overlay-sub">Score {game.score.toLocaleString()}</p>
             <div className="overlay-actions">
@@ -223,18 +229,16 @@ function pos(row: number, col: number) {
   return { "--row": row, "--col": col } as CSSProperties;
 }
 
-/** Isometric building, billboarded so its footprint sits on the plot's top face. */
+/** Painted building, billboarded so its footprint sits centred on the plot's lawn. */
 const Building = memo(function Building({ value }: { value: number }) {
-  const { Art, gilded } = buildingFor(value);
-  const Drawing = Art as (props: { gilded?: boolean }) => ReturnType<typeof Art>;
+  const { src, aspect, fit } = buildingFor(value);
   return (
-    <svg
-      className="sprite"
-      viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-      style={{ "--aspect": VIEW_HEIGHT / VIEW_WIDTH } as CSSProperties}
-      aria-hidden="true"
-    >
-      <Drawing gilded={gilded} />
-    </svg>
+    <img
+      className="sprite painted"
+      src={src}
+      style={{ "--aspect": aspect, "--fit": fit, "--lift": 0.03 } as CSSProperties}
+      alt=""
+      draggable={false}
+    />
   );
 });

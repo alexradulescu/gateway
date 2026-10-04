@@ -50,12 +50,16 @@ body {
 body {
   user-select: none;
   -webkit-user-select: none;
+  /* No iOS long-press callout (copy/save image) while playing. */
+  -webkit-touch-callout: none;
 }
 
 button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+  /* Rapid pad taps must not trigger iOS double-tap zoom or tap delay. */
+  touch-action: manipulation;
 }
 
 button:focus-visible {
@@ -247,27 +251,41 @@ button:focus-visible {
   position: relative;
   width: var(--board);
   height: var(--board);
-  border-radius: calc(var(--gap) * 1.4);
-  /* Pavé: offset rows of small setts, plus a subtle radial wear. */
-  background:
-    radial-gradient(circle at 50% 50%, rgb(255 250 238 / 0.45), transparent 70%),
-    linear-gradient(90deg, rgb(120 100 70 / 0.18) 1px, transparent 1px) 0 0 / 14px 14px,
-    linear-gradient(90deg, rgb(120 100 70 / 0.18) 1px, transparent 1px) 7px 7px / 14px 14px,
-    repeating-linear-gradient(
-      0deg,
-      rgb(120 100 70 / 0.2) 0 1px,
-      var(--pave-a) 1px 7px,
-      rgb(120 100 70 / 0.2) 7px 8px,
-      var(--pave-b) 8px 14px
-    );
+  /* Painted pavé (seamless), sized so a plot spans ~1.5 repeats; light limestone rim. */
+  background: url("/ground/ground-pave.webp") 0 0 / calc(var(--board) / 2.6) repeat;
   transform-style: preserve-3d;
   transform: rotateX(54.7deg) rotateZ(45deg);
   box-shadow:
-    inset 0 0 0 calc(var(--gap) * 0.45) var(--curb),
-    inset 0 0 0 calc(var(--gap) * 0.55) rgb(120 100 70 / 0.25),
-    calc(var(--thick) * 0.5) calc(var(--thick) * 0.5) 0 0 var(--curb-side),
-    var(--thick) var(--thick) 0 0 var(--curb-dark),
+    inset 0 0 0 calc(var(--gap) * 0.35) var(--curb),
+    inset 0 0 0 calc(var(--gap) * 0.45) rgb(120 100 70 / 0.25),
     calc(var(--thick) * 2.6) calc(var(--thick) * 2.6) calc(var(--thick) * 2.4) 0 var(--shadow);
+}
+
+/* Board edge: real 3D limestone curb faces on the two visible sides. */
+.board-side {
+  position: absolute;
+  background: url("/ground/curb-side-s.webp") 0 0 / auto 100% repeat-x;
+}
+
+.board-side.south {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--thick);
+  transform-origin: bottom;
+  /* Positive angle swings the face below the board (tile faces use -90deg to rise). */
+  transform: rotateX(90deg);
+}
+
+.board-side.east {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--thick);
+  transform-origin: right;
+  background: url("/ground/curb-side-e.webp") 0 0 / 100% auto repeat-y;
+  transform: rotateY(-90deg);
+  filter: brightness(0.86);
 }
 
 .cell,
@@ -279,41 +297,14 @@ button:focus-visible {
   top: calc(var(--gap) + var(--row) * (var(--size) + var(--gap)));
 }
 
-/* Empty plot: sidewalk frame + raked gravel or fresh lawn, a surveyor stake. */
+/* Empty plot: painted vacant lot (meadow or levelled gravel with a surveyor stake). */
 
 .cell {
-  border-radius: 3px;
-  background: var(--walk);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.5),
-    1px 1px 0 var(--walk-side);
+  background: url("/ground/plot-empty-gravel.webp") center / 100% 100% no-repeat;
 }
 
-.cell::before {
-  content: "";
-  position: absolute;
-  inset: var(--walk-w);
-  border-radius: 2px;
-  opacity: 0.55;
-  background: repeating-linear-gradient(90deg, var(--gravel) 0 3px, var(--gravel-2) 3px 5px);
-}
-
-.cell[data-ground="lawn"]::before {
-  background: repeating-linear-gradient(0deg, var(--lawn) 0 4px, var(--lawn-2) 4px 8px);
-}
-
-.cell::after {
-  /* Stake: a tiny post with a gold flag, lying in the plot's corner. */
-  content: "";
-  position: absolute;
-  left: 22%;
-  top: 22%;
-  width: 9%;
-  height: 9%;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.65);
-  opacity: 0.8;
+.cell[data-ground="lawn"] {
+  background-image: url("/ground/plot-empty-grass.webp");
 }
 
 /* Occupied plot: raised foundation with sidewalk + ground. */
@@ -354,21 +345,12 @@ button:focus-visible {
 
 .top {
   inset: 0;
-  border-radius: 2px;
-  background:
-    linear-gradient(var(--ground), var(--ground)) content-box,
-    var(--walk);
-  padding: var(--walk-w);
+  background: url("/ground/plot-gravel.webp") center / 100% 100% no-repeat;
   transform: translateZ(var(--h));
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.55);
 }
 
-.top::before {
-  content: "";
-  position: absolute;
-  inset: var(--walk-w);
-  background: repeating-linear-gradient(45deg, transparent 0 3px, var(--ground-2) 3px 5px);
-  opacity: 0.6;
+.tile[data-ground="lawn"] .top {
+  background-image: url("/ground/plot-grass.webp");
 }
 
 .south {
@@ -423,10 +405,20 @@ button:focus-visible {
   pointer-events: none;
 }
 
+/* Painted sprites: shrinking --w also scales the drop above, so the painting's footprint
+   stays centred on the tile while its props stay inside the lawn with breathing room. */
+.sprite.painted {
+  --w: calc(var(--size) * 1.41421 * var(--fit));
+  margin-bottom: calc(var(--w) * var(--lift));
+  object-fit: contain;
+  user-select: none;
+}
+
+/* Scale only: opacity < 1 on a preserve-3d element flattens it (WebKit/spec), which would lay
+   the upright building flat on its plot for the length of the animation. */
 @keyframes pop {
   from {
-    transform: scale(0.3);
-    opacity: 0;
+    transform: scale(0.05);
   }
 }
 
