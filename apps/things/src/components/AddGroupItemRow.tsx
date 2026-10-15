@@ -64,6 +64,7 @@ export function AddGroupItemRow({
           isDisabled={isPending}
           isInvalid={Boolean(error)}
           label="Item name"
+          labelClassName="sr-only"
           placeholder="Item name"
           value={name}
           onChange={onNameChange}
@@ -89,7 +90,14 @@ export function AddGroupItemRow({
             }}
           />
         </TextField>
-        <Button isIconOnly aria-label="Add item" type="submit" isDisabled={isPending}>
+        <Button
+          isIconOnly
+          size="md"
+          variant="primary"
+          aria-label="Add item"
+          type="submit"
+          isPending={isPending}
+        >
           <span className="things-add-action-disc">
             <Plus aria-hidden="true" size={17} />
           </span>

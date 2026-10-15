@@ -55,10 +55,15 @@ export function ConfirmAction({
             </AlertDialog.Header>
             <AlertDialog.Body>{description}</AlertDialog.Body>
             <AlertDialog.Footer>
-              <Button variant="tertiary" isDisabled={isPending} onPress={() => setIsOpen(false)}>
+              <Button
+                size="lg"
+                variant="tertiary"
+                isDisabled={isPending}
+                onPress={() => setIsOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button variant="danger" isDisabled={isPending} onPress={confirm}>
+              <Button size="lg" variant="danger" isPending={isPending} onPress={confirm}>
                 {confirmLabel}
               </Button>
             </AlertDialog.Footer>

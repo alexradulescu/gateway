@@ -61,10 +61,10 @@ export function DiscardChangesDialog({
             </AlertDialog.Header>
             <AlertDialog.Body>Your unsaved changes will be lost.</AlertDialog.Body>
             <AlertDialog.Footer>
-              <Button variant="tertiary" onPress={onKeepEditing}>
+              <Button size="lg" variant="tertiary" onPress={onKeepEditing}>
                 Keep editing
               </Button>
-              <Button variant="danger" onPress={onDiscard}>
+              <Button size="lg" variant="danger" onPress={onDiscard}>
                 Discard
               </Button>
             </AlertDialog.Footer>

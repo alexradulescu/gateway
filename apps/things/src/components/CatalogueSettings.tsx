@@ -2,14 +2,16 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import {
   Button,
   ButtonGroup,
-  Checkbox,
+  Card,
+  FieldError,
+  Switch,
   Input,
+  Label,
   Spinner,
-  Surface,
   TextField,
   toast,
 } from "@heroui/react";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, Tag, X } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
 import { api } from "../../../../convex/_generated/api";
@@ -42,7 +44,7 @@ export function CatalogueSettings() {
           isIconOnly
           aria-label="Back to Things"
           className="things-page-icon-button"
-          size="sm"
+          size="lg"
           variant="ghost"
           onPress={() => navigate({ to: "/" })}
         >
@@ -80,11 +82,21 @@ function CatalogueSection({
   onEditingChange: (itemId: string | null) => void;
 }) {
   return (
-    <section className="things-catalogue-section" aria-labelledby={`catalogue-${title}`}>
-      <h2 id={`catalogue-${title}`}>
-        {title} <span>{items.length}</span>
-      </h2>
-      <Surface className="things-frosted things-group-surface things-catalogue-surface">
+    <Card
+      render={(props) => <section {...props} />}
+      className="things-list-card things-catalogue-section"
+      aria-labelledby={`catalogue-${title}`}
+    >
+      <Card.Header className="things-list-header">
+        <Card.Title
+          id={`catalogue-${title}`}
+          render={(props) => <h2 {...props}>{props.children}</h2>}
+        >
+          {title}
+        </Card.Title>
+        <Card.Description className="tabular-nums">{items.length} items</Card.Description>
+      </Card.Header>
+      <Card.Content className="things-row-list">
         {items.length === 0 ? (
           <p className="things-empty">No {title.toLocaleLowerCase()} catalogue items.</p>
         ) : (
@@ -98,8 +110,8 @@ function CatalogueSection({
             />
           ))
         )}
-      </Surface>
-    </section>
+      </Card.Content>
+    </Card>
   );
 }
 
@@ -174,7 +186,7 @@ function CatalogueRow({
     <div className="things-catalogue-row-wrap">
       {isEditing ? (
         <form
-          className="things-catalogue-row things-catalogue-row--editing"
+          className="things-row things-catalogue-row--editing"
           aria-busy={pendingAction === "rename" || undefined}
           onSubmit={save}
         >
@@ -184,9 +196,9 @@ function CatalogueRow({
             value={name}
             onChange={setName}
           >
+            <Label className="sr-only">Rename {item.canonicalName}</Label>
             <Input
               ref={inputRef}
-              aria-label={`Rename ${item.canonicalName}`}
               aria-describedby={error ? errorId : undefined}
               autoComplete="off"
               name="catalogueItemName"
@@ -197,16 +209,21 @@ function CatalogueRow({
                 cancel();
               }}
             />
+            <FieldError id={errorId} className="things-field-error">
+              {error}
+            </FieldError>
           </TextField>
           <ButtonGroup
             aria-label={`Editing ${item.canonicalName}`}
             className="things-catalogue-edit-actions"
-            size="sm"
+            size="lg"
             variant="secondary"
           >
             <Button
               isIconOnly
               aria-label={`Save ${item.canonicalName}`}
+              variant="primary"
+              isPending={pendingAction === "rename"}
               isDisabled={pendingAction !== null}
               type="submit"
             >
@@ -226,35 +243,38 @@ function CatalogueRow({
         </form>
       ) : (
         <div
-          className="things-catalogue-row"
+          className="things-row things-catalogue-row"
           aria-busy={pendingAction === "visibility" || undefined}
         >
-          <button className="things-row-main things-catalogue-name" type="button" onClick={onEdit}>
+          <span className="things-row-icon" aria-hidden="true">
+            <Tag size={20} />
+          </span>
+          <Button
+            size="lg"
+            variant="ghost"
+            fullWidth
+            className="things-row-main"
+            type="button"
+            onPress={onEdit}
+          >
             <span className="things-row-title">{item.canonicalName}</span>
-          </button>
-          <Checkbox
+          </Button>
+          <Switch
             aria-label={`Show ${item.canonicalName} in suggestions`}
             className="things-catalogue-visibility"
             isDisabled={pendingAction !== null}
             isSelected={item.isVisible}
             onChange={changeVisibility}
           >
-            <Checkbox.Content>
-              <Checkbox.Control>
-                <Checkbox.Indicator />
-              </Checkbox.Control>
-            </Checkbox.Content>
-          </Checkbox>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch>
           <ThingsBusyOverlay
             isBusy={pendingAction === "visibility"}
             label="Updating catalogue visibility"
           />
         </div>
-      )}
-      {error && (
-        <p id={errorId} className="things-field-error things-catalogue-row-error" role="alert">
-          {error}
-        </p>
       )}
     </div>
   );
