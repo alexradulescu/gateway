@@ -30,4 +30,10 @@ export const gatewayApps = [
     description: "Slide and stack matching tiles on an isometric board.",
     accent: "#d98a1f",
   },
+  {
+    id: "sydney",
+    name: "Sydney",
+    description: "Explore apartment-friendly neighbourhoods within 45 minutes of the CBD.",
+    accent: "#1a73d9",
+  },
 ] satisfies GatewayApp[];
