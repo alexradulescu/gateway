@@ -1,3 +1,4 @@
+import { affluenceFor } from "./affluence";
 import { ANGLO, type Amenity, type Suburb } from "./data";
 
 export type Prefs = {
@@ -6,9 +7,17 @@ export type Prefs = {
   maxCommute: number;
   /** Hide suburbs where one non-Anglo-Celtic ancestry is at or above this share. 100 = off. */
   maxSingleGroup: number;
+  /** Minimum SEIFA advantage decile (1 = off). */
+  minAffluence: number;
 };
 
-export const defaultPrefs: Prefs = { budget: 2000, beds: 3, maxCommute: 45, maxSingleGroup: 100 };
+export const defaultPrefs: Prefs = {
+  budget: 2000,
+  beds: 3,
+  maxCommute: 45,
+  maxSingleGroup: 100,
+  minAffluence: 1,
+};
 
 export function priceFor(s: Suburb, beds: 2 | 3) {
   return beds === 2 ? s.buy2 : s.buy3;
@@ -38,7 +47,8 @@ export function passes(s: Suburb, p: Prefs) {
   return (
     s.commute <= p.maxCommute &&
     priceFor(s, p.beds)[0] <= p.budget &&
-    (p.maxSingleGroup >= 100 || !other || other[1] < p.maxSingleGroup)
+    (p.maxSingleGroup >= 100 || !other || other[1] < p.maxSingleGroup) &&
+    affluenceFor(s.id).decile >= p.minAffluence
   );
 }
 
@@ -56,8 +66,15 @@ export function fitScore(s: Suburb, p: Prefs) {
   const headroom = clamp01((p.budget - mid) / (p.budget * 0.5));
   const hospital = s.amenities.some((a) => a.kind === "hospital" && a.walk <= 15) ? 1 : 0;
 
+  const affluent = clamp01((affluenceFor(s.id).decile - 4) / 6); // decile 4 ≈ 0, 10 = 1
+
   const score =
-    0.35 * convenience + 0.25 * safety + 0.2 * commute + 0.15 * headroom + 0.05 * hospital;
+    0.3 * convenience +
+    0.2 * safety +
+    0.2 * commute +
+    0.15 * affluent +
+    0.1 * headroom +
+    0.05 * hospital;
   return Math.round(score * 100);
 }
 
