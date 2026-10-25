@@ -36,4 +36,10 @@ export const gatewayApps = [
     description: "Explore apartment-friendly neighbourhoods within 45 minutes of the CBD.",
     accent: "#1a73d9",
   },
+  {
+    id: "library",
+    name: "Restricted Section",
+    description: "A candlelit library of wizarding-world fan fiction, book by book.",
+    accent: "#9c7433",
+  },
 ] satisfies GatewayApp[];
