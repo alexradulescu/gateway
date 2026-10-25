@@ -2,6 +2,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import type { Suburb } from "./data";
+import { studios } from "./pilates";
 import { lines } from "./transit";
 
 const CBD: L.LatLngExpression = [-33.8731, 151.2065];
@@ -60,6 +61,15 @@ export function MapView({ pins, selectedId, bottomInset, dark, showTransit, onSe
     // Lines sit above tiles but under suburb pins.
     m.createPane("transit").style.zIndex = "450";
     transit.current = buildTransit();
+    for (const studio of studios) {
+      L.marker([studio.lat, studio.lng], {
+        icon: L.divIcon({ className: "", html: '<div class="studio">S</div>', iconSize: [0, 0] }),
+        zIndexOffset: -200,
+        title: `STRONG Pilates ${studio.name}`,
+      })
+        .bindTooltip(`STRONG Pilates · ${studio.name}`, { direction: "top", offset: [0, -10] })
+        .addTo(m);
+    }
     L.control.attribution({ position: "topright", prefix: false }).addTo(m);
     layer.current = L.layerGroup().addTo(m);
     // Names collide when zoomed out; keep just the commute badges until zoom 12.
