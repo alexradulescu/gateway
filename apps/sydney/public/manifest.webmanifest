@@ -1,0 +1,26 @@
+{
+  "id": "/sydney/",
+  "name": "Sydney Neighbourhoods",
+  "short_name": "Sydney",
+  "description": "Explore Sydney neighbourhoods within 45 minutes of the CBD.",
+  "start_url": "/sydney/",
+  "scope": "/sydney/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f4f6",
+  "theme_color": "#f2f4f6",
+  "icons": [
+    {
+      "src": "/sydney/icons/sydney-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/sydney/icons/sydney-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
