@@ -26,6 +26,7 @@ import {
   rentFor,
   type Prefs,
 } from "./fit";
+import { affluenceFor, affluenceLabel } from "./affluence";
 import { MapView } from "./MapView";
 import { lines } from "./transit";
 import { distanceKm, nearestStudio } from "./pilates";
@@ -228,8 +229,8 @@ export function App() {
                           )}
                         </span>
                         <span className="row__sub">
-                          {r.suburb.region} · {r.suburb.commute} min · {essentialsWalk(r.suburb)}{" "}
-                          min to essentials
+                          {r.suburb.commute}′ CBD · {essentialsWalk(r.suburb)}′ shops · well-off{" "}
+                          {affluenceFor(r.suburb.id).decile}/10
                         </span>
                       </span>
                       <span className="row__price">
@@ -326,6 +327,11 @@ function Detail({
             sub={["", "Low", "Below avg", "Average", "Good", "Very good"][s.safety]}
           />
           <Tile label="Essentials" value={`${essentialsWalk(s)} min`} sub="avg walk" />
+          <Tile
+            label="Well-off"
+            value={`${affluenceFor(s.id).decile}/10`}
+            sub={affluenceLabel(affluenceFor(s.id).decile)}
+          />
         </div>
 
         <NearbyLines suburb={s} />
@@ -435,6 +441,7 @@ function Detail({
             ))}
           </ul>
           <p className="hint">
+            Median household income ${affluenceFor(s.id).income.toLocaleString()}/wk.{" "}
             {s.bornOverseas}% born overseas.
             {other ? ` Biggest non-Anglo group: ${other[0]} ${other[1]}%.` : ""}
           </p>
@@ -631,6 +638,20 @@ function Filters({
         />
       </div>
       <div className="field">
+        <span className="field__label">How well off (ABS advantage decile)</span>
+        <Segment
+          label="Minimum affluence"
+          value={prefs.minAffluence}
+          onChange={(minAffluence) => onChange({ minAffluence })}
+          options={[
+            { value: 1, label: "Any" },
+            { value: 7, label: "7+" },
+            { value: 8, label: "8+" },
+            { value: 9, label: "9+" },
+          ]}
+        />
+      </div>
+      <div className="field">
         <span className="field__label">Hide areas where one non-Anglo ancestry is at least</span>
         <Segment
           label="Ancestry cap"
@@ -673,10 +694,14 @@ function About({ onClose }: { onClose: () => void }) {
             <strong>Community</strong> — Census 2021 ancestry.
           </li>
           <li>
+            <strong>Well-off</strong> — ABS SEIFA advantage decile (1–10) + median household income,
+            Census 2021.
+          </li>
+          <li>
             <strong>STRONG Pilates</strong> — official studio list, Oct 2026.
           </li>
           <li>
-            <strong>Fit score</strong> — essentials first, then safety, commute, price.
+            <strong>Fit score</strong> — essentials first, then safety, commute, well-off, price.
           </li>
         </ul>
       </div>
