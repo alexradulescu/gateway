@@ -91,7 +91,6 @@ p {
 .glass {
   background: var(--glass);
   backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
   border: 0.5px solid var(--hairline);
   box-shadow: var(--shadow);
 }
@@ -182,7 +181,6 @@ p {
   color: var(--ink);
   background: var(--glass);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 0.5px solid var(--hairline);
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.18);
   transition:
@@ -740,7 +738,6 @@ p {
   z-index: 1100;
   background: rgb(0 0 0 / 0.22);
   backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1024,4 +1021,12 @@ input[type="range"] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Safari only blurs what shares the panel's compositing context; Leaflet's
+   will-change layers (tiles, zoom) would otherwise show through unblurred. */
+.leaflet-tile,
+.leaflet-zoom-animated,
+.leaflet-pane {
+  will-change: auto !important;
 }
