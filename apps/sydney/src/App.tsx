@@ -1,5 +1,6 @@
 import {
   ChevronLeft,
+  Dumbbell,
   Hospital,
   Info,
   ShoppingBag,
@@ -27,6 +28,7 @@ import {
 } from "./fit";
 import { MapView } from "./MapView";
 import { lines } from "./transit";
+import { distanceKm, nearestStudio } from "./pilates";
 import { schoolTier, TIER_HINT, TIER_LABEL } from "./schools";
 
 const STORE = "gateway-sydney:v1";
@@ -146,7 +148,7 @@ export function App() {
         <div>
           <h1>Sydney</h1>
           <p>
-            {matching} areas · {prefs.beds} bed · {fmtK(prefs.budget)} · {prefs.maxCommute}′
+            {matching} areas · {prefs.beds}bd · {fmtK(prefs.budget)} · {prefs.maxCommute}′
           </p>
         </div>
         <div className="topbar__actions">
@@ -295,12 +297,12 @@ function Detail({
           <ChevronLeft size={20} /> Areas
         </button>
         <button
-          className={`icon-btn ${saved ? "icon-btn--on" : ""}`}
+          className={`icon-btn icon-btn--sm ${saved ? "icon-btn--on" : ""}`}
           onClick={onToggleSaved}
           aria-pressed={saved}
           aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
         >
-          <Star size={20} fill={saved ? "currentColor" : "none"} />
+          <Star size={17} fill={saved ? "currentColor" : "none"} />
         </button>
       </div>
 
@@ -327,6 +329,7 @@ function Detail({
         </div>
 
         <NearbyLines suburb={s} />
+        <PilatesCard suburb={s} />
 
         <Section title="Apartment prices">
           <table className="prices">
@@ -363,8 +366,7 @@ function Detail({
 
         <Section title="Schools">
           <p className="hint">
-            Your child starts Kindergarten in Jan 2028. NSW public primaries enrol by home address,
-            so the catchment of the exact apartment matters.
+            Kindy starts Jan 2028. Public primaries go by home address — check the exact flat.
           </p>
           <ul className="schools">
             {[...s.schools]
@@ -391,11 +393,11 @@ function Detail({
         </Section>
 
         <p className="hint">
-          Quality tiers are rough, from NAPLAN-based primary rankings and HSC results. Check{" "}
+          Tiers are rough (NAPLAN, HSC). Verify on{" "}
           <a href="https://www.myschool.edu.au/" target="_blank" rel="noreferrer">
             My School
-          </a>{" "}
-          for each school's results compared with similar schools.
+          </a>
+          .
         </p>
 
         <Section title="Nearby, on foot">
@@ -434,8 +436,7 @@ function Detail({
           </ul>
           <p className="hint">
             {s.bornOverseas}% born overseas.
-            {other ? ` Largest non-Anglo group: ${other[0]} ${other[1]}%.` : ""} Ancestry is
-            self-reported; people can give two.
+            {other ? ` Biggest non-Anglo group: ${other[0]} ${other[1]}%.` : ""}
           </p>
         </Section>
 
@@ -484,9 +485,22 @@ function NearbyLines({ suburb }: { suburb: Suburb }) {
   );
 }
 
-function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const x = (lng2 - lng1) * Math.cos(((lat1 + lat2) / 2) * (Math.PI / 180));
-  return Math.hypot(x, lat2 - lat1) * 111;
+function PilatesCard({ suburb }: { suburb: Suburb }) {
+  const { studio, km } = nearestStudio(suburb.lat, suburb.lng);
+  // ~12 min per km on foot; beyond 2 km assume a short bus or drive.
+  const how = km <= 2 ? `${Math.max(1, Math.round(km * 12))} min walk` : `${km.toFixed(1)} km away`;
+  return (
+    <div className={`pilates ${km <= 2 ? "pilates--near" : ""}`}>
+      <span className="pilates__icon">
+        <Dumbbell size={16} />
+      </span>
+      <span className="pilates__main">
+        <strong>STRONG · {studio.name}</strong>
+        <small>{studio.address}</small>
+      </span>
+      <span className="pilates__dist">{how}</span>
+    </div>
+  );
 }
 
 function Tile({ label, value, sub }: { label: string; value: string; sub: string }) {
@@ -642,27 +656,27 @@ function About({ onClose }: { onClose: () => void }) {
     <Modal title="About this data" onClose={onClose}>
       <div className="about">
         <p>
-          A hand-built research snapshot (2025–26) of {suburbs.length} apartment-friendly areas
-          within 45 minutes of the CBD by public transport. Use it to shortlist, then verify with
-          the links on each area.
+          Snapshot, 2025–26. {suburbs.length} areas ≤45 min to CBD. Shortlist here, verify via
+          links.
         </p>
         <ul>
           <li>
-            <strong>Commute</strong> — typical weekday peak, door to Town Hall / Wynyard.
+            <strong>Commute</strong> — weekday peak, door to Town Hall / Wynyard.
           </li>
           <li>
-            <strong>Prices</strong> — indicative unit medians (Domain, realestate.com.au). 3 bed
-            units are scarce in many areas.
+            <strong>Prices</strong> — unit medians, indicative. 3 bed units are rare.
           </li>
           <li>
-            <strong>Safety</strong> — relative to Greater Sydney, from NSW BOCSAR rates.
+            <strong>Safety</strong> — vs Greater Sydney (BOCSAR).
           </li>
           <li>
-            <strong>Community</strong> — ABS Census 2021 top ancestry responses.
+            <strong>Community</strong> — Census 2021 ancestry.
           </li>
           <li>
-            <strong>Fit score</strong> — weighs walk to essentials most, then safety, commute and
-            price headroom.
+            <strong>STRONG Pilates</strong> — official studio list, Oct 2026.
+          </li>
+          <li>
+            <strong>Fit score</strong> — essentials first, then safety, commute, price.
           </li>
         </ul>
       </div>

@@ -82,8 +82,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1150],
     rent3: [1300, 1700],
     safety: 3,
-    safetyNote:
-      "Busy late-night strip on Oxford/Crown St; theft and assault rates above average near Central.",
+    safetyNote: "Busy nightlife. Theft above average near Central.",
     schools: [
       {
         name: "Bourke Street Public School",
@@ -107,8 +106,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Prince Alfred Park / Moore Park", walk: 8 },
       { kind: "station", name: "Central", walk: 10 },
     ],
-    character:
-      "Terraces, converted warehouses and some of Sydney's best cafes. Lively, creative, walk-everywhere. Small apartments and limited green space for a toddler; noisy on weekends.",
+    character: "Cafés, terraces, walk everywhere. Small flats, little green, loud weekends.",
     ancestry: [
       ["English", 30],
       ["Australian", 21],
@@ -132,7 +130,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1200],
     rent3: [1350, 1800],
     safety: 3,
-    safetyNote: "Generally calm residential streets; casino precinct lifts incident counts.",
+    safetyNote: "Calm streets. Casino area adds incidents.",
     schools: [
       { name: "Ultimo Public School", level: "Primary", sector: "Public" },
       { name: "Sydney Secondary College Blackwattle Bay", level: "High", sector: "Public" },
@@ -145,8 +143,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Pirrama Park, harbour foreshore", walk: 6 },
       { kind: "station", name: "Pyrmont Bay light rail", walk: 5 },
     ],
-    character:
-      "Harbour-side apartment peninsula next to the CBD. Professional, compact, waterfront walks and playgrounds along the foreshore. Few family-size apartments.",
+    character: "Harbour peninsula next to CBD. Foreshore playgrounds. Few big flats.",
     ancestry: [
       ["English", 25],
       ["Chinese", 17],
@@ -170,8 +167,7 @@ export const suburbs: Suburb[] = [
     rent2: [800, 950],
     rent3: [1100, 1400],
     safety: 3,
-    safetyNote:
-      "Mixed; pockets of social housing and student population. Glebe Point Rd is relaxed.",
+    safetyNote: "Mixed. Some social housing; main road relaxed.",
     schools: [
       { name: "Glebe Public School", level: "Primary", sector: "Public" },
       {
@@ -190,8 +186,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Jubilee & Bicentennial Parks", walk: 8 },
       { kind: "station", name: "Glebe light rail", walk: 8 },
     ],
-    character:
-      "Bohemian, leafy and university-adjacent. Weekend markets, bookshops, harbour parks. Mix of students, academics and long-time residents.",
+    character: "Leafy, arty, uni crowd. Markets and harbour parks.",
     ancestry: [
       ["English", 30],
       ["Australian", 22],
@@ -215,8 +210,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1200, 1500],
     safety: 2,
-    safetyNote:
-      "Improved a lot, but crime rates stay above Sydney average around the station and The Block.",
+    safetyNote: "Above average crime near station.",
     schools: [
       { name: "Alexandria Park Community School", level: "K–12", sector: "Public" },
       { name: "Bourke Street Public School", level: "Primary", sector: "Public" },
@@ -229,8 +223,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Redfern Park", walk: 5 },
       { kind: "station", name: "Redfern (all lines)", walk: 6 },
     ],
-    character:
-      "Historically the heart of Aboriginal Sydney, now rapidly gentrified. Great bars and food, one stop from Central. Very well connected; still gritty in places.",
+    character: "1 stop from Central. Great food and bars. Still gritty in spots.",
     ancestry: [
       ["English", 27],
       ["Australian", 21],
@@ -255,8 +248,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1150, 1450],
     safety: 2,
-    safetyNote:
-      "Large public-housing estate under redevelopment; newer apartment blocks around the Metro are quieter.",
+    safetyNote: "Old estate being rebuilt. New blocks quieter.",
     schools: [
       { name: "Alexandria Park Community School", level: "K–12", sector: "Public" },
       {
@@ -274,8 +266,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Waterloo Park / Sydney Park", walk: 10 },
       { kind: "station", name: "Waterloo Metro (4 min to Central)", walk: 6 },
     ],
-    character:
-      "In transition: towers, Metro and new parks replacing the old estate. Great value for the commute, but feels unfinished for a few more years.",
+    character: "New Metro, towers, parks. Good value. Still a building site.",
     ancestry: [
       ["Chinese", 18],
       ["English", 18],
@@ -299,7 +290,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1050],
     rent3: [1250, 1550],
     safety: 4,
-    safetyNote: "New master-planned apartments, below-average crime.",
+    safetyNote: "Low crime. New and orderly.",
     schools: [
       {
         name: "Gadigal Public School",
@@ -323,8 +314,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Gunyama Park & aquatic centre", walk: 8 },
       { kind: "station", name: "Green Square", walk: 10 },
     ],
-    character:
-      "Brand-new apartment suburb built around Green Square: library, pools, playgrounds, young families. Very convenient day-to-day. Mostly towers.",
+    character: "New towers around Green Square. Pools, library, young families.",
     ancestry: [
       ["Chinese", 26],
       ["English", 17],
@@ -348,7 +338,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1200, 1500],
     safety: 4,
-    safetyNote: "Low residential crime; former industrial streets quiet at night.",
+    safetyNote: "Low crime. Quiet at night.",
     schools: [
       { name: "Alexandria Park Community School", level: "K–12", sector: "Public" },
       { name: "Erskineville Public School", level: "Primary", sector: "Public" },
@@ -361,8 +351,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Sydney Park", walk: 8 },
       { kind: "station", name: "Green Square / Erskineville", walk: 12 },
     ],
-    character:
-      "Warehouse conversions and newer mid-rise, right next to Sydney Park. Popular with young families and dogs. Busy roads on edges.",
+    character: "Warehouses + mid-rise next to Sydney Park. Dogs and young families.",
     ancestry: [
       ["English", 28],
       ["Australian", 20],
@@ -386,7 +375,7 @@ export const suburbs: Suburb[] = [
     rent2: [800, 950],
     rent3: [1100, 1350],
     safety: 3,
-    safetyNote: "King St nightlife brings late-night incidents; side streets are relaxed.",
+    safetyNote: "King St nightlife. Side streets calm.",
     schools: [
       { name: "Newtown Public School", level: "Primary", sector: "Public" },
       { name: "Camdenville Public School", level: "Primary", sector: "Public" },
@@ -400,8 +389,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Camperdown Park, Sydney Park", walk: 8 },
       { kind: "station", name: "Newtown", walk: 5 },
     ],
-    character:
-      "Sydney's alternative high street: vintage shops, live music, global food. Diverse, progressive, a bit loud. Mostly older walk-up apartments.",
+    character: "Alternative high street. Live music, global food. Loud-ish.",
     ancestry: [
       ["English", 31],
       ["Australian", 23],
@@ -425,7 +413,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1200, 1450],
     safety: 4,
-    safetyNote: "Village-like, below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       {
         name: "Erskineville Public School",
@@ -443,8 +431,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Sydney Park", walk: 6 },
       { kind: "station", name: "Erskineville", walk: 5 },
     ],
-    character:
-      "Small, friendly village feel between Newtown and Sydney Park. Many young families, pubs with kids' areas, new apartments on Ashmore estate.",
+    character: "Village feel by Sydney Park. Lots of young families.",
     ancestry: [
       ["English", 32],
       ["Australian", 22],
@@ -468,7 +455,7 @@ export const suburbs: Suburb[] = [
     rent2: [800, 900],
     rent3: [1050, 1300],
     safety: 4,
-    safetyNote: "Below-average crime; aircraft noise is the main downside.",
+    safetyNote: "Low crime. Noise is the issue.",
     schools: [
       { name: "Mascot Public School", level: "Primary", sector: "Public" },
       { name: "Gardeners Road Public School", level: "Primary", sector: "Public" },
@@ -482,8 +469,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Mascot Oval, Sydney Park", walk: 10 },
       { kind: "station", name: "Mascot", walk: 4 },
     ],
-    character:
-      "Airport-adjacent apartment hub with good value and a quick train. Practical rather than charming; check plane flight paths before buying.",
+    character: "Airport-side flats. Fast train, good value. Plane noise.",
     ancestry: [
       ["Chinese", 24],
       ["English", 15],
@@ -507,7 +493,7 @@ export const suburbs: Suburb[] = [
     rent2: [750, 850],
     rent3: [950, 1150],
     safety: 4,
-    safetyNote: "Newer apartment precinct with average to below-average crime.",
+    safetyNote: "Average to low crime.",
     schools: [
       { name: "Arncliffe Public School", level: "Primary", sector: "Public" },
       { name: "Arncliffe West Infants", level: "Primary", sector: "Public" },
@@ -526,8 +512,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Cooks River foreshore", walk: 5 },
       { kind: "station", name: "Wolli Creek (airport line junction)", walk: 5 },
     ],
-    character:
-      "High-rise cluster on the Cooks River with very good transport and airport access. Functional, newer, diverse; limited heritage charm.",
+    character: "Riverside towers. Great trains, airport close. Little charm.",
     ancestry: [
       ["Chinese", 24],
       ["Nepalese", 10],
@@ -552,7 +537,7 @@ export const suburbs: Suburb[] = [
     rent2: [650, 750],
     rent3: [850, 1000],
     safety: 3,
-    safetyNote: "Around Sydney average; busier around the station.",
+    safetyNote: "Average. Busier by station.",
     schools: [
       { name: "Rockdale Public School", level: "Primary", sector: "Public" },
       { name: "James Cook Boys / Moorefield Girls", level: "High", sector: "Public" },
@@ -566,8 +551,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Brighton-Le-Sands beach (bus)", walk: 25 },
       { kind: "station", name: "Rockdale", walk: 4 },
     ],
-    character:
-      "Affordable, multicultural town centre on the Illawarra line, near Botany Bay beaches. Busy, practical; long-standing Greek and Macedonian communities.",
+    character: "Cheap, busy, multicultural. Near Botany Bay beaches.",
     ancestry: [
       ["Chinese", 15],
       ["English", 12],
@@ -591,7 +575,7 @@ export const suburbs: Suburb[] = [
     rent2: [650, 780],
     rent3: [850, 1000],
     safety: 4,
-    safetyNote: "Below-average crime; hospital and school precinct.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Kogarah Public School", level: "Primary", sector: "Public" },
       {
@@ -611,8 +595,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Kogarah Park", walk: 8 },
       { kind: "station", name: "Kogarah", walk: 4 },
     ],
-    character:
-      "Quiet hospital-and-schools suburb with a modest town centre. Good value, easy family logistics.",
+    character: "Quiet. Hospital + top schools. Small centre.",
     ancestry: [
       ["Chinese", 30],
       ["English", 11],
@@ -636,7 +619,7 @@ export const suburbs: Suburb[] = [
     rent2: [650, 780],
     rent3: [850, 1000],
     safety: 3,
-    safetyNote: "Around Sydney average; busy CBD around Westfield.",
+    safetyNote: "Average. Busy around Westfield.",
     schools: [
       { name: "Hurstville Public School", level: "Primary", sector: "Public" },
       { name: "Hurstville Boys / Georges River College", level: "High", sector: "Public" },
@@ -650,8 +633,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Hurstville Oval", walk: 10 },
       { kind: "station", name: "Hurstville (express)", walk: 4 },
     ],
-    character:
-      "Major southern hub with one of Sydney's largest Chinese communities. Excellent shops and food, everything walkable.",
+    character: "Big shopping hub. Very large Chinese community.",
     ancestry: [
       ["Chinese", 52],
       ["English", 7],
@@ -691,8 +673,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Enmore Park, Cooks River", walk: 8 },
       { kind: "station", name: "Marrickville / Sydenham", walk: 8 },
     ],
-    character:
-      "Creative, family-friendly Inner West: breweries, Saturday Organic Markets, Greek and Vietnamese heritage. Under flight paths on the south side. Train line becomes Metro (Sydenham–Bankstown) — check current status.",
+    character: "Creative, family-friendly. Breweries, markets, Greek + Vietnamese food.",
     ancestry: [
       ["English", 21],
       ["Australian", 18],
@@ -716,7 +697,7 @@ export const suburbs: Suburb[] = [
     rent2: [680, 800],
     rent3: [900, 1100],
     safety: 4,
-    safetyNote: "Below-average crime, quiet leafy streets.",
+    safetyNote: "Low crime. Quiet streets.",
     schools: [
       { name: "Dulwich Hill Public School", level: "Primary", sector: "Public" },
       { name: "Ferncourt Public School (Marrickville)", level: "Primary", sector: "Public" },
@@ -730,8 +711,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Arlington Reserve, GreenWay", walk: 6 },
       { kind: "station", name: "Dulwich Hill light rail", walk: 8 },
     ],
-    character:
-      "Leafy, low-key family suburb with Art Deco walk-ups and the GreenWay bike path. Strong Greek and Lebanese heritage, increasingly young families.",
+    character: "Leafy, low-key. Art Deco flats, GreenWay bike path.",
     ancestry: [
       ["English", 23],
       ["Australian", 19],
@@ -755,7 +735,7 @@ export const suburbs: Suburb[] = [
     rent2: [720, 850],
     rent3: [950, 1150],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Petersham Public School", level: "Primary", sector: "Public" },
       {
@@ -774,8 +754,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Petersham Park & pool", walk: 6 },
       { kind: "station", name: "Petersham", walk: 5 },
     ],
-    character:
-      "Small, heritage-rich suburb known for its Portuguese bakeries. Quiet streets, great school options, fast trains to the city.",
+    character: "Small, heritage, Portuguese bakeries. Fast trains.",
     ancestry: [
       ["English", 25],
       ["Australian", 20],
@@ -799,7 +778,7 @@ export const suburbs: Suburb[] = [
     rent2: [750, 880],
     rent3: [1000, 1200],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Leichhardt Public School", level: "Primary", sector: "Public" },
       { name: "Orange Grove Public School", level: "Primary", sector: "Public" },
@@ -813,8 +792,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Pioneers Memorial Park", walk: 8 },
       { kind: "station", name: "Bus to city (no train)", walk: 3 },
     ],
-    character:
-      "Sydney's Little Italy. Family-oriented, cafes, bay walks nearby. No train — commute relies on buses, which can be slow in peak.",
+    character: "Little Italy. Family cafés. Buses only — slow at peak.",
     ancestry: [
       ["English", 25],
       ["Australian", 20],
@@ -838,7 +816,7 @@ export const suburbs: Suburb[] = [
     rent2: [650, 760],
     rent3: [850, 1000],
     safety: 3,
-    safetyNote: "Around Sydney average.",
+    safetyNote: "Average.",
     schools: [
       { name: "Ashfield Public School", level: "Primary", sector: "Public" },
       { name: "Ashfield Boys High", level: "High", sector: "Public" },
@@ -853,8 +831,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Ashfield Park", walk: 8 },
       { kind: "station", name: "Ashfield", walk: 4 },
     ],
-    character:
-      "Busy transport hub known as Little Shanghai. Affordable, very convenient, older apartment stock.",
+    character: "Little Shanghai. Cheap, convenient, older flats.",
     ancestry: [
       ["Chinese", 33],
       ["English", 11],
@@ -878,7 +855,7 @@ export const suburbs: Suburb[] = [
     rent2: [680, 800],
     rent3: [900, 1050],
     safety: 3,
-    safetyNote: "Around average; busy around Westfield and the station.",
+    safetyNote: "Average. Busy by Westfield.",
     schools: [
       { name: "Burwood Public School", level: "Primary", sector: "Public" },
       { name: "Burwood Girls High", level: "High", sector: "Public" },
@@ -892,8 +869,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Burwood Park", walk: 5 },
       { kind: "station", name: "Burwood (express)", walk: 4 },
     ],
-    character:
-      "Major shopping and dining centre of the inner west with a large Chinese community and great private schools nearby.",
+    character: "Big shops and food. Large Chinese community. Good private schools.",
     ancestry: [
       ["Chinese", 42],
       ["English", 9],
@@ -917,7 +893,7 @@ export const suburbs: Suburb[] = [
     rent2: [650, 780],
     rent3: [850, 1000],
     safety: 4,
-    safetyNote: "Below-average; station precinct busier.",
+    safetyNote: "Low crime. Station busier.",
     schools: [
       { name: "Strathfield North Public School", level: "Primary", sector: "Public" },
       { name: "Strathfield Girls High / Homebush Boys", level: "High", sector: "Public" },
@@ -931,8 +907,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Strathfield Park / Bicentennial", walk: 10 },
       { kind: "station", name: "Strathfield (major hub)", walk: 4 },
     ],
-    character:
-      "Grand houses and a big school belt around a major rail hub. Apartments cluster by the station's Koreatown. Diverse: Korean, Indian, Chinese.",
+    character: "Rail hub + school belt. Koreatown by station.",
     ancestry: [
       ["Chinese", 20],
       ["Indian", 15],
@@ -956,7 +931,7 @@ export const suburbs: Suburb[] = [
     rent2: [700, 820],
     rent3: [900, 1100],
     safety: 5,
-    safetyNote: "Low crime, quiet residential.",
+    safetyNote: "Very low crime.",
     schools: [
       { name: "Concord Public School", level: "Primary", sector: "Public", note: "Well-regarded" },
       { name: "Concord West Public School", level: "Primary", sector: "Public" },
@@ -970,8 +945,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Bay Run, Cabarita Park", walk: 10 },
       { kind: "station", name: "Bus 461 / Concord West station", walk: 10 },
     ],
-    character:
-      "Calm, green family suburb on the Parramatta River with the Bay Run. Few apartments; low-rise. Strong Italian heritage, growing Chinese and Korean community.",
+    character: "Calm, green, riverside. Bay Run. Few flats.",
     ancestry: [
       ["Chinese", 19],
       ["Italian", 15],
@@ -995,7 +969,7 @@ export const suburbs: Suburb[] = [
     rent2: [750, 850],
     rent3: [950, 1150],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Concord West Public School", level: "Primary", sector: "Public" },
       {
@@ -1013,8 +987,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Bay Run, Rhodes foreshore", walk: 5 },
       { kind: "station", name: "Rhodes", walk: 5 },
     ],
-    character:
-      "Waterfront tower suburb with very high convenience. Predominantly Chinese and Korean community.",
+    character: "Waterfront towers. Everything walkable. Mostly Chinese + Korean.",
     ancestry: [
       ["Chinese", 46],
       ["Korean", 12],
@@ -1038,7 +1011,7 @@ export const suburbs: Suburb[] = [
     rent2: [750, 900],
     rent3: [1000, 1250],
     safety: 5,
-    safetyNote: "Low crime.",
+    safetyNote: "Very low crime.",
     schools: [
       { name: "Drummoyne Public School", level: "Primary", sector: "Public" },
       { name: "Five Dock Public School", level: "Primary", sector: "Public" },
@@ -1052,8 +1025,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Bay Run, Drummoyne Oval", walk: 6 },
       { kind: "station", name: "B-Line style buses on Victoria Rd", walk: 5 },
     ],
-    character:
-      "Peninsula surrounded by water, popular with Italian-Australian families and professionals. Quiet, riverside walks, no train.",
+    character: "Water on 3 sides. Quiet, Italian-Australian families. No train.",
     ancestry: [
       ["English", 21],
       ["Italian", 18],
@@ -1077,7 +1049,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1200, 1500],
     safety: 5,
-    safetyNote: "Low crime, village feel.",
+    safetyNote: "Very low crime.",
     schools: [
       { name: "Balmain Public School", level: "Primary", sector: "Public" },
       { name: "Nicholson Street Public School", level: "Primary", sector: "Public" },
@@ -1092,8 +1064,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Mort Bay Park, Ballast Point", walk: 7 },
       { kind: "station", name: "Balmain / East Balmain ferry", walk: 10 },
     ],
-    character:
-      "Historic harbour village with pubs, sandstone cottages and ferry commutes. Family-friendly and established. Apartment supply is limited.",
+    character: "Harbour village. Pubs, cottages, ferry commute. Few flats.",
     ancestry: [
       ["English", 33],
       ["Australian", 22],
@@ -1117,7 +1088,7 @@ export const suburbs: Suburb[] = [
     rent2: [700, 800],
     rent3: [900, 1050],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       {
         name: "Wentworth Point Public School",
@@ -1135,8 +1106,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Blaxland Riverside / Olympic parklands", walk: 6 },
       { kind: "station", name: "Sydney Olympic Park ferry", walk: 10 },
     ],
-    character:
-      "New waterfront apartment peninsula next to Olympic Park. Lots of parks and young families. Commute is at the edge of your limit.",
+    character: "New waterfront flats, lots of parks. Commute at your limit.",
     ancestry: [
       ["Chinese", 36],
       ["Korean", 15],
@@ -1160,7 +1130,7 @@ export const suburbs: Suburb[] = [
     rent2: [620, 720],
     rent3: [780, 900],
     safety: 2,
-    safetyNote: "CBD-like crime rates; residential pockets quieter.",
+    safetyNote: "City-level crime. Suburbs quieter.",
     schools: [
       { name: "Parramatta Public School", level: "Primary", sector: "Public" },
       { name: "Parramatta High", level: "High", sector: "Public" },
@@ -1180,8 +1150,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Parramatta Park", walk: 10 },
       { kind: "station", name: "Parramatta (express to CBD)", walk: 6 },
     ],
-    character:
-      "Sydney's second CBD, booming with towers, Metro West coming. Cheapest option here, big Indian community, lots of everything. Longer commute.",
+    character: "Second CBD. Cheapest, has everything. Longest commute.",
     ancestry: [
       ["Indian", 30],
       ["Chinese", 14],
@@ -1206,7 +1175,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1150],
     rent3: [1350, 1800],
     safety: 4,
-    safetyNote: "Below-average crime; office precinct quiet at night.",
+    safetyNote: "Low crime. Quiet at night.",
     schools: [
       {
         name: "North Sydney Demonstration School",
@@ -1225,8 +1194,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Berry Island, Wendy's Garden", walk: 12 },
       { kind: "station", name: "North Sydney / Victoria Cross Metro", walk: 5 },
     ],
-    character:
-      "Second business district with harbour views, top schools and a 5-minute train to Wynyard. Polished, professional, expensive.",
+    character: "Harbour views, top schools, 5 min to Wynyard. Pricey.",
     ancestry: [
       ["English", 28],
       ["Australian", 17],
@@ -1250,7 +1218,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1050],
     rent3: [1250, 1600],
     safety: 5,
-    safetyNote: "Low crime.",
+    safetyNote: "Very low crime.",
     schools: [
       {
         name: "Neutral Bay Public School",
@@ -1269,8 +1237,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Anderson Park, harbour coves", walk: 8 },
       { kind: "station", name: "Military Rd express buses / ferry", walk: 5 },
     ],
-    character:
-      "Popular with young professionals and families. Harbour coves, a buzzy village and a fast bus to the city. Mostly 1960s–90s apartment blocks.",
+    character: "Buzzy village, harbour coves, fast bus. Older flats.",
     ancestry: [
       ["English", 34],
       ["Australian", 19],
@@ -1294,7 +1261,7 @@ export const suburbs: Suburb[] = [
     rent2: [880, 1000],
     rent3: [1200, 1550],
     safety: 5,
-    safetyNote: "Low crime.",
+    safetyNote: "Very low crime.",
     schools: [
       { name: "Neutral Bay Public School", level: "Primary", sector: "Public" },
       { name: "Mosman High / Cammeraygal High", level: "High", sector: "Public" },
@@ -1308,8 +1275,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Cremorne Point Reserve, harbour pool", walk: 10 },
       { kind: "station", name: "Cremorne Point ferry / buses", walk: 6 },
     ],
-    character:
-      "Quiet harbour peninsula with walking tracks and the Orpheum cinema. Calm, elegant, family-oriented.",
+    character: "Quiet harbour point. Walks, harbour pool, Orpheum.",
     ancestry: [
       ["English", 34],
       ["Australian", 19],
@@ -1333,7 +1299,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1100],
     rent3: [1300, 1700],
     safety: 5,
-    safetyNote: "Among the lowest crime rates in Sydney.",
+    safetyNote: "One of Sydney's safest.",
     schools: [
       { name: "Mosman Public School", level: "Primary", sector: "Public" },
       { name: "Beauty Point / Middle Harbour PS", level: "Primary", sector: "Public" },
@@ -1348,8 +1314,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Balmoral Beach, Taronga Zoo", walk: 15 },
       { kind: "station", name: "Military Rd buses / Mosman Bay ferry", walk: 5 },
     ],
-    character:
-      "Affluent, beachy and leafy with Balmoral Beach and the zoo. Very family-oriented, quiet. Buses on Military Rd can crawl in peak.",
+    character: "Rich, leafy, beachy. Balmoral + zoo. Slow peak buses.",
     ancestry: [
       ["English", 37],
       ["Australian", 20],
@@ -1373,7 +1338,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1050],
     rent3: [1250, 1600],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Cammeraygal High (Crows Nest campus)", level: "High", sector: "Public" },
       { name: "Willoughby Public School", level: "Primary", sector: "Public" },
@@ -1387,8 +1352,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Hume St Park, Gore Hill Oval", walk: 6 },
       { kind: "station", name: "Crows Nest Metro (7 min to Barangaroo)", walk: 5 },
     ],
-    character:
-      "Village dining strip, now with a Metro that makes the CBD trivially close. Very walkable with RNSH nearby. One of the best convenience-to-commute balances.",
+    character: "Food strip + Metro. CBD in minutes. Hospital close. Top pick.",
     ancestry: [
       ["English", 28],
       ["Australian", 16],
@@ -1412,7 +1376,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 980],
     rent3: [1150, 1450],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       {
         name: "Artarmon Public School",
@@ -1430,8 +1394,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Newlands Park, Gore Hill", walk: 8 },
       { kind: "station", name: "St Leonards (T1) + Crows Nest Metro", walk: 4 },
     ],
-    character:
-      "High-rise hub over the station, next to RNSH. Practical and well-priced for the North Shore. Diverse.",
+    character: "Towers over station. Next to hospital. Good value for North Shore.",
     ancestry: [
       ["Chinese", 26],
       ["English", 16],
@@ -1455,7 +1418,7 @@ export const suburbs: Suburb[] = [
     rent2: [780, 900],
     rent3: [1050, 1300],
     safety: 5,
-    safetyNote: "Low crime.",
+    safetyNote: "Very low crime.",
     schools: [
       {
         name: "Artarmon Public School",
@@ -1474,8 +1437,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Artarmon Reserve", walk: 6 },
       { kind: "station", name: "Artarmon", walk: 5 },
     ],
-    character:
-      "Quiet, leafy and studious. A strong school catchment and a little village. Large Chinese and Korean communities.",
+    character: "Quiet, leafy, studious. Top primary school.",
     ancestry: [
       ["Chinese", 27],
       ["English", 16],
@@ -1499,7 +1461,7 @@ export const suburbs: Suburb[] = [
     rent2: [800, 950],
     rent3: [1100, 1350],
     safety: 4,
-    safetyNote: "Below-average crime for a major centre.",
+    safetyNote: "Low for a big centre.",
     schools: [
       { name: "Chatswood Public School", level: "Primary", sector: "Public" },
       { name: "Chatswood High", level: "High", sector: "Public", note: "Strong academic results" },
@@ -1513,8 +1475,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Chatswood Park, Lane Cove River", walk: 10 },
       { kind: "station", name: "Chatswood (Metro + T1)", walk: 4 },
     ],
-    character:
-      "The North Shore's shopping capital, with a very large Chinese community. Peak convenience, tall towers, good schools.",
+    character: "North Shore shopping capital. Very large Chinese community.",
     ancestry: [
       ["Chinese", 46],
       ["English", 10],
@@ -1553,8 +1514,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Lane Cove National Park, The Canopy", walk: 10 },
       { kind: "station", name: "Express buses to Wynyard", walk: 5 },
     ],
-    character:
-      "Leafy, quiet and very family-oriented with a lovely village centre and bush walks. Bus-only commute, but express buses are fast.",
+    character: "Leafy village, bush walks, families. Express buses only.",
     ancestry: [
       ["English", 28],
       ["Australian", 17],
@@ -1578,7 +1538,7 @@ export const suburbs: Suburb[] = [
     rent2: [780, 900],
     rent3: [1050, 1300],
     safety: 5,
-    safetyNote: "Low crime.",
+    safetyNote: "Very low crime.",
     schools: [
       { name: "Willoughby Public School", level: "Primary", sector: "Public" },
       { name: "Willoughby Girls High", level: "High", sector: "Public" },
@@ -1592,7 +1552,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Flat Rock Gully, Willoughby Park", walk: 8 },
       { kind: "station", name: "Buses to Chatswood / Crows Nest Metro", walk: 6 },
     ],
-    character: "Quiet low-rise suburb with lots of parks, near Chatswood shops. Few apartments.",
+    character: "Quiet, low-rise, lots of parks. Few flats.",
     ancestry: [
       ["English", 24],
       ["Chinese", 18],
@@ -1616,7 +1576,7 @@ export const suburbs: Suburb[] = [
     rent2: [720, 820],
     rent3: [900, 1050],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "North Ryde Public School", level: "Primary", sector: "Public" },
       { name: "Epping Boys / Cheltenham Girls", level: "High", sector: "Public" },
@@ -1630,8 +1590,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Lane Cove National Park", walk: 10 },
       { kind: "station", name: "Macquarie University / Park Metro", walk: 6 },
     ],
-    character:
-      "Business and university park turned apartment city. Very new, very convenient; less soul.",
+    character: "Uni + office park turned apartment city. Handy, bland.",
     ancestry: [
       ["Chinese", 38],
       ["Indian", 10],
@@ -1656,7 +1615,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1100],
     rent3: [1300, 1700],
     safety: 3,
-    safetyNote: "Busy retail hub with average crime; residential streets calm.",
+    safetyNote: "Average. Home streets calm.",
     schools: [
       { name: "Bondi Public School", level: "Primary", sector: "Public" },
       { name: "Waverley Public School", level: "Primary", sector: "Public" },
@@ -1671,8 +1630,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Waverley Park, Centennial Park", walk: 12 },
       { kind: "station", name: "Bondi Junction (12 min to Town Hall)", walk: 5 },
     ],
-    character:
-      "Eastern suburbs' main hub. Beaches 10 minutes away, Westfield on the doorstep, fast trains. Apartments plentiful.",
+    character: "Westfield, fast trains, beaches 10 min away.",
     ancestry: [
       ["English", 28],
       ["Australian", 16],
@@ -1696,7 +1654,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1150],
     rent3: [1350, 1800],
     safety: 3,
-    safetyNote: "Average; summer crowds and nightlife around Campbell Pde.",
+    safetyNote: "Average. Summer crowds.",
     schools: [
       { name: "Bondi Beach Public School", level: "Primary", sector: "Public" },
       { name: "Rose Bay Secondary College", level: "High", sector: "Public" },
@@ -1709,8 +1667,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Bondi Beach & coastal walk", walk: 5 },
       { kind: "station", name: "Bus to Bondi Junction", walk: 4 },
     ],
-    character:
-      "Iconic beach suburb: surf, coastal walk, cafes, international crowd. Busy and pricey; commute via bus + train.",
+    character: "Iconic beach, cafés, coastal walk. Busy and pricey.",
     ancestry: [
       ["English", 30],
       ["Australian", 15],
@@ -1734,7 +1691,7 @@ export const suburbs: Suburb[] = [
     rent2: [1000, 1300],
     rent3: [1500, 2200],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Double Bay Public School", level: "Primary", sector: "Public" },
       { name: "Woollahra Public School", level: "Primary", sector: "Public" },
@@ -1748,8 +1705,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Steyne Park, harbour", walk: 5 },
       { kind: "station", name: "Edgecliff / Double Bay ferry", walk: 10 },
     ],
-    character:
-      "Glamorous harbour village with boutiques and great restaurants. 3BR apartments mostly above budget.",
+    character: "Glam harbour village. 3BR mostly over budget.",
     ancestry: [
       ["English", 26],
       ["Australian", 13],
@@ -1773,7 +1729,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1100],
     rent3: [1300, 1700],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Paddington Public School", level: "Primary", sector: "Public" },
       { name: "Glenmore Road Public School", level: "Primary", sector: "Public" },
@@ -1793,8 +1749,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Centennial Park", walk: 8 },
       { kind: "station", name: "Oxford St buses", walk: 4 },
     ],
-    character:
-      "Victorian terraces, galleries and Centennial Park on the doorstep. Charming and walkable; apartments are few and older.",
+    character: "Terraces, galleries, Centennial Park. Few flats.",
     ancestry: [
       ["English", 33],
       ["Australian", 18],
@@ -1818,7 +1773,7 @@ export const suburbs: Suburb[] = [
     rent2: [850, 1000],
     rent3: [1200, 1500],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Randwick Public School", level: "Primary", sector: "Public" },
       { name: "Coogee Public School", level: "Primary", sector: "Public" },
@@ -1833,8 +1788,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Centennial Park, Coogee Beach", walk: 15 },
       { kind: "station", name: "Randwick light rail (L2)", walk: 8 },
     ],
-    character:
-      "Hospital and university hub between Centennial Park and the beaches. Sydney Children's Hospital is here — reassuring with a toddler.",
+    character: "Hospitals incl. Children's Hospital. Park + beaches close.",
     ancestry: [
       ["English", 25],
       ["Australian", 16],
@@ -1858,7 +1812,7 @@ export const suburbs: Suburb[] = [
     rent2: [800, 950],
     rent3: [1100, 1400],
     safety: 4,
-    safetyNote: "Below-average crime.",
+    safetyNote: "Low crime.",
     schools: [
       { name: "Kensington Public School", level: "Primary", sector: "Public" },
       { name: "Randwick Boys / Girls High", level: "High", sector: "Public" },
@@ -1872,8 +1826,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Centennial Park, Queens Park", walk: 10 },
       { kind: "station", name: "Kensington light rail (L3)", walk: 5 },
     ],
-    character:
-      "UNSW student suburb with good-value apartments and light rail. Close to Centennial Park and hospitals.",
+    character: "Uni suburb. Good-value flats, light rail.",
     ancestry: [
       ["Chinese", 22],
       ["English", 18],
@@ -1897,7 +1850,7 @@ export const suburbs: Suburb[] = [
     rent2: [900, 1100],
     rent3: [1300, 1700],
     safety: 4,
-    safetyNote: "Below-average; summer beach crowds.",
+    safetyNote: "Low. Summer crowds.",
     schools: [
       { name: "Coogee Public School", level: "Primary", sector: "Public" },
       { name: "Randwick Boys / Girls High", level: "High", sector: "Public" },
@@ -1911,8 +1864,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Coogee Beach, Grant Reserve", walk: 5 },
       { kind: "station", name: "Bus to Central / Randwick light rail", walk: 4 },
     ],
-    character:
-      "Relaxed family beach with rock pools and a calmer vibe than Bondi. Bus-only commute is the trade-off.",
+    character: "Relaxed family beach, rock pools. Bus-only commute.",
     ancestry: [
       ["English", 30],
       ["Australian", 16],
@@ -1937,7 +1889,7 @@ export const suburbs: Suburb[] = [
     rent2: [950, 1150],
     rent3: [1400, 1800],
     safety: 4,
-    safetyNote: "Low residential crime; Corso nightlife on weekends.",
+    safetyNote: "Low. Weekend nightlife on Corso.",
     schools: [
       { name: "Manly Village Public School", level: "Primary", sector: "Public" },
       { name: "Manly West Public School", level: "Primary", sector: "Public" },
@@ -1952,8 +1904,7 @@ export const suburbs: Suburb[] = [
       { kind: "park", name: "Manly Beach, Shelly Beach", walk: 5 },
       { kind: "station", name: "Manly Wharf (fast ferry 18 min)", walk: 8 },
     ],
-    character:
-      "Beach-town lifestyle with a ferry commute that feels like a holiday. Outdoorsy, family-oriented, expensive. Apartments, especially 3BR, are mostly above $2M.",
+    character: "Beach town, ferry commute. Outdoorsy, pricey.",
     ancestry: [
       ["English", 35],
       ["Australian", 18],
