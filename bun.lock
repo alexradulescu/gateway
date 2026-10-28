@@ -56,6 +56,12 @@
     "apps/counter": {
       "name": "@gateway/counter",
     },
+    "apps/library": {
+      "name": "@gateway/library",
+      "dependencies": {
+        "@gateway/convex": "workspace:*",
+      },
+    },
     "apps/main": {
       "name": "@gateway/main",
     },
@@ -218,6 +224,8 @@
     "@gateway/convex": ["@gateway/convex@workspace:packages/gateway-convex"],
 
     "@gateway/counter": ["@gateway/counter@workspace:apps/counter"],
+
+    "@gateway/library": ["@gateway/library@workspace:apps/library"],
 
     "@gateway/main": ["@gateway/main@workspace:apps/main"],
 
