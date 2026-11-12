@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Checkbox, toast } from "@heroui/react";
+import { Button, Checkbox, toast } from "@heroui/react";
 import { GripVertical } from "lucide-react";
 import { useMutation } from "convex/react";
 import { useNavigate } from "@tanstack/react-router";
@@ -44,7 +44,7 @@ export function GroupItemRow({
 
   return (
     <div
-      className="things-item-row"
+      className="things-row things-item-row"
       data-completed={isCompleted || undefined}
       data-pending={isPending || undefined}
       aria-busy={isPending || undefined}
@@ -54,6 +54,7 @@ export function GroupItemRow({
           isCompleted ? `Reactivate ${item.canonicalName}` : `Complete ${item.canonicalName}`
         }
         className="things-item-checkbox"
+        variant="secondary"
         isDisabled={isPending}
         isSelected={isCompleted}
         onChange={toggleCompletion}
@@ -64,10 +65,13 @@ export function GroupItemRow({
           </Checkbox.Control>
         </Checkbox.Content>
       </Checkbox>
-      <button
-        className="things-row-main things-item-row__main"
+      <Button
+        size="lg"
+        variant="ghost"
+        fullWidth
+        className="things-row-main"
         type="button"
-        onClick={() =>
+        onPress={() =>
           navigate({
             to: "/$groupId/$itemId",
             params: { groupId, itemId: item._id },
@@ -78,19 +82,22 @@ export function GroupItemRow({
           {item.canonicalName}
           {item.quantity ? <span className="things-item-quantity"> × {item.quantity}</span> : null}
         </span>
-      </button>
+      </Button>
       {handle && (
-        <button
+        <Button
           {...handle.attributes}
           {...handle.listeners}
           ref={handle.setActivatorNodeRef}
+          isIconOnly
+          size="lg"
+          variant="ghost"
           className="things-drag-handle"
           type="button"
           aria-label={`Reorder ${item.canonicalName}`}
-          disabled={handle.isDisabled}
+          isDisabled={handle.isDisabled}
         >
           <GripVertical aria-hidden="true" size={18} />
-        </button>
+        </Button>
       )}
       <ThingsBusyOverlay isBusy={isPending} label="Updating item" />
     </div>

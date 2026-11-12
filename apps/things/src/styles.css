@@ -47,20 +47,14 @@
   --things-creation-inset: 8px;
   --things-scrim: color-mix(in oklab, var(--backdrop) 70%, transparent);
   --things-input-background: color-mix(in oklab, var(--foreground) 7%, var(--surface));
-  --things-item-group-background: color-mix(in oklab, var(--foreground) 4%, var(--surface));
-  --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 32%, transparent);
-  --things-checkbox-unchecked-fill: color-mix(in oklab, var(--foreground) 5%, transparent);
   --things-input-radius: 999px;
 
   --things-glass-shadow: var(--surface-shadow);
   --things-glass-shadow-raised: var(--overlay-shadow);
 
-  /* Subtract the modal inset from the iPhone 15 Pro screen curve to keep both edges parallel. */
   --things-drawer-inset: 8px;
-  --things-screen-corner-radius: 55px;
   --things-drawer-header-height: 60px;
-  --things-radius-panel: 24px;
-  --things-radius-drawer: calc(var(--things-screen-corner-radius) - var(--things-drawer-inset));
+  --things-radius-drawer: 32px;
   --things-radius-control: 14px;
 }
 
@@ -75,9 +69,6 @@
     --things-glass-popover: color-mix(in srgb, var(--overlay) 76%, transparent);
     --things-creation-border: color-mix(in oklab, var(--foreground) 22%, transparent);
     --things-input-background: color-mix(in oklab, var(--foreground) 10%, var(--surface));
-    --things-item-group-background: color-mix(in srgb, var(--surface) 94%, var(--foreground) 6%);
-    --things-checkbox-unchecked-border: color-mix(in oklab, var(--foreground) 46%, transparent);
-    --things-checkbox-unchecked-fill: color-mix(in oklab, var(--foreground) 10%, transparent);
   }
 }
 
@@ -163,10 +154,6 @@ input,
   touch-action: manipulation;
 }
 
-button {
-  color: inherit;
-}
-
 ::selection {
   color: var(--things-accent-ink);
   background: var(--things-accent);
@@ -215,15 +202,6 @@ button {
   min-width: 44px;
   height: 44px;
   min-height: 44px;
-  border-radius: 999px;
-  color: var(--things-page-muted);
-  background: transparent;
-}
-
-.things-page-icon-button.button[data-hovered="true"],
-.things-page-icon-button.button[data-pressed="true"] {
-  color: var(--things-page-ink);
-  background: color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
 .things-header h1 {
@@ -251,34 +229,43 @@ button {
   backdrop-filter: blur(14px);
 }
 
-.things-group-surface {
-  overflow: clip;
-  border: 1px solid var(--things-glass-border);
-  border-radius: var(--things-radius-panel);
-  background: color-mix(in srgb, var(--surface) 80%, transparent);
-  box-shadow: var(--things-glass-shadow);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+.things-list-card {
+  gap: 0;
+  padding: 0;
+}
+
+.things-list-header {
+  padding: 12px 16px;
+}
+
+.things-row-list {
+  gap: 0;
+}
+
+.things-list-footer,
+.things-list-footer > form {
+  width: 100%;
+}
+
+/* Dividers follow real rows, including the existing sortable wrappers. */
+.things-row-list > :has(> .things-row) ~ :has(> .things-row),
+.things-row-list > .things-row + .things-row {
+  border-top: 1px solid var(--separator);
+}
+
+.things-active-list > .things-add-item + div:has(> .things-item-row) {
+  border-top: 1px solid var(--separator);
 }
 
 /* Group list */
 
-.things-group-row {
+.things-row {
   position: relative;
   display: grid;
-  min-height: 58px;
-  grid-template-columns: 42px minmax(0, 1fr) 44px;
+  min-height: 56px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: stretch;
-  background: transparent;
-}
-
-.things-group-row + .things-group-row,
-.things-item-row + .things-item-row {
-  border-top: 1px solid var(--things-glass-separator);
-}
-
-.things-home-groups {
-  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
+  padding-inline: 4px;
 }
 
 /* Catalogue settings */
@@ -287,65 +274,22 @@ button {
   margin-top: 24px;
 }
 
-.things-catalogue-section > h2 {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin: 0;
-  padding: 0 8px 7px;
-  color: var(--things-page-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.things-catalogue-section > h2 span {
-  color: var(--things-page-faint);
-  font-variant-numeric: tabular-nums;
-}
-
-.things-catalogue-surface > .things-empty {
-  margin: 0;
-  padding: 18px 16px;
-}
-
 .things-catalogue-row-wrap {
   position: relative;
 }
 
-.things-catalogue-row-wrap + .things-catalogue-row-wrap {
-  border-top: 1px solid var(--things-glass-separator);
-}
-
 .things-catalogue-row {
-  position: relative;
-  display: grid;
-  min-height: 58px;
-  grid-template-columns: minmax(0, 1fr) 52px;
-  align-items: stretch;
-}
-
-.things-catalogue-name {
-  display: flex;
-  align-items: center;
-  padding-inline: 16px 6px;
+  grid-template-columns: 44px minmax(0, 1fr) 64px;
 }
 
 .things-catalogue-visibility {
   display: grid;
-  width: 52px;
-  min-width: 52px;
+  width: 64px;
+  min-width: 64px;
   min-height: 44px;
   place-items: center;
   align-self: center;
   padding: 0;
-}
-
-.things-catalogue-visibility .checkbox__control {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
 }
 
 .things-catalogue-row--editing {
@@ -355,7 +299,7 @@ button {
   padding: 7px 8px;
 }
 
-.things-catalogue-row--editing > .text-field {
+.things-catalogue-row--editing > .textfield {
   min-width: 0;
 }
 
@@ -363,12 +307,6 @@ button {
   width: 100%;
   min-width: 0;
   height: 44px;
-  padding: 0 12px;
-  border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
-  border-radius: var(--things-input-radius);
-  color: var(--things-page-ink);
-  background: var(--things-input-background);
-  box-shadow: var(--field-shadow);
 }
 
 .things-catalogue-edit-actions {
@@ -383,63 +321,51 @@ button {
   min-height: 44px;
 }
 
-.things-catalogue-row-error {
-  padding: 0 12px 10px;
-}
-
-/* Sortable entries are deliberately unstyled wrappers. */
-.things-group-surface > div + div {
-  border-top: 1px solid var(--things-glass-separator);
+.things-order,
+.things-row-icon {
+  display: grid;
+  width: 44px;
+  min-height: 44px;
+  align-self: center;
+  place-items: center;
+  color: var(--muted);
 }
 
 .things-order {
-  display: grid;
-  place-items: center;
-  padding-left: 5px;
-  color: var(--things-page-faint);
-  font-size: 0.69rem;
+  font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 720;
-  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 
-.things-group-main,
 .things-row-main {
   min-width: 0;
+  height: auto;
   min-height: 44px;
-  padding: 8px 6px;
-  border: 0;
-  background: transparent;
+  white-space: normal;
+  padding: 8px;
   text-align: left;
-  cursor: pointer;
-}
-
-.things-group-main {
-  display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   justify-content: center;
-  padding-block: 9px;
 }
 
 .things-item-label,
 .things-row-title {
-  overflow: hidden;
   color: var(--things-page-ink);
-  font-size: 0.98rem;
-  font-weight: 570;
+  font-size: 1rem;
+  font-weight: 500;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-row-meta {
-  overflow: hidden;
-  margin-top: 2px;
   color: var(--things-page-muted);
-  font-size: 0.76rem;
+  font-size: 0.875rem;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-drag-handle {
@@ -450,10 +376,6 @@ button {
   place-items: center;
   align-self: center;
   padding: 0;
-  border: 0;
-  border-radius: 12px;
-  color: var(--things-page-faint);
-  background: transparent;
   cursor: grab;
   touch-action: none;
   -webkit-touch-callout: none;
@@ -494,7 +416,7 @@ button {
   min-width: 0;
 }
 
-.things-add-group > .things-field-error {
+.things-add-group__field .things-field-error {
   padding: 0 5px 7px;
 }
 
@@ -516,7 +438,7 @@ button {
   position: relative;
   display: grid;
   min-width: 0;
-  height: 40px;
+  height: 44px;
   align-items: stretch;
   overflow: visible;
   border: 1px solid var(--things-creation-border);
@@ -536,8 +458,8 @@ button {
 .things-add-group__controls > button,
 .things-add-item__controls > button {
   position: absolute;
-  inset-block: -1px;
-  inset-inline-end: -1px;
+  inset-block: 1px;
+  inset-inline-end: 1px;
   width: 40px;
   height: 40px;
   min-width: 40px;
@@ -546,8 +468,6 @@ button {
   max-height: 40px;
   padding: 0;
   border-radius: 999px;
-  color: var(--things-accent-ink);
-  background: transparent;
 }
 
 .things-add-action-disc {
@@ -556,7 +476,6 @@ button {
   height: 32px;
   place-items: center;
   border-radius: 999px;
-  background: var(--things-accent);
 }
 
 .things-add-item__error {
@@ -570,15 +489,15 @@ button {
 
 .things-add-group__controls > .things-add-group__field {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
 }
 
 .things-add-item__controls > .things-combobox,
 .things-add-item__controls > .things-add-item__quantity {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
   align-self: stretch;
 }
 
@@ -587,8 +506,8 @@ button {
   display: flex;
   width: 100%;
   min-width: 0;
-  height: 38px;
-  min-height: 38px;
+  height: 42px;
+  min-height: 42px;
   align-items: stretch;
   border: 0;
   border-radius: 0;
@@ -639,7 +558,7 @@ button {
 .things-add-item input {
   width: 100%;
   min-width: 0;
-  min-height: 46px;
+  min-height: 44px;
   padding: 0 13px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: var(--things-input-radius);
@@ -824,10 +743,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (prefers-color-scheme: dark) {
-  .things-group-surface {
-    background: color-mix(in srgb, var(--surface) 70%, transparent);
-  }
-
   body .drawer__dialog.things-group-drawer,
   .things-item-modal,
   body .alert-dialog__dialog.things-confirm-dialog {
@@ -849,19 +764,22 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-drawer > .things-drawer-header {
-  position: absolute;
   z-index: 4;
-  inset: 0 0 auto;
   min-height: var(--things-drawer-header-height);
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: transparent;
   -webkit-backdrop-filter: blur(32px);
   backdrop-filter: blur(32px);
 }
 
+.things-group-drawer > .drawer__handle {
+  flex-shrink: 0;
+  padding: 12px 0 0;
+}
+
 .things-drawer-title {
   min-width: 0;
-  overflow: hidden;
+  height: auto;
   margin: 0;
   padding: 9px 4px;
   border: 0;
@@ -871,8 +789,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   font-weight: 660;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-drawer-header > h1,
@@ -880,14 +798,13 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-drawer-header .modal__heading,
 .things-drawer-header .drawer__heading {
   min-width: 0;
-  overflow: hidden;
   margin: 0;
   font-size: 1.05rem;
   font-weight: 660;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .things-header-spacer {
@@ -912,7 +829,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-drawer-title-wrap input {
   width: 100%;
   min-width: 0;
-  height: 38px;
+  height: 44px;
   padding: 0 30px 0 10px;
   border: 1px solid color-mix(in oklab, var(--border) 66%, transparent);
   border-radius: var(--things-input-radius);
@@ -950,8 +867,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: var(--things-drawer-header-height) 12px max(10px, env(safe-area-inset-bottom));
-  scroll-padding-top: var(--things-drawer-header-height);
+  padding: 0 16px max(16px, env(safe-area-inset-bottom));
+  scroll-padding-top: 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--things-glass-separator) transparent;
 }
@@ -959,11 +876,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
 .things-group-drawer__content,
 .things-drawer-placeholder {
   min-height: 210px;
-}
-
-.things-active-list > div + div,
-.things-done-list > .things-item-row + .things-item-row {
-  border-top: 1px solid var(--things-glass-separator);
 }
 
 .things-item-form__actions {
@@ -977,12 +889,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-item-form__actions > button {
   width: 100%;
-  height: 40px;
-  min-height: 40px;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--foreground) 8%, transparent);
-  font-size: 0.875rem;
-  font-weight: 550;
+  height: auto;
+  min-height: 44px;
 }
 
 .things-delete-item {
@@ -996,7 +904,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   height: 44px;
   min-height: 44px;
   border-radius: 999px;
-  background: transparent;
 }
 
 .things-close-button.button {
@@ -1030,8 +937,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-group-switcher {
   overflow-x: auto;
-  margin: 0 -12px 28px;
-  padding: 2px 12px 0;
+  margin: 0 -16px 16px;
+  padding: 2px 16px 0;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -1047,7 +954,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-group-toggle {
-  min-height: 36px;
+  min-height: 44px;
   padding-inline: 14px;
   font-size: 0.82rem;
   white-space: nowrap;
@@ -1064,40 +971,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
   margin: 2px 0 10px;
 }
 
-.things-item-section__label {
-  margin: 0;
-  padding: 0 8px 6px;
-  color: var(--things-page-muted);
-  font-size: 0.72rem;
-  font-weight: 680;
-  letter-spacing: 0.02em;
-}
-
-.things-item-group {
-  overflow: hidden;
-  border: 0;
-  border-radius: calc(var(--things-creation-control-radius) + var(--things-creation-inset));
-  background: var(--things-item-group-background);
-  box-shadow: var(--surface-shadow);
-}
-
-.things-item-row {
-  position: relative;
-  display: grid;
-  min-height: 46px;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  align-items: stretch;
-  background: transparent;
-}
-
 .things-item-row[data-completed="true"] {
   grid-template-columns: 44px minmax(0, 1fr);
-}
-
-.things-item-row__main {
-  display: flex;
-  align-items: center;
-  padding-inline: 2px 6px;
 }
 
 .things-item-checkbox {
@@ -1109,18 +984,10 @@ body .alert-dialog__dialog.things-confirm-dialog {
   padding: 0;
 }
 
-.things-item-checkbox .checkbox__control {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-}
-
-.things-item-checkbox.checkbox:not([aria-checked="true"]):not([data-selected="true"]):not(
-    [data-indeterminate="true"]
-  )
-  .checkbox__control {
-  border: 1.5px solid var(--things-checkbox-unchecked-border);
-  background: var(--things-checkbox-unchecked-fill);
+.things-item-checkbox .checkbox__content {
+  width: 44px;
+  min-height: 44px;
+  justify-content: center;
 }
 
 .things-item-quantity {
@@ -1138,8 +1005,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 /* Done disclosure */
 
 .things-done-section {
-  margin-top: 28px;
-  border-top: 0;
+  margin-top: 16px;
 }
 
 .things-done-section__header {
@@ -1156,25 +1022,15 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-done-trigger {
-  display: inline-flex;
   min-width: 0;
   min-height: 44px;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  padding: 0 4px;
-  border: 0;
-  color: var(--things-page-muted);
-  background: transparent;
-  font-size: 0.84rem;
-  font-weight: 680;
   text-align: left;
-  cursor: pointer;
 }
 
 .things-done-section__header .things-done-trigger {
   width: 100%;
-  padding-right: 4px;
 }
 
 .things-done-trigger .disclosure__indicator {
@@ -1187,22 +1043,8 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-clear-all {
-  min-height: 30px;
-  padding: 0 10px;
-  border: 0;
-  color: var(--things-danger);
-  background: transparent;
-  font-size: 0.8rem;
-  font-weight: 630;
-  cursor: pointer;
-}
-
-.things-clear-all.button {
-  height: 30px;
-  min-height: 30px;
-  border-radius: 999px;
-  color: var(--things-danger);
-  font-size: 0.75rem;
+  min-height: 44px;
+  height: auto;
 }
 
 /* Item form and actions */
@@ -1217,7 +1059,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 .things-item-form__field,
-.things-item-form > .text-field,
+.things-item-form > .textfield,
 .things-item-form > [data-slot="base"] {
   display: grid;
   min-width: 0;
@@ -1315,9 +1157,9 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 .things-toast-region .toast__action.things-toast-action {
   width: auto;
-  height: 32px;
-  min-width: 0;
-  min-height: 32px;
+  height: auto;
+  min-width: 44px;
+  min-height: 44px;
   justify-self: end;
   padding-inline: 12px;
   margin: 0;
@@ -1400,6 +1242,17 @@ body .alert-dialog__dialog.things-confirm-dialog {
   margin-inline: auto;
 }
 
+@media (prefers-reduced-transparency: reduce) {
+  body .drawer__dialog.things-group-drawer,
+  .things-item-modal,
+  body .alert-dialog__dialog.things-confirm-dialog,
+  .things-frosted.popover {
+    background: var(--overlay);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
 @keyframes things-spin {
   to {
     transform: rotate(1turn);
@@ -1413,8 +1266,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
   outline-offset: 2px;
 }
 
-.things-group-main:focus-visible {
-  border-radius: 10px;
+.things-row-main:focus-visible {
   outline-offset: -3px;
 }
 
@@ -1429,12 +1281,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .things-group-main:hover,
-  .things-close-button:hover,
-  .things-drag-handle:hover {
-    background: color-mix(in oklab, var(--things-page-ink) 4%, transparent);
-  }
-
   .things-group-toggle:hover:not([data-selected="true"]) {
     color: var(--things-page-ink);
     border-color: color-mix(in oklab, var(--things-accent) 26%, var(--things-glass-border-subtle));
@@ -1466,10 +1312,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
   .things-add-item__controls {
     grid-template-columns: minmax(0, 1fr) 104px;
   }
-
-  .things-group-row {
-    grid-template-columns: 36px minmax(0, 1fr) 44px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1485,7 +1327,7 @@ body .alert-dialog__dialog.things-confirm-dialog {
 
 @media (forced-colors: active) {
   .things-frosted,
-  .things-group-surface,
+  .things-list-card,
   .things-add-group__controls,
   .things-add-item__controls {
     border: 1px solid CanvasText;
@@ -1497,7 +1339,6 @@ body .alert-dialog__dialog.things-confirm-dialog {
 /* Solid, readable materials when backdrop-filter is not available. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .things-frosted,
-  .things-group-surface,
   .things-add-group__controls,
   .things-add-item__controls,
   body .drawer__dialog,

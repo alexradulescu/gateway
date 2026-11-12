@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { ComboBox, Input, ListBox } from "@heroui/react";
+import { ComboBox, Input, Label, ListBox } from "@heroui/react";
 import { rankCatalogueMatches } from "../../../../convex/thingsDomain";
 import { useThingsData } from "../context/ThingsDataContext";
 
@@ -14,6 +14,7 @@ type CatalogueComboBoxProps = {
   isDisabled?: boolean;
   isInvalid?: boolean;
   errorId?: string;
+  labelClassName?: string;
 };
 
 export function CatalogueComboBox({
@@ -25,6 +26,7 @@ export function CatalogueComboBox({
   isDisabled = false,
   isInvalid = false,
   errorId,
+  labelClassName,
 }: CatalogueComboBoxProps) {
   const { catalogue } = useThingsData();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -42,12 +44,12 @@ export function CatalogueComboBox({
     <ComboBox
       allowsCustomValue
       allowsEmptyCollection
-      aria-label={label}
       className="things-combobox"
       defaultFilter={keepPreRankedMatch}
       fullWidth
       inputValue={value}
       isDisabled={isDisabled}
+      isInvalid={isInvalid}
       menuTrigger="input"
       selectedKey={selectedKey}
       onInputChange={onChange}
@@ -59,10 +61,10 @@ export function CatalogueComboBox({
         }
       }}
     >
+      <Label className={labelClassName}>{label}</Label>
       <ComboBox.InputGroup className="things-combobox__control">
         <Input
           ref={inputRef}
-          aria-label={label}
           aria-describedby={errorId}
           aria-invalid={isInvalid || undefined}
           autoComplete="off"
