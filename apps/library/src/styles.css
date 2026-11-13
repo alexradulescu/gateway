@@ -310,7 +310,8 @@ textarea:focus-visible {
 .quill,
 .hex-label,
 .house-chip,
-.seg {
+.seg,
+.capsule {
   --hx: var(--hex);
   --hex-line: var(--line);
   --hex-ring: var(--line-soft);
@@ -329,6 +330,7 @@ textarea:focus-visible {
 .hex-label,
 .house-chip,
 .seg,
+.capsule,
 .btn-primary::after,
 .hex-label::after,
 .quill::after,
@@ -351,7 +353,8 @@ textarea:focus-visible {
 .quill::before,
 .hex-label::before,
 .house-chip::before,
-.seg::before {
+.seg::before,
+.capsule::before {
   content: "";
   position: absolute;
   inset: 1px;
@@ -386,10 +389,14 @@ textarea:focus-visible {
 .hex-label::after {
   content: "";
   position: absolute;
-  inset: -4px;
+  /* The ring is the same hexagon offset by --ring-gap on every side: flat edges move out by
+     the gap, the 45° diagonals move out by the gap along their normal, which pushes the
+     pointed ends out by gap × √2. Same geometry as the button, so the gap reads even. */
+  --ring-gap: 4px;
+  inset: calc(-1 * var(--ring-gap)) calc(-1.4142 * var(--ring-gap));
   z-index: -1;
   pointer-events: none;
-  --hx: calc(var(--hex) + 4px);
+  --hx: calc(var(--hex) + var(--ring-gap));
   --hex-line: var(--hex-ring);
 }
 
@@ -440,64 +447,114 @@ textarea:focus-visible {
   color: var(--amber-bright);
 }
 
-/* ───── Top bar ───── */
+/* ───── Top bar ─────
+   No bar of its own: a transparent strip holding floating hexagon capsules. The strip lets taps
+   through; only the capsules take them. */
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 10;
   display: grid;
-  /* sides never shrink below their content; the title gives way and ellipsizes */
-  grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr);
+  /* sides keep their content width; the title takes what is left and ellipsizes */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: calc(var(--safe-top) + 54px);
+  gap: 12px;
+  min-height: calc(var(--safe-top) + 50px);
+  pointer-events: none;
   /* full-bleed: break out of the .app column, then pad back to it */
   margin: calc(-1 * var(--safe-top) - 8px) calc(50% - 50vw) 0;
-  padding: calc(var(--safe-top) + 4px)
-    max(16px, env(safe-area-inset-right, 0px), calc(50vw - 474px)) 4px
-    max(16px, env(safe-area-inset-left, 0px), calc(50vw - 474px));
+  padding: calc(var(--safe-top) + 6px)
+    max(12px, env(safe-area-inset-right, 0px), calc(50vw - 474px)) 6px
+    max(12px, env(safe-area-inset-left, 0px), calc(50vw - 474px));
 }
 
-.topbar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--bar-material);
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(3px) saturate(120%);
-  border-bottom: 1px solid var(--bar-hairline);
-  opacity: 0;
-  transition: opacity 0.25s ease;
+/* Small, light controls: 38px tall (owner accepts below 44px here); point depth follows. */
+.capsule {
+  --hex: 19px;
+  --hex-line: rgba(212, 162, 76, 0.26);
+  --hex-fill: rgba(12, 38, 28, 0.22);
+  gap: 0;
+  padding: 0 7px;
+  pointer-events: auto;
+  max-width: 100%;
 }
 
-.topbar.scrolled::before {
-  opacity: 1;
+.topbar-title {
+  max-width: 100%;
+  padding: 0 14px;
 }
 
-/* over bright parchment the bar needs more body to keep its labels legible */
-.paper-parchment .topbar::before {
-  background: rgba(8, 30, 21, 0.84);
+.topbar-title > span {
+  min-width: 0;
+}
+
+.capsule::before {
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+.paper-parchment .capsule {
+  --hex-fill: rgba(12, 38, 28, 0.5);
+}
+
+.capsule .back,
+.capsule .link,
+.capsule .icon-btn {
+  min-height: 38px;
+  padding: 0 4px;
+}
+
+.capsule .icon-btn {
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.capsule .icon-btn.aa {
+  font-size: 18px;
+}
+
+.capsule .quill {
+  --hex: 15px;
+  padding: 0 16px;
+}
+
+.icon {
+  display: block;
+  flex: none;
 }
 
 .topbar-start {
   grid-column: 1;
   display: flex;
   justify-content: flex-start;
+  min-width: 0;
+}
+
+.topbar-title-slot {
+  grid-column: 2;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .topbar-title {
-  grid-column: 2;
+  min-width: 0;
   font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
+  animation: fade-in 0.25s ease;
+}
+
+.topbar-title > span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(50vw, 420px);
+  max-width: 420px;
 }
 
 .topbar-actions {
@@ -505,14 +562,13 @@ textarea:focus-visible {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
 }
 
 .back,
 .link {
   white-space: nowrap;
   min-height: 44px;
-  padding: 0 4px;
+  padding: 0 6px;
   color: var(--amber);
   font-family: var(--display);
   font-size: 13px;
@@ -961,8 +1017,10 @@ textarea:focus-visible {
   font-size: 20px;
 }
 
-.current .chapter-title::after {
-  content: "  ·  reading";
+.reading-mark {
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: 0.5em;
   font-size: 15px;
   font-style: italic;
   color: var(--amber);
@@ -1095,8 +1153,9 @@ textarea:focus-visible {
 .prose {
   font-family: var(--book);
   font-size: var(--reader-size, 19px);
-  line-height: 1.7;
-  text-wrap: pretty;
+  line-height: var(--reader-leading, 1.55);
+  /* plain greedy wrapping: Safari's whole-paragraph "pretty" leaves a ragged band on the right */
+  text-wrap: wrap;
   hyphens: manual;
   -webkit-hyphens: manual;
 }
@@ -1149,8 +1208,8 @@ textarea:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 18px 0 8px;
+  gap: 4px;
+  padding: 14px 0 0;
   text-align: center;
   break-inside: avoid;
 }
@@ -1317,6 +1376,7 @@ textarea:focus-visible {
   height: 100%;
 }
 
+/* Spread only: the text ended on a left page, so the closing takes the right page. */
 .mode-pages .chapter-end[data-place="right"] {
   break-before: column;
 }
@@ -1327,7 +1387,7 @@ textarea:focus-visible {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  margin-top: 6px;
+  margin-top: -4px;
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -1340,7 +1400,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 6px;
   min-height: 44px;
-  padding: 0 10px;
+  padding: 0 6px;
   color: var(--quiet-link);
 }
 
@@ -1366,7 +1426,7 @@ textarea:focus-visible {
 .end-pos::before,
 .end-pos::after {
   content: "·";
-  padding: 0 8px;
+  padding: 0 5px;
 }
 
 .mode-scroll .page {
@@ -1389,15 +1449,14 @@ textarea:focus-visible {
   position: fixed;
   inset: 0;
   z-index: 50;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 8px 8px calc(var(--safe-bottom) + 8px);
 }
 
+/* Backdrop and panel are pinned to the viewport edges themselves (fixed, bottom 0) rather than
+   laid out inside a viewport-sized box, so a toolbar resize or a layout change underneath
+   never moves the panel. */
 .sheet-backdrop {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  inset: -100px 0;
   background: rgba(2, 8, 5, 0.55);
   animation: fade-in 0.2s ease;
 }
@@ -1405,11 +1464,20 @@ textarea:focus-visible {
 .sheet {
   --frame-fill: linear-gradient(180deg, rgba(16, 42, 32, 0.9), rgba(7, 19, 14, 0.94));
   --frame-backdrop: blur(18px) saturate(140%);
-  width: min(100%, 440px);
-  padding: 18px 20px 22px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-bottom) + 8px);
+  width: min(calc(100% - 16px), 440px);
+  margin: 0 auto;
+  max-height: calc(100% - var(--safe-top) - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* one inset on every side, measured from the inner frame line */
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   animation: sheet-up 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
@@ -1417,16 +1485,16 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 6px;
+  min-height: 46px;
 }
 
 .sheet-head h2 {
   margin: 0;
   font-family: var(--display);
   font-weight: 400;
-  font-size: 13px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
   color: var(--amber);
 }
 
@@ -1435,11 +1503,10 @@ textarea:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  min-height: 46px;
 }
 
 .sheet-label {
-  padding-left: 6px;
   font-size: 18px;
   color: var(--ink-soft);
 }
@@ -1483,11 +1550,25 @@ textarea:focus-visible {
   text-underline-offset: 6px;
 }
 
+/* Cinzel figures are lining capitals, so the value sits on the same line as A− / A+ */
 .seg-value {
-  min-width: 28px;
+  min-width: 30px;
   text-align: center;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
+  font-family: var(--display);
   font-size: 15px;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.seg button .icon {
+  margin: 0 auto;
+}
+
+/* Icon segments: same selected underline, drawn as a line since SVG takes no text-decoration */
+.seg button.active:has(> .icon) {
+  background: linear-gradient(var(--line), var(--line)) center calc(50% + 16px) / 20px 1px
+    no-repeat;
 }
 
 /* ───── Editors ───── */
@@ -2026,24 +2107,21 @@ textarea:focus-visible {
     width: 220px;
   }
 
-  .sheet-root {
-    align-items: center;
-    padding: 24px;
-  }
-
   .sheet {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
     animation-name: fade-in;
   }
 }
 
 @media (max-width: 599px) {
-  .topbar-title.wide-only {
-    visibility: hidden;
+  .topbar-title {
+    font-size: 11px;
   }
 
   .topbar-title {
-    font-size: 11px;
-    max-width: 46vw;
+    letter-spacing: 0.1em;
   }
 }
 
@@ -2122,7 +2200,6 @@ textarea:focus-visible {
   .tome,
   .btn,
   .progress,
-  .topbar::before,
   .page-columns.animate {
     transition: none;
   }
