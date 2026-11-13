@@ -444,8 +444,8 @@ function TopBar({
       <div className="topbar-start">
         {onBack && (
           <div className="capsule">
-            <button className="back" onClick={onBack}>
-              <span aria-hidden="true">‹</span> {backLabel ?? "Back"}
+            <button className="back icon-btn" onClick={onBack} aria-label={backLabel ?? "Back"}>
+              <Icon name="back" />
             </button>
           </div>
         )}
@@ -459,6 +459,34 @@ function TopBar({
       </div>
       <div className="topbar-actions">{actions && <div className="capsule">{actions}</div>}</div>
     </header>
+  );
+}
+
+const ICON_PATHS = {
+  back: "M14.5 5 7.5 12l7 7",
+  close: "M6.5 6.5l11 11M17.5 6.5l-11 11",
+  "leading-compact": "M5 9h14M5 12h14M5 15h14",
+  "leading-normal": "M5 7.5h14M5 12h14M5 16.5h14",
+  "leading-relaxed": "M5 5.5h14M5 12h14M5 18.5h14",
+} as const;
+
+/** Line icons drawn in currentColor so they pick up the text glow and active colour. */
+function Icon({ name }: { name: keyof typeof ICON_PATHS }) {
+  return (
+    <svg
+      className="icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={ICON_PATHS[name]} />
+    </svg>
   );
 }
 
@@ -527,9 +555,11 @@ function Sheet({
       >
         <div className="sheet-head">
           <h2 id="sheet-title">{title}</h2>
-          <button className="link" onClick={onClose}>
-            Done
-          </button>
+          <div className="capsule">
+            <button className="icon-btn" onClick={onClose} aria-label="Close">
+              <Icon name="close" />
+            </button>
+          </div>
         </div>
         {children}
       </div>
@@ -546,7 +576,7 @@ function Choice<T extends string>({
 }: {
   label: string;
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: ReactNode; ariaLabel?: string }[];
   onChange: (value: T) => void;
 }) {
   return (
@@ -558,6 +588,7 @@ function Choice<T extends string>({
             key={option.value}
             className={value === option.value ? "active" : ""}
             aria-pressed={value === option.value}
+            aria-label={option.ariaLabel}
             onClick={() => onChange(option.value)}
           >
             {option.label}
@@ -718,7 +749,7 @@ function BookPage({
     <main className="book">
       <TopBar
         onBack={() => up({ view: "shelves" })}
-        backLabel="Library"
+        backLabel="Back to library"
         actions={
           scribe && (
             <button className="link" onClick={() => go({ view: "editBook", bookId })}>
@@ -975,7 +1006,7 @@ function Reader({
       </div>
       <TopBar
         onBack={() => up({ view: "book", bookId })}
-        backLabel="Contents"
+        backLabel="Back to contents"
         // Pages mode has its own running header; scroll mode shows the title once the
         // chapter heading has scrolled away.
         title={mode === "scroll" && showChapterTitle ? chapter.title : undefined}
@@ -1074,9 +1105,9 @@ function Reader({
             value={leading}
             onChange={setLeading}
             options={[
-              { value: "compact", label: "Compact" },
-              { value: "normal", label: "Normal" },
-              { value: "relaxed", label: "Relaxed" },
+              { value: "compact", label: <Icon name="leading-compact" />, ariaLabel: "Compact" },
+              { value: "normal", label: <Icon name="leading-normal" />, ariaLabel: "Normal" },
+              { value: "relaxed", label: <Icon name="leading-relaxed" />, ariaLabel: "Relaxed" },
             ]}
           />
           <Choice

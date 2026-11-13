@@ -459,8 +459,8 @@ textarea:focus-visible {
   /* sides keep their content width; the title takes what is left and ellipsizes */
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: calc(var(--safe-top) + 56px);
+  gap: 12px;
+  min-height: calc(var(--safe-top) + 50px);
   pointer-events: none;
   /* full-bleed: break out of the .app column, then pad back to it */
   margin: calc(-1 * var(--safe-top) - 8px) calc(50% - 50vw) 0;
@@ -469,18 +469,20 @@ textarea:focus-visible {
     max(12px, env(safe-area-inset-left, 0px), calc(50vw - 474px));
 }
 
+/* Small, light controls: 38px tall (owner accepts below 44px here); point depth follows. */
 .capsule {
-  --hex: 22px;
-  --hex-line: rgba(212, 162, 76, 0.3);
-  --hex-fill: rgba(9, 32, 23, 0.5);
-  gap: 2px;
-  padding: 0 calc(var(--hex) - 8px);
+  --hex: 19px;
+  --hex-line: rgba(212, 162, 76, 0.26);
+  --hex-fill: rgba(12, 38, 28, 0.22);
+  gap: 0;
+  padding: 0 7px;
   pointer-events: auto;
   max-width: 100%;
 }
 
 .topbar-title {
   max-width: 100%;
+  padding: 0 14px;
 }
 
 .topbar-title > span {
@@ -488,12 +490,40 @@ textarea:focus-visible {
 }
 
 .capsule::before {
-  backdrop-filter: blur(8px) saturate(130%);
-  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
 }
 
 .paper-parchment .capsule {
-  --hex-fill: rgba(9, 32, 23, 0.72);
+  --hex-fill: rgba(12, 38, 28, 0.5);
+}
+
+.capsule .back,
+.capsule .link,
+.capsule .icon-btn {
+  min-height: 38px;
+  padding: 0 4px;
+}
+
+.capsule .icon-btn {
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.capsule .icon-btn.aa {
+  font-size: 18px;
+}
+
+.capsule .quill {
+  --hex: 15px;
+  padding: 0 16px;
+}
+
+.icon {
+  display: block;
+  flex: none;
 }
 
 .topbar-start {
@@ -524,8 +554,7 @@ textarea:focus-visible {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: min(50vw, 420px);
-  padding: 0 4px;
+  max-width: 420px;
 }
 
 .topbar-actions {
@@ -1444,10 +1473,11 @@ textarea:focus-visible {
   max-height: calc(100% - var(--safe-top) - 24px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 18px 20px 22px;
+  /* one inset on every side, measured from the inner frame line */
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   animation: sheet-up 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
@@ -1455,16 +1485,16 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 6px;
+  min-height: 46px;
 }
 
 .sheet-head h2 {
   margin: 0;
   font-family: var(--display);
   font-weight: 400;
-  font-size: 13px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
   color: var(--amber);
 }
 
@@ -1473,11 +1503,10 @@ textarea:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
+  min-height: 46px;
 }
 
 .sheet-label {
-  padding-left: 6px;
   font-size: 18px;
   color: var(--ink-soft);
 }
@@ -1521,11 +1550,25 @@ textarea:focus-visible {
   text-underline-offset: 6px;
 }
 
+/* Cinzel figures are lining capitals, so the value sits on the same line as A− / A+ */
 .seg-value {
-  min-width: 28px;
+  min-width: 30px;
   text-align: center;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
+  font-family: var(--display);
   font-size: 15px;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.seg button .icon {
+  margin: 0 auto;
+}
+
+/* Icon segments: same selected underline, drawn as a line since SVG takes no text-decoration */
+.seg button.active:has(> .icon) {
+  background: linear-gradient(var(--line), var(--line)) center calc(50% + 16px) / 20px 1px
+    no-repeat;
 }
 
 /* ───── Editors ───── */
@@ -2077,8 +2120,8 @@ textarea:focus-visible {
     font-size: 11px;
   }
 
-  .topbar-title > span {
-    max-width: 40vw;
+  .topbar-title {
+    letter-spacing: 0.1em;
   }
 }
 
