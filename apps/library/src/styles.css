@@ -46,6 +46,8 @@
 html,
 body {
   margin: 0;
+  /* the full-bleed top bar spans 100vw, which includes a classic scrollbar */
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--serif);
@@ -400,13 +402,6 @@ textarea:focus-visible {
   text-transform: uppercase;
   color: var(--amber-bright);
   white-space: nowrap;
-  transition:
-    transform 0.15s ease,
-    filter 0.25s ease;
-}
-
-.btn:hover {
-  filter: brightness(1.12);
 }
 
 .btn:active {
@@ -459,7 +454,9 @@ textarea:focus-visible {
   min-height: calc(var(--safe-top) + 54px);
   /* full-bleed: break out of the .app column, then pad back to it */
   margin: calc(-1 * var(--safe-top) - 8px) calc(50% - 50vw) 0;
-  padding: calc(var(--safe-top) + 4px) max(16px, calc(50vw - 474px)) 4px;
+  padding: calc(var(--safe-top) + 4px)
+    max(16px, env(safe-area-inset-right, 0px), calc(50vw - 474px)) 4px
+    max(16px, env(safe-area-inset-left, 0px), calc(50vw - 474px));
 }
 
 .topbar::before {
@@ -692,10 +689,6 @@ textarea:focus-visible {
   align-items: center;
   gap: 12px;
   text-align: center;
-}
-
-.tome {
-  position: relative;
 }
 
 .tome:focus-visible {
@@ -1042,6 +1035,9 @@ textarea:focus-visible {
 
 .paper-parchment .page,
 .preview-page {
+  /* quiet ink: small links ≥ 4.5:1, folio and running header ≥ 3:1 on the paper */
+  --quiet-link: #6a4c22;
+  --quiet-ink: #7d6236;
   --frame-fill: var(--parchment);
   --frame-line: rgba(143, 99, 34, 0.62);
   --frame-line-inner: rgba(143, 99, 34, 0.42);
@@ -1049,6 +1045,8 @@ textarea:focus-visible {
 }
 
 .paper-night .page {
+  --quiet-link: #b5aa8e;
+  --quiet-ink: #8f8770;
   --frame-fill: var(--panel);
   --frame-backdrop: blur(14px);
   color: #e6dec9;
@@ -1157,21 +1155,6 @@ textarea:focus-visible {
   break-inside: avoid;
 }
 
-.end-label {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 12px;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
-
-.chapter-end .btn {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .fin {
   margin: 0;
   font-style: italic;
@@ -1201,7 +1184,8 @@ textarea:focus-visible {
   min-height: 0;
   display: flex;
   justify-content: center;
-  padding: 2px 16px 0;
+  padding: 2px max(16px, env(safe-area-inset-right, 0px)) calc(var(--safe-bottom) + 8px)
+    max(16px, env(safe-area-inset-left, 0px));
 }
 
 .mode-pages .page {
@@ -1257,7 +1241,7 @@ textarea:focus-visible {
   pointer-events: none;
   text-align: center;
   font-variant-numeric: oldstyle-nums;
-  opacity: 0.55;
+  color: var(--quiet-ink);
 }
 
 .running {
@@ -1279,10 +1263,6 @@ textarea:focus-visible {
   font-family: var(--book);
   font-size: 13px;
   letter-spacing: 0.04em;
-}
-
-.folio-of {
-  opacity: 0.7;
 }
 
 .visually-hidden {
@@ -1361,7 +1341,7 @@ textarea:focus-visible {
   gap: 6px;
   min-height: 44px;
   padding: 0 10px;
-  opacity: 0.62;
+  color: var(--quiet-link);
 }
 
 .end-step .arrow {
@@ -1372,13 +1352,14 @@ textarea:focus-visible {
 }
 
 .end-step[aria-disabled="true"] {
-  opacity: 0.25;
+  color: var(--quiet-ink);
+  opacity: 0.5;
   cursor: default;
 }
 
 .end-pos {
   padding: 0 4px;
-  opacity: 0.45;
+  color: var(--quiet-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1847,7 +1828,7 @@ textarea:focus-visible {
 .seg button,
 .chapter-row,
 .tome {
-  --_g: calc(var(--glow) + var(--glow-peak));
+  --_glow: calc(var(--glow) + var(--glow-peak));
   transition:
     --glow var(--glow-out) var(--glow-ease),
     transform 0.15s ease;
@@ -1864,18 +1845,18 @@ textarea:focus-visible {
 .seg button,
 .chapter-num,
 .cover-title {
-  text-shadow: 0 0 calc(var(--_g, 0) * 11px) rgba(var(--glow-color), calc(var(--_g, 0) * 0.75));
+  text-shadow: 0 0 calc(var(--_glow, 0) * 11px) rgba(var(--glow-color), calc(var(--_glow, 0) * 0.75));
 }
 
 .chapter-num,
 .cover-title {
-  --_g: calc(var(--glow) + var(--glow-peak));
+  --_glow: calc(var(--glow) + var(--glow-peak));
 }
 
 .cover-title {
   text-shadow:
     0 1px 0 rgba(0, 0, 0, 0.5),
-    0 0 calc(var(--_g) * 12px) color-mix(in srgb, var(--trim) calc(var(--_g) * 45%), transparent);
+    0 0 calc(var(--_glow) * 12px) color-mix(in srgb, var(--trim) calc(var(--_glow) * 45%), transparent);
 }
 
 /* Border glow: hex outlines (pills, segmented controls, plain and gold buttons). */
@@ -1888,17 +1869,17 @@ textarea:focus-visible {
   z-index: -1;
   pointer-events: none;
   --hex-line: var(--amber-bright);
-  opacity: min(1, calc(var(--_g) * 1.4));
-  filter: drop-shadow(0 0 calc(var(--_g) * 5px) rgba(var(--glow-color), calc(var(--_g) * 0.8)));
+  opacity: min(1, calc(var(--_glow) * 1.4));
+  filter: drop-shadow(0 0 calc(var(--_glow) * 5px) rgba(var(--glow-color), calc(var(--_glow) * 0.8)));
 }
 
 .btn:not(.btn-primary) {
-  filter: drop-shadow(0 0 calc(var(--_g) * 6px) rgba(var(--glow-color), calc(var(--_g) * 0.35)));
+  filter: drop-shadow(0 0 calc(var(--_glow) * 6px) rgba(var(--glow-color), calc(var(--_glow) * 0.35)));
 }
 
 .btn-primary::after {
-  --hex-line: color-mix(in srgb, var(--amber-bright) calc(var(--_g) * 100%), var(--hex-ring));
-  filter: drop-shadow(0 0 calc(var(--_g) * 6px) rgba(var(--glow-color), calc(var(--_g) * 0.7)));
+  --hex-line: color-mix(in srgb, var(--amber-bright) calc(var(--_glow) * 100%), var(--hex-ring));
+  filter: drop-shadow(0 0 calc(var(--_glow) * 6px) rgba(var(--glow-color), calc(var(--_glow) * 0.7)));
 }
 
 .seg button.active {
@@ -1947,10 +1928,6 @@ textarea:focus-visible {
     transform: translateX(-2px);
   }
 
-  .end-step:is(a):hover {
-    opacity: 0.9;
-  }
-
   .end-step:is(a):hover .arrow {
     transform: translateX(-2px);
   }
@@ -1966,6 +1943,7 @@ textarea:focus-visible {
 
 /* Covers: slow, eased lift and a soft sheen. */
 .tome {
+  position: relative;
   transition:
     transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
     --glow var(--glow-out) var(--glow-ease);
@@ -2079,7 +2057,7 @@ textarea:focus-visible {
   }
 
   .stage {
-    padding-inline: 7px;
+    padding-inline: max(7px, env(safe-area-inset-left, 0px)) max(7px, env(safe-area-inset-right, 0px));
   }
 
   .mode-pages .page {

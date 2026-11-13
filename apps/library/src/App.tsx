@@ -74,16 +74,28 @@ function useRouter() {
   }, []);
   const go = useCallback((next: Route, replace = false) => {
     const url = routeToUrl(next);
-    if (replace) window.history.replaceState({ scroll: 0 }, "", url);
+    const here = window.location.pathname + window.location.search;
+    const state = window.history.state as { from?: string } | null;
+    if (replace) window.history.replaceState({ scroll: 0, from: state?.from }, "", url);
     else {
       // Remember where we were so Back lands on the same spot.
-      window.history.replaceState({ scroll: window.scrollY }, "");
-      window.history.pushState({ scroll: 0 }, "", url);
+      window.history.replaceState({ ...state, scroll: window.scrollY }, "");
+      window.history.pushState({ scroll: 0, from: here }, "", url);
     }
     setRoute(next);
     window.scrollTo({ top: 0 });
   }, []);
-  return { route, go };
+  /** Up to a parent view: pop history when the previous entry is that parent, so swipe-back
+   * never cycles; otherwise (deep link) replace the current entry with the parent. */
+  const up = useCallback(
+    (parent: Route) => {
+      const state = window.history.state as { from?: string } | null;
+      if (state?.from === routeToUrl(parent)) window.history.back();
+      else go(parent, true);
+    },
+    [go],
+  );
+  return { route, go, up };
 }
 
 function useStored<T>(key: string, initial: T) {
@@ -169,7 +181,7 @@ const isBookend = (title: string) => /^(prologue|epilogue)\b/i.test(title.trim()
 /* ───────────────────────── App ───────────────────────── */
 
 export function App() {
-  const { route, go } = useRouter();
+  const { route, go, up } = useRouter();
   const [scribe, setScribe] = useStored("library:scribe", false);
   const [lastRead, setLastRead] = useStored<LastRead>("library:lastRead", {});
   usePressEffects();
@@ -182,13 +194,14 @@ export function App() {
           <Shelves go={go} scribe={scribe} setScribe={setScribe} lastRead={lastRead} />
         )}
         {route.view === "book" && (
-          <BookPage bookId={route.bookId} go={go} scribe={scribe} lastRead={lastRead} />
+          <BookPage bookId={route.bookId} go={go} up={up} scribe={scribe} lastRead={lastRead} />
         )}
         {route.view === "read" && (
           <Reader
             bookId={route.bookId}
             chapterId={route.chapterId}
             go={go}
+            up={up}
             scribe={scribe}
             onRead={(chapterId) =>
               setLastRead((prev) => ({ ...prev, [route.bookId]: { chapterId, at: Date.now() } }))
@@ -213,7 +226,6 @@ function Link({
   replace,
   className,
   children,
-  onNavigate,
   ...rest
 }: {
   to: Route;
@@ -221,7 +233,6 @@ function Link({
   replace?: boolean;
   className?: string;
   children: ReactNode;
-  onNavigate?: () => void;
   "aria-label"?: string;
 }) {
   return (
@@ -239,7 +250,6 @@ function Link({
         )
           return;
         event.preventDefault();
-        onNavigate?.();
         go(to, replace);
       }}
       {...rest}
@@ -273,8 +283,19 @@ function replay(element: HTMLElement, className: string) {
  */
 function usePressEffects() {
   useEffect(() => {
-    const onDown = (event: PointerEvent) => {
-      if (event.button !== 0 || prefersReducedMotion()) return;
+    // Fire on a real tap (lift without moving), so touching a cover to scroll stays quiet.
+    let down: { id: number; x: number; y: number } | null = null;
+    const onStart = (event: PointerEvent) => {
+      down = event.button === 0 ? { id: event.pointerId, x: event.clientX, y: event.clientY } : null;
+    };
+    const onCancel = () => {
+      down = null;
+    };
+    const onTap = (event: PointerEvent) => {
+      const start = down;
+      down = null;
+      if (!start || start.id !== event.pointerId || prefersReducedMotion()) return;
+      if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10) return;
       const target = event.target instanceof Element ? event.target : null;
       const pressable = target?.closest<HTMLElement>(PRESSABLE);
       if (pressable && !pressable.matches(":disabled")) {
@@ -298,8 +319,14 @@ function usePressEffects() {
         }
       }
     };
-    document.addEventListener("pointerdown", onDown, { passive: true });
-    return () => document.removeEventListener("pointerdown", onDown);
+    document.addEventListener("pointerdown", onStart, { passive: true });
+    document.addEventListener("pointerup", onTap, { passive: true });
+    document.addEventListener("pointercancel", onCancel, { passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", onStart);
+      document.removeEventListener("pointerup", onTap);
+      document.removeEventListener("pointercancel", onCancel);
+    };
   }, []);
 }
 
@@ -659,11 +686,13 @@ function Cover({
 function BookPage({
   bookId,
   go,
+  up,
   scribe,
   lastRead,
 }: {
   bookId: BookId;
   go: Go;
+  up: (parent: Route) => void;
   scribe: boolean;
   lastRead: LastRead;
 }) {
@@ -683,7 +712,7 @@ function BookPage({
   return (
     <main className="book">
       <TopBar
-        onBack={() => go({ view: "shelves" })}
+        onBack={() => up({ view: "shelves" })}
         backLabel="Library"
         actions={
           scribe && (
@@ -779,6 +808,12 @@ function BookPage({
 
 function toRoman(value: number) {
   const map: [number, string][] = [
+    [1000, "M"],
+    [900, "CM"],
+    [500, "D"],
+    [400, "CD"],
+    [100, "C"],
+    [90, "XC"],
     [50, "L"],
     [40, "XL"],
     [10, "X"],
@@ -809,15 +844,25 @@ function Reader({
   bookId,
   chapterId,
   go,
+  up,
   scribe,
   onRead,
 }: {
   bookId: BookId;
   chapterId: ChapterId;
   go: Go;
+  up: (parent: Route) => void;
   scribe: boolean;
   onRead: (chapterId: ChapterId) => void;
 }) {
+  // A pending "open at the end" belongs to one chapter; drop it once we're anywhere else.
+  if (openAtEnd !== null && openAtEnd !== chapterId) openAtEnd = null;
+  useEffect(
+    () => () => {
+      openAtEnd = null;
+    },
+    [],
+  );
   const data = useQuery(api.library.getBook, { bookId });
   const chapter = useQuery(api.library.getChapter, { chapterId });
   const [size, setSize] = useStored("library:size", 19);
@@ -826,7 +871,11 @@ function Reader({
   const [mode, setMode] = useStored<Mode>("library:mode", "pages");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
-  const [progress, setProgress] = useState(0);
+  // Progress is written straight to the bar so scrolling never re-renders the reader.
+  const progressRef = useRef<HTMLDivElement>(null);
+  const setProgress = useCallback((value: number) => {
+    progressRef.current?.style.setProperty("transform", `scaleX(${value})`);
+  }, []);
   const [headingVisible, setHeadingVisible] = useState(true);
 
   useEffect(() => {
@@ -837,15 +886,19 @@ function Reader({
   const onPageState = useCallback((state: PageState) => {
     setProgress(Math.min(1, (state.page + state.perView) / state.count));
     setHeadingVisible(state.page === 0);
-  }, []);
+  }, [setProgress]);
+
+  const body = chapter?.body;
+  const prose = useMemo(() => (body === undefined ? null : <Prose body={body} />), [body]);
 
   if (data === undefined || chapter === undefined) return <Loading />;
   if (data === null || chapter === null) return <Missing go={go} />;
 
   const list = data.chapters.filter((item) => scribe || item.published);
   const index = list.findIndex((item) => item._id === chapterId);
-  const prev = list[index - 1];
-  const next = list[index + 1];
+  const listed = index !== -1;
+  const prev = listed ? list[index - 1] : undefined;
+  const next = listed ? list[index + 1] : undefined;
   const toChapter = (id: ChapterId): Route => ({ view: "read", bookId, chapterId: id });
   const number = list.slice(0, index + 1).filter((item) => !isBookend(item.title)).length;
   const bookend = isBookend(chapter.title);
@@ -853,40 +906,47 @@ function Reader({
   const content = (
     <>
       <header className="chapter-head">
-        {!bookend && <p className="chapter-kicker">Chapter {toRoman(number)}</p>}
+        {!bookend && listed && <p className="chapter-kicker">Chapter {toRoman(number)}</p>}
         <h1 className="chapter-heading">{chapter.title}</h1>
         {!chapter.published && <p className="draft-note">Draft — only visible in scribe mode</p>}
         <Ornament />
       </header>
       <div className="prose">
-        <Prose body={chapter.body} />
+        {prose}
       </div>
       <div className="chapter-end">
         <Ornament />
         <p className="fin">Mischief managed — for now.</p>
-        <nav className="end-nav" aria-label="Chapters">
-          {prev ? (
-            <Link go={go} replace className="end-step" to={toChapter(prev._id)}>
-              <span className="arrow" aria-hidden="true">‹</span> Previous
-            </Link>
-          ) : (
-            <span className="end-step" aria-disabled="true">
-              <span className="arrow" aria-hidden="true">‹</span> Previous
+        {listed && (
+          <nav className="end-nav" aria-label="Chapters">
+            {prev ? (
+              <Link go={go} replace className="end-step" to={toChapter(prev._id)}>
+                <span className="arrow" aria-hidden="true">‹</span> Previous
+              </Link>
+            ) : (
+              <a className="end-step" aria-disabled="true" role="link">
+                <span className="arrow" aria-hidden="true">‹</span> Previous
+              </a>
+            )}
+            <span className="end-pos">
+              <span className="visually-hidden">
+                Chapter {index + 1} of {list.length}
+              </span>
+              <span aria-hidden="true">
+                {toRoman(index + 1)} / {toRoman(list.length)}
+              </span>
             </span>
-          )}
-          <span className="end-pos" aria-label={`Chapter ${index + 1} of ${list.length}`}>
-            {toRoman(index + 1)} / {toRoman(list.length)}
-          </span>
-          {next ? (
-            <Link go={go} replace className="end-step end-next" to={toChapter(next._id)}>
-              Next <span className="arrow" aria-hidden="true">›</span>
-            </Link>
-          ) : (
-            <span className="end-step end-next" aria-disabled="true">
-              Next <span className="arrow" aria-hidden="true">›</span>
-            </span>
-          )}
-        </nav>
+            {next ? (
+              <Link go={go} replace className="end-step end-next" to={toChapter(next._id)}>
+                Next <span className="arrow" aria-hidden="true">›</span>
+              </Link>
+            ) : (
+              <a className="end-step end-next" aria-disabled="true" role="link">
+                Next <span className="arrow" aria-hidden="true">›</span>
+              </a>
+            )}
+          </nav>
+        )}
       </div>
     </>
   );
@@ -899,10 +959,10 @@ function Reader({
       style={{ ["--reader-size" as string]: `${size}px` }}
     >
       <div className="progress-track" aria-hidden="true">
-        <div className="progress" style={{ transform: `scaleX(${progress})` }} />
+        <div ref={progressRef} className="progress" style={{ transform: "scaleX(0)" }} />
       </div>
       <TopBar
-        onBack={() => go({ view: "book", bookId })}
+        onBack={() => up({ view: "book", bookId })}
         backLabel="Contents"
         title={showChapterTitle ? chapter.title : data.book.title}
         titleClassName={showChapterTitle ? "" : "wide-only"}
@@ -1055,7 +1115,8 @@ function PagedView({
     const cols = colsRef.current;
     if (!viewport || !cols) return;
     // The columns sit inside the viewport's fade padding; their box is the text width.
-    const width = cols.clientWidth;
+    // Fractional, not clientWidth's rounded integer: a rounded step drifts a little per page.
+    const width = cols.getBoundingClientRect().width;
     // Spread when the stage (not the page, whose width follows this choice) has room for two.
     const stageWidth = viewport.closest(".stage")?.clientWidth ?? width;
     const perView = window.innerWidth >= 1000 && stageWidth >= 960 ? 2 : 1;
@@ -1070,7 +1131,7 @@ function PagedView({
       delete end.dataset.place;
       if (perView === 2) {
         const column = Math.round(end.offsetLeft / (colWidth + gap));
-        if (column % 2 === 0) end.dataset.place = end.offsetTop > 4 ? "right" : "alone";
+        if (column % 2 === 0) end.dataset.place = "right";
       } else if (end.offsetTop <= 4) end.dataset.place = "alone";
     }
     const count = Math.max(1, Math.round((cols.scrollWidth + gap) / (colWidth + gap)));
@@ -1143,6 +1204,10 @@ function PagedView({
     null,
   );
 
+  // Mouse taps wait a moment so a double-click near an edge selects a word instead of turning.
+  const pendingTurn = useRef(0);
+  useEffect(() => () => window.clearTimeout(pendingTurn.current), []);
+
   const onPointerDown = (event: ReactPointerEvent) => {
     if (event.button !== 0) return;
     pointer.current = {
@@ -1188,8 +1253,11 @@ function PagedView({
     const rect = viewportRef.current?.getBoundingClientRect();
     if (!rect) return;
     const rel = (event.clientX - rect.left) / rect.width;
-    if (rel < 0.3) goTo(viewRef.current - 1);
-    else if (rel > 0.7) goTo(viewRef.current + 1);
+    const delta = rel < 0.3 ? -1 : rel > 0.7 ? 1 : 0;
+    if (delta === 0) return;
+    if (event.pointerType !== "mouse") return goTo(viewRef.current + delta);
+    window.clearTimeout(pendingTurn.current);
+    pendingTurn.current = window.setTimeout(() => goTo(viewRef.current + delta), 260);
   };
 
   const onPointerCancel = () => {
@@ -1234,6 +1302,7 @@ function PagedView({
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
+          onDoubleClick={() => window.clearTimeout(pendingTurn.current)}
         >
           <div
             ref={colsRef}
