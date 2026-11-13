@@ -3,6 +3,16 @@ import { Fragment, type ReactNode } from "react";
 // Chapter text is plain prose: blank lines split paragraphs, a line of
 // "***" (or "* * *") is a scene break, *text* is italic, **text** is bold.
 
+/** Straight quotes and apostrophes to typographic ones. An opening quote follows the start of
+ * a line, whitespace, an opening bracket, a dash or an emphasis marker; everything else closes. */
+function smartQuotes(text: string) {
+  return text
+    .replace(/(^|[\s([{\u2014\u2013*_-])"/g, "$1\u201C")
+    .replace(/"/g, "\u201D")
+    .replace(/(^|[\s([{\u2014\u2013*_-])'/g, "$1\u2018")
+    .replace(/'/g, "\u2019");
+}
+
 function inline(text: string): ReactNode[] {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((part, index) => {
@@ -35,7 +45,7 @@ export function Prose({ body }: { body: string }) {
             {block.split("\n").map((line, lineIndex) => (
               <Fragment key={lineIndex}>
                 {lineIndex > 0 && <br />}
-                {inline(line)}
+                {inline(smartQuotes(line))}
               </Fragment>
             ))}
           </p>

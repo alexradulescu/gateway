@@ -2,10 +2,13 @@ import { useMutation, useQuery } from "convex/react";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -48,17 +51,35 @@ function routeToUrl(route: Route) {
   return query ? `${BASE}?${query}` : BASE;
 }
 
+/** Scroll back to `y` once the (live-loading) page is tall enough, giving up after ~1.5s. */
+function restoreScroll(y: number) {
+  let tries = 0;
+  const tick = () => {
+    window.scrollTo(0, y);
+    if (Math.abs(window.scrollY - y) > 2 && tries++ < 90) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
 function useRouter() {
   const [route, setRoute] = useState<Route>(parseRoute);
   useEffect(() => {
-    const onPop = () => setRoute(parseRoute());
+    if ("scrollRestoration" in window.history) window.history.scrollRestoration = "manual";
+    const onPop = (event: PopStateEvent) => {
+      setRoute(parseRoute());
+      restoreScroll((event.state as { scroll?: number } | null)?.scroll ?? 0);
+    };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
   const go = useCallback((next: Route, replace = false) => {
     const url = routeToUrl(next);
-    if (replace) window.history.replaceState(null, "", url);
-    else window.history.pushState(null, "", url);
+    if (replace) window.history.replaceState({ scroll: 0 }, "", url);
+    else {
+      // Remember where we were so Back lands on the same spot.
+      window.history.replaceState({ scroll: window.scrollY }, "");
+      window.history.pushState({ scroll: 0 }, "", url);
+    }
     setRoute(next);
     window.scrollTo({ top: 0 });
   }, []);
@@ -84,6 +105,53 @@ function useStored<T>(key: string, initial: T) {
   return [value, setValue] as const;
 }
 
+function useScrolled(threshold = 4) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
+}
+
+/* ── Reading history ── */
+
+type ReadEntry = { chapterId: ChapterId; at: number };
+/** Older builds stored a bare chapter id per book; read those as "long ago". */
+type LastRead = Record<string, ReadEntry | string>;
+
+function entryOf(value: ReadEntry | string | undefined): ReadEntry | undefined {
+  if (!value) return undefined;
+  if (typeof value === "string") return { chapterId: value as ChapterId, at: 0 };
+  return value;
+}
+
+const POS_KEY = "library:pos";
+
+function readPos(chapterId: string): number {
+  try {
+    const map = JSON.parse(localStorage.getItem(POS_KEY) ?? "{}") as Record<string, number>;
+    return typeof map[chapterId] === "number" ? map[chapterId] : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writePos(chapterId: string, fraction: number) {
+  try {
+    const map = JSON.parse(localStorage.getItem(POS_KEY) ?? "{}") as Record<string, number>;
+    map[chapterId] = Math.round(Math.min(1, Math.max(0, fraction)) * 10000) / 10000;
+    localStorage.setItem(POS_KEY, JSON.stringify(map));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Set when paging backwards into the previous chapter so it opens on its last page. */
+let openAtEnd: string | null = null;
+
 const HOUSES: Record<House, { label: string }> = {
   slytherin: { label: "Slytherin" },
   gryffindor: { label: "Gryffindor" },
@@ -96,12 +164,14 @@ function readingTime(words: number) {
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
+const isBookend = (title: string) => /^(prologue|epilogue)\b/i.test(title.trim());
+
 /* ───────────────────────── App ───────────────────────── */
 
 export function App() {
   const { route, go } = useRouter();
   const [scribe, setScribe] = useStored("library:scribe", false);
-  const [lastRead, setLastRead] = useStored<Record<string, string>>("library:lastRead", {});
+  const [lastRead, setLastRead] = useStored<LastRead>("library:lastRead", {});
 
   return (
     <>
@@ -119,7 +189,9 @@ export function App() {
             chapterId={route.chapterId}
             go={go}
             scribe={scribe}
-            onRead={(chapterId) => setLastRead((prev) => ({ ...prev, [route.bookId]: chapterId }))}
+            onRead={(chapterId) =>
+              setLastRead((prev) => ({ ...prev, [route.bookId]: { chapterId, at: Date.now() } }))
+            }
           />
         )}
         {route.view === "editBook" && <BookEditor bookId={route.bookId} go={go} />}
@@ -132,6 +204,49 @@ export function App() {
 }
 
 type Go = (route: Route, replace?: boolean) => void;
+
+/** Real anchor (so long-press, new tab and status-bar previews work) with client-side routing. */
+function Link({
+  to,
+  go,
+  replace,
+  className,
+  children,
+  onNavigate,
+  ...rest
+}: {
+  to: Route;
+  go: Go;
+  replace?: boolean;
+  className?: string;
+  children: ReactNode;
+  onNavigate?: () => void;
+  "aria-label"?: string;
+}) {
+  return (
+    <a
+      href={routeToUrl(to)}
+      className={className}
+      onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        event.preventDefault();
+        onNavigate?.();
+        go(to, replace);
+      }}
+      {...rest}
+    >
+      {children}
+    </a>
+  );
+}
 
 /* ───────────────────────── Ambience ───────────────────────── */
 
@@ -166,10 +281,10 @@ function Sky() {
   );
 }
 
-/** Thin double-line frame with scooped corners and a chevron notch, top and bottom. */
+/** Thin double-line frame with scooped corners and a diamond notch, top and bottom. */
 function Frame({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`frame ${className}`}>
+    <div className={`frame framed ${className}`}>
       <span className="notch notch-top" aria-hidden="true" />
       <span className="notch notch-bottom" aria-hidden="true" />
       {children}
@@ -244,25 +359,127 @@ function TopBar({
   onBack,
   backLabel,
   title,
+  titleClassName = "",
   actions,
 }: {
   onBack?: () => void;
   backLabel?: string;
   title?: string;
+  titleClassName?: string;
   actions?: ReactNode;
 }) {
+  const scrolled = useScrolled();
   return (
-    <header className="topbar">
-      {onBack ? (
-        <button className="back" onClick={onBack}>
-          <span aria-hidden="true">‹</span> {backLabel ?? "Back"}
-        </button>
-      ) : (
-        <span />
-      )}
-      {title && <span className="topbar-title">{title}</span>}
+    <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
+      <div className="topbar-start">
+        {onBack && (
+          <button className="back" onClick={onBack}>
+            <span aria-hidden="true">‹</span> {backLabel ?? "Back"}
+          </button>
+        )}
+      </div>
+      <span className={`topbar-title ${titleClassName}`} aria-live="polite">
+        {title}
+      </span>
       <div className="topbar-actions">{actions}</div>
     </header>
+  );
+}
+
+/** Bottom drawer on phones, centred modal from 720px. Traps focus; Esc / backdrop close. */
+function Sheet({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    const focusables = () =>
+      Array.from(
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+    focusables()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      } else if (event.key === "Tab") {
+        const items = focusables();
+        if (items.length === 0) return;
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
+  }, [onClose]);
+
+  return (
+    <div className="sheet-root">
+      <div className="sheet-backdrop" onClick={onClose} />
+      <div
+        ref={panelRef}
+        className="sheet framed"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sheet-title"
+      >
+        <div className="sheet-head">
+          <h2 id="sheet-title">{title}</h2>
+          <button className="link" onClick={onClose}>
+            Done
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Choice<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="sheet-row">
+      <span className="sheet-label">{label}</span>
+      <div className="seg" role="group" aria-label={label}>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            className={value === option.value ? "active" : ""}
+            aria-pressed={value === option.value}
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -277,7 +494,7 @@ function Shelves({
   go: Go;
   scribe: boolean;
   setScribe: (value: boolean) => void;
-  lastRead: Record<string, string>;
+  lastRead: LastRead;
 }) {
   const books = useQuery(api.library.listBooks);
   const seed = useMutation(api.library.seedLibrary);
@@ -291,7 +508,10 @@ function Shelves({
   }, [books, seed]);
 
   const visible = books?.filter((book) => scribe || book.chapterCount > 0) ?? [];
-  const continueBook = books?.find((book) => lastRead[book._id]);
+  const recent = (books ?? [])
+    .map((book) => ({ book, entry: entryOf(lastRead[book._id]) }))
+    .filter((item): item is { book: (typeof visible)[number]; entry: ReadEntry } => !!item.entry)
+    .sort((a, b) => b.entry.at - a.entry.at)[0];
 
   return (
     <main className="shelves">
@@ -313,26 +533,21 @@ function Shelves({
           The Restricted <span>Section</span>
         </h1>
         <Ornament />
-        <p className="lede">Tales the Ministry would rather you didn't read.</p>
+        <p className="lede">Tales the Ministry would rather you didn’t read.</p>
       </Frame>
 
-      {continueBook && (
-        <button
-          className="continue glass"
-          onClick={() =>
-            go({
-              view: "read",
-              bookId: continueBook._id,
-              chapterId: lastRead[continueBook._id] as ChapterId,
-            })
-          }
+      {recent && (
+        <Link
+          go={go}
+          className="continue glass framed"
+          to={{ view: "read", bookId: recent.book._id, chapterId: recent.entry.chapterId }}
         >
           <span className="continue-label">Continue reading</span>
-          <span className="continue-title">{continueBook.title}</span>
+          <span className="continue-title">{recent.book.title}</span>
           <span className="continue-arrow" aria-hidden="true">
             ›
           </span>
-        </button>
+        </Link>
       )}
 
       {books === undefined ? (
@@ -340,17 +555,13 @@ function Shelves({
       ) : (
         <div className="shelf">
           {visible.map((book) => (
-            <button
-              key={book._id}
-              className="tome"
-              onClick={() => go({ view: "book", bookId: book._id })}
-            >
+            <Link key={book._id} go={go} className="tome" to={{ view: "book", bookId: book._id }}>
               <Cover book={book} />
               <span className="tome-meta">
                 {book.chapterCount} {book.chapterCount === 1 ? "chapter" : "chapters"}
                 {scribe && book.draftCount > 0 && ` · ${book.draftCount} draft`}
               </span>
-            </button>
+            </Link>
           ))}
           {scribe && (
             <button className="tome tome-new" onClick={() => go({ view: "editBook" })}>
@@ -378,11 +589,13 @@ function Cover({
 }) {
   return (
     <span className={`cover house-${book.house} ${large ? "cover-large" : ""}`}>
-      <span className="cover-frame">
-        {book.series && <span className="cover-series">{book.series}</span>}
-        <Crest house={book.house} />
-        <span className="cover-title">{book.title}</span>
-        {book.subtitle && <span className="cover-subtitle">{book.subtitle}</span>}
+      <span className="cover-frame framed">
+        <span className="cover-series">{book.series}</span>
+        <span className="cover-body">
+          <Crest house={book.house} />
+          <span className="cover-title">{book.title}</span>
+          {book.subtitle && <span className="cover-subtitle">{book.subtitle}</span>}
+        </span>
       </span>
     </span>
   );
@@ -399,7 +612,7 @@ function BookPage({
   bookId: BookId;
   go: Go;
   scribe: boolean;
-  lastRead: Record<string, string>;
+  lastRead: LastRead;
 }) {
   const data = useQuery(api.library.getBook, { bookId });
   const move = useMutation(api.library.moveChapter);
@@ -410,7 +623,8 @@ function BookPage({
   const { book, chapters } = data;
   const readable = chapters.filter((chapter) => scribe || chapter.published);
   const words = readable.reduce((sum, chapter) => sum + chapter.wordCount, 0);
-  const resume = lastRead[bookId] && readable.find((chapter) => chapter._id === lastRead[bookId]);
+  const current = entryOf(lastRead[bookId])?.chapterId;
+  const resume = current && readable.find((chapter) => chapter._id === current);
   const start = resume || readable[0];
 
   return (
@@ -438,19 +652,20 @@ function BookPage({
             {words.toLocaleString()} words · {readingTime(words)}
           </p>
           {start && (
-            <button
+            <Link
+              go={go}
               className="btn btn-primary"
-              onClick={() => go({ view: "read", bookId, chapterId: start._id })}
+              to={{ view: "read", bookId, chapterId: start._id }}
             >
               {resume ? "Continue reading" : "Begin reading"}
-            </button>
+            </Link>
           )}
         </div>
       </section>
 
       {book.blurb && <p className="blurb">{book.blurb}</p>}
 
-      <section className="contents glass">
+      <section className="contents glass framed">
         <div className="contents-head">
           <h2>Contents</h2>
           {scribe && (
@@ -464,10 +679,11 @@ function BookPage({
         ) : (
           <ol>
             {readable.map((chapter, index) => (
-              <li key={chapter._id} className={lastRead[bookId] === chapter._id ? "current" : ""}>
-                <button
+              <li key={chapter._id} className={current === chapter._id ? "current" : ""}>
+                <Link
+                  go={go}
                   className="chapter-row"
-                  onClick={() => go({ view: "read", bookId, chapterId: chapter._id })}
+                  to={{ view: "read", bookId, chapterId: chapter._id }}
                 >
                   <span className="chapter-num">{toRoman(index + 1)}</span>
                   <span className="chapter-title">
@@ -475,7 +691,7 @@ function BookPage({
                     {!chapter.published && <span className="badge">Draft</span>}
                   </span>
                   <span className="chapter-time">{readingTime(chapter.wordCount)}</span>
-                </button>
+                </Link>
                 {scribe && (
                   <span className="row-tools">
                     <button
@@ -532,6 +748,9 @@ function toRoman(value: number) {
 /* ───────────────────────── Reader ───────────────────────── */
 
 type Paper = "parchment" | "night";
+type Align = "justify" | "left";
+type Mode = "pages" | "scroll";
+type PageState = { page: number; count: number; perView: number };
 
 function Reader({
   bookId,
@@ -550,23 +769,28 @@ function Reader({
   const chapter = useQuery(api.library.getChapter, { chapterId });
   const [size, setSize] = useStored("library:size", 19);
   const [paper, setPaper] = useStored<Paper>("library:paper", "parchment");
-  const [showSettings, setShowSettings] = useState(false);
+  const [align, setAlign] = useStored<Align>("library:align", "justify");
+  const [mode, setMode] = useStored<Mode>("library:mode", "pages");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [progress, setProgress] = useState(0);
+  const [pages, setPages] = useState<PageState | null>(null);
+  const [headingVisible, setHeadingVisible] = useState(true);
 
   useEffect(() => {
     if (chapter) onRead(chapter._id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapter?._id]);
 
+  const onPageState = useCallback((state: PageState) => {
+    setPages(state);
+    setProgress(Math.min(1, (state.page + state.perView) / state.count));
+    setHeadingVisible(state.page === 0);
+  }, []);
+
   useEffect(() => {
-    const onScroll = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 1);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [chapter?._id]);
+    if (mode === "scroll") setPages(null);
+  }, [mode]);
 
   if (data === undefined || chapter === undefined) return <Loading />;
   if (data === null || chapter === null) return <Missing go={go} />;
@@ -575,14 +799,54 @@ function Reader({
   const index = list.findIndex((item) => item._id === chapterId);
   const prev = list[index - 1];
   const next = list[index + 1];
+  const toChapter = (id: ChapterId): Route => ({ view: "read", bookId, chapterId: id });
+  const number = list.slice(0, index + 1).filter((item) => !isBookend(item.title)).length;
+  const bookend = isBookend(chapter.title);
+
+  const content = (
+    <>
+      <header className="chapter-head">
+        {!bookend && <p className="chapter-kicker">Chapter {toRoman(number)}</p>}
+        <h1 className="chapter-heading">{chapter.title}</h1>
+        {!chapter.published && <p className="draft-note">Draft — only visible in scribe mode</p>}
+        <Ornament />
+      </header>
+      <div className="prose">
+        <Prose body={chapter.body} />
+      </div>
+      <div className="chapter-end">
+        <Ornament />
+        {next ? (
+          <>
+            <p className="end-label">
+              End of {bookend ? chapter.title : `chapter ${toRoman(number)}`}
+            </p>
+            <Link go={go} replace className="btn btn-primary" to={toChapter(next._id)}>
+              Next: {next.title}
+            </Link>
+          </>
+        ) : (
+          <p className="fin">Mischief managed — for now.</p>
+        )}
+      </div>
+    </>
+  );
+
+  const showChapterTitle = !headingVisible;
 
   return (
-    <main className={`reader paper-${paper}`} style={{ ["--reader-size" as string]: `${size}px` }}>
-      <div className="progress" style={{ transform: `scaleX(${progress})` }} />
+    <main
+      className={`reader paper-${paper} mode-${mode} align-${align}`}
+      style={{ ["--reader-size" as string]: `${size}px` }}
+    >
+      <div className="progress-track" aria-hidden="true">
+        <div className="progress" style={{ transform: `scaleX(${progress})` }} />
+      </div>
       <TopBar
         onBack={() => go({ view: "book", bookId })}
         backLabel="Contents"
-        title={data.book.title}
+        title={showChapterTitle ? chapter.title : data.book.title}
+        titleClassName={showChapterTitle ? "" : "wide-only"}
         actions={
           <>
             {scribe && (
@@ -594,75 +858,387 @@ function Reader({
               </button>
             )}
             <button
-              className="icon-btn"
+              className="icon-btn aa"
               aria-label="Reading settings"
-              aria-expanded={showSettings}
-              onClick={() => setShowSettings(!showSettings)}
+              aria-haspopup="dialog"
+              aria-expanded={settingsOpen}
+              onClick={() => setSettingsOpen(true)}
             >
               Aa
             </button>
           </>
         }
       />
-      {showSettings && (
-        <div className="settings glass" role="dialog" aria-label="Reading settings">
-          <div className="seg">
-            <button aria-label="Smaller text" onClick={() => setSize(Math.max(15, size - 1))}>
-              A−
-            </button>
-            <span>{size}</span>
-            <button aria-label="Larger text" onClick={() => setSize(Math.min(26, size + 1))}>
-              A+
-            </button>
-          </div>
-          <div className="seg">
-            <button
-              className={paper === "parchment" ? "active" : ""}
-              onClick={() => setPaper("parchment")}
-            >
-              Parchment
-            </button>
-            <button className={paper === "night" ? "active" : ""} onClick={() => setPaper("night")}>
-              Lumos
-            </button>
-          </div>
-        </div>
+
+      {mode === "pages" ? (
+        <PagedView
+          key={chapterId}
+          chapterId={chapterId}
+          layoutKey={`${size}|${align}|${paper}`}
+          active={!settingsOpen}
+          onState={onPageState}
+          onBeforeFirst={
+            prev
+              ? () => {
+                  openAtEnd = prev._id;
+                  go(toChapter(prev._id), true);
+                }
+              : undefined
+          }
+          onAfterLast={next ? () => go(toChapter(next._id), true) : undefined}
+        >
+          {content}
+        </PagedView>
+      ) : (
+        <ScrollView
+          key={chapterId}
+          chapterId={chapterId}
+          onProgress={setProgress}
+          onHeading={setHeadingVisible}
+        >
+          {content}
+        </ScrollView>
       )}
 
-      <article className="page">
-        <p className="chapter-kicker">Chapter {toRoman(index + 1)}</p>
-        <h1 className="chapter-heading">{chapter.title}</h1>
-        {!chapter.published && <p className="draft-note">Draft — only visible in scribe mode</p>}
-        <Ornament />
-        <div className="prose">
-          <Prose body={chapter.body} />
+      <nav className="chapter-nav" aria-label="Chapters">
+        <div className="chapter-nav-inner">
+          {prev ? (
+            <Link go={go} replace className="nav-step" to={toChapter(prev._id)}>
+              <span aria-hidden="true">‹</span> Previous
+            </Link>
+          ) : (
+            <span className="nav-step" aria-disabled="true">
+              <span aria-hidden="true">‹</span> Previous
+            </span>
+          )}
+          <span className="nav-pos">
+            <span>
+              {toRoman(index + 1)} / {toRoman(list.length)}
+            </span>
+            {pages && (
+              <span className="nav-page">
+                {pages.page + 1}
+                {pages.perView === 2 && pages.page + 2 <= pages.count && `–${pages.page + 2}`} /{" "}
+                {pages.count}
+              </span>
+            )}
+          </span>
+          {next ? (
+            <Link go={go} replace className="nav-step nav-next" to={toChapter(next._id)}>
+              Next <span aria-hidden="true">›</span>
+            </Link>
+          ) : (
+            <span className="nav-step nav-next" aria-disabled="true">
+              Next <span aria-hidden="true">›</span>
+            </span>
+          )}
         </div>
-        <Ornament />
-      </article>
-
-      <nav className="pager">
-        {prev ? (
-          <button
-            className="btn"
-            onClick={() => go({ view: "read", bookId, chapterId: prev._id }, true)}
-          >
-            ‹ {prev.title}
-          </button>
-        ) : (
-          <span />
-        )}
-        {next ? (
-          <button
-            className="btn btn-primary"
-            onClick={() => go({ view: "read", bookId, chapterId: next._id }, true)}
-          >
-            {next.title} ›
-          </button>
-        ) : (
-          <p className="fin">Mischief managed — for now.</p>
-        )}
       </nav>
+
+      {settingsOpen && (
+        <Sheet title="Reading" onClose={closeSettings}>
+          <div className="sheet-row">
+            <span className="sheet-label">Text size</span>
+            <div className="seg" role="group" aria-label="Text size">
+              <button aria-label="Smaller text" onClick={() => setSize(Math.max(15, size - 1))}>
+                A−
+              </button>
+              <span className="seg-value" aria-live="polite">
+                {size}
+              </span>
+              <button aria-label="Larger text" onClick={() => setSize(Math.min(26, size + 1))}>
+                A+
+              </button>
+            </div>
+          </div>
+          <Choice
+            label="Paper"
+            value={paper}
+            onChange={setPaper}
+            options={[
+              { value: "parchment", label: "Parchment" },
+              { value: "night", label: "Nox" },
+            ]}
+          />
+          <Choice
+            label="Alignment"
+            value={align}
+            onChange={setAlign}
+            options={[
+              { value: "justify", label: "Justified" },
+              { value: "left", label: "Left" },
+            ]}
+          />
+          <Choice
+            label="Layout"
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "pages", label: "Pages" },
+              { value: "scroll", label: "Scroll" },
+            ]}
+          />
+        </Sheet>
+      )}
     </main>
+  );
+}
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Paginates one chapter body with CSS multi-column inside a fixed-height viewport and moves
+ * one page (or a two-page spread) at a time. Position is kept as a fraction of the chapter so
+ * resizes, rotation and font changes land on the same passage.
+ */
+function PagedView({
+  chapterId,
+  layoutKey,
+  active,
+  onState,
+  onBeforeFirst,
+  onAfterLast,
+  children,
+}: {
+  chapterId: string;
+  layoutKey: string;
+  active: boolean;
+  onState: (state: PageState) => void;
+  onBeforeFirst?: () => void;
+  onAfterLast?: () => void;
+  children: ReactNode;
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const colsRef = useRef<HTMLDivElement>(null);
+  const [geom, setGeom] = useState({ step: 0, count: 1, perView: 1, gap: 48 });
+  const [view, setView] = useState(0);
+  const [drag, setDrag] = useState<number | null>(null);
+  // Layout-driven jumps (open, resize, font change) snap; only reader-driven turns animate.
+  const [instant, setInstant] = useState(true);
+  const fraction = useRef(openAtEnd === chapterId ? 1 : readPos(chapterId));
+  const geomRef = useRef(geom);
+  const viewRef = useRef(view);
+  geomRef.current = geom;
+  viewRef.current = view;
+
+  const measure = useCallback(() => {
+    const viewport = viewportRef.current;
+    const cols = colsRef.current;
+    if (!viewport || !cols) return;
+    const width = viewport.clientWidth;
+    // Spread when the stage (not the page, whose width follows this choice) has room for two.
+    const stageWidth = viewport.closest(".stage")?.clientWidth ?? width;
+    const perView = window.innerWidth >= 1000 && stageWidth >= 960 ? 2 : 1;
+    const gap = perView === 2 ? 80 : 48;
+    cols.style.columnCount = String(perView);
+    cols.style.columnGap = `${gap}px`;
+    const colWidth = (width - (perView - 1) * gap) / perView;
+    const count = Math.max(1, Math.round((cols.scrollWidth + gap) / (colWidth + gap)));
+    const views = Math.ceil(count / perView);
+    const target = Math.min(
+      views - 1,
+      Math.max(0, Math.floor((fraction.current * count) / perView + 1e-6)),
+    );
+    setGeom({ step: width + gap, count, perView, gap });
+    setView(target);
+    setInstant(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => setInstant(false)));
+  }, []);
+
+  useLayoutEffect(() => {
+    measure();
+  }, [measure, layoutKey]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(viewport);
+    void document.fonts?.ready.then(() => measure());
+    if (openAtEnd === chapterId) openAtEnd = null;
+    return () => observer.disconnect();
+  }, [measure, chapterId]);
+
+  useEffect(() => {
+    onState({ page: view * geom.perView, count: geom.count, perView: geom.perView });
+  }, [view, geom, onState]);
+
+  const goTo = useCallback(
+    (target: number) => {
+      const { count, perView } = geomRef.current;
+      const views = Math.ceil(count / perView);
+      if (target < 0) return onBeforeFirst?.();
+      if (target >= views) return onAfterLast?.();
+      fraction.current = (target * perView) / count;
+      writePos(chapterId, fraction.current);
+      setView(target);
+    },
+    [chapterId, onAfterLast, onBeforeFirst],
+  );
+
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("input, textarea, select, [contenteditable]")) return;
+      const onControl = !!target?.closest("button, a");
+      const forward =
+        event.key === "ArrowRight" ||
+        event.key === "PageDown" ||
+        (event.key === " " && !event.shiftKey && !onControl);
+      const back =
+        event.key === "ArrowLeft" ||
+        event.key === "PageUp" ||
+        (event.key === " " && event.shiftKey && !onControl);
+      if (!forward && !back) return;
+      event.preventDefault();
+      goTo(viewRef.current + (forward ? 1 : -1));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active, goTo]);
+
+  const pointer = useRef<{ id: number; x: number; y: number; t: number; dragging: boolean } | null>(
+    null,
+  );
+
+  const onPointerDown = (event: ReactPointerEvent) => {
+    if (event.button !== 0) return;
+    pointer.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      t: performance.now(),
+      dragging: false,
+    };
+  };
+
+  const onPointerMove = (event: ReactPointerEvent) => {
+    const start = pointer.current;
+    if (!start || start.id !== event.pointerId || event.pointerType === "mouse") return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (!start.dragging) {
+      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+      start.dragging = true;
+      viewportRef.current?.setPointerCapture(event.pointerId);
+    }
+    const views = Math.ceil(geomRef.current.count / geomRef.current.perView);
+    const atEdge = (viewRef.current === 0 && dx > 0) || (viewRef.current === views - 1 && dx < 0);
+    setDrag(atEdge ? dx / 3 : dx);
+  };
+
+  const onPointerUp = (event: ReactPointerEvent) => {
+    const start = pointer.current;
+    pointer.current = null;
+    if (!start || start.id !== event.pointerId) return;
+    const dx = event.clientX - start.x;
+    if (start.dragging) {
+      setDrag(null);
+      const velocity = Math.abs(dx) / Math.max(1, performance.now() - start.t);
+      const far = Math.abs(dx) > geomRef.current.step * 0.18;
+      if (far || (velocity > 0.35 && Math.abs(dx) > 24)) goTo(viewRef.current + (dx < 0 ? 1 : -1));
+      return;
+    }
+    // A tap: edges turn the page, the middle is left alone for reading and selecting.
+    if (Math.abs(dx) > 8 || Math.abs(event.clientY - start.y) > 8) return;
+    if ((event.target as Element).closest("a, button")) return;
+    if (window.getSelection()?.isCollapsed === false) return;
+    const rect = viewportRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const rel = (event.clientX - rect.left) / rect.width;
+    if (rel < 0.3) goTo(viewRef.current - 1);
+    else if (rel > 0.7) goTo(viewRef.current + 1);
+  };
+
+  const onPointerCancel = () => {
+    pointer.current = null;
+    setDrag(null);
+  };
+
+  const offset = -view * geom.step + (drag ?? 0);
+  const animate = !instant && drag === null && !prefersReducedMotion();
+
+  return (
+    <div className="stage">
+      <article className={`page framed ${geom.perView === 2 ? "spread" : ""}`}>
+        <div
+          ref={viewportRef}
+          className="page-viewport"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+        >
+          <div
+            ref={colsRef}
+            className={`page-columns ${animate ? "animate" : ""}`}
+            style={{ transform: `translate3d(${offset}px, 0, 0)` }}
+          >
+            {children}
+          </div>
+        </div>
+        {geom.perView === 2 && <span className="gutter" aria-hidden="true" />}
+      </article>
+    </div>
+  );
+}
+
+function ScrollView({
+  chapterId,
+  onProgress,
+  onHeading,
+  children,
+}: {
+  chapterId: string;
+  onProgress: (value: number) => void;
+  onHeading: (visible: boolean) => void;
+  children: ReactNode;
+}) {
+  const articleRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const start = openAtEnd === chapterId ? 1 : readPos(chapterId);
+    if (openAtEnd === chapterId) openAtEnd = null;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (start > 0 && max > 0) window.scrollTo(0, start * max);
+  }, [chapterId]);
+
+  useEffect(() => {
+    let timer = 0;
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const value = max > 0 ? Math.min(1, window.scrollY / max) : 1;
+      onProgress(value);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => writePos(chapterId, value), 250);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [chapterId, onProgress]);
+
+  useEffect(() => {
+    const heading = articleRef.current?.querySelector(".chapter-heading");
+    if (!heading) return;
+    onHeading(heading.getBoundingClientRect().bottom > 60);
+    const observer = new IntersectionObserver(
+      ([entry]) => onHeading(entry.isIntersecting),
+      { rootMargin: "-60px 0px 0px 0px" },
+    );
+    observer.observe(heading);
+    return () => observer.disconnect();
+  }, [onHeading]);
+
+  return (
+    <article ref={articleRef} className="page framed">
+      {children}
+    </article>
   );
 }
 
@@ -722,7 +1298,7 @@ function BookEditor({ bookId, go }: { bookId?: BookId; go: Go }) {
         backLabel="Cancel"
         title={bookId ? "Edit book" : "New book"}
       />
-      <form onSubmit={submit} className="glass form">
+      <form onSubmit={submit} className="glass framed form">
         <div className="preview">
           <Cover book={form.title ? form : { ...form, title: "Untitled" }} />
         </div>
@@ -892,7 +1468,7 @@ function ChapterEditor({
           </button>
         }
       />
-      <div className="glass form">
+      <div className="glass framed form">
         <Field label="Chapter title">
           <input
             value={title}
@@ -901,7 +1477,7 @@ function ChapterEditor({
           />
         </Field>
         {preview ? (
-          <div className="page preview-page">
+          <div className="page framed preview-page">
             <h1 className="chapter-heading">{title || "Untitled"}</h1>
             <div className="prose">
               <Prose body={body} />
@@ -954,7 +1530,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (
     <label className="field">
       <span className="field-label">{label}</span>
-      {children}
+      <span className="input-frame framed">{children}</span>
       {hint && <span className="field-hint">{hint}</span>}
     </label>
   );
