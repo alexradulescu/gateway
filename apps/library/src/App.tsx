@@ -287,12 +287,12 @@ function usePressEffects() {
       }
       const cover = target?.closest<HTMLElement>("a.tome");
       if (cover) {
-        for (let index = 0; index < 6; index++) {
+        for (let index = 0; index < 4; index++) {
           const mote = document.createElement("span");
           mote.className = "burst-mote";
-          mote.style.left = `${22 + index * 11 + Math.random() * 6}%`;
+          mote.style.left = `${26 + index * 15 + Math.random() * 6}%`;
           mote.style.setProperty("--drift", `${(Math.random() - 0.5) * 24}px`);
-          mote.style.animationDelay = `${index * 40}ms`;
+          mote.style.animationDelay = `${index * 90}ms`;
           mote.addEventListener("animationend", () => mote.remove(), { once: true });
           cover.appendChild(mote);
         }

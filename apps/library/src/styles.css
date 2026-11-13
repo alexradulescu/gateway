@@ -692,7 +692,6 @@ textarea:focus-visible {
   align-items: center;
   gap: 12px;
   text-align: center;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .tome {
@@ -1659,12 +1658,6 @@ textarea:focus-visible {
   initial-value: 0;
 }
 
-@property --draw {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 @property --glint {
   syntax: "<number>";
   inherits: true;
@@ -1733,7 +1726,7 @@ textarea:focus-visible {
   box-shadow: 0 0 8px 2px rgba(240, 205, 140, 0.5);
   pointer-events: none;
   opacity: 0;
-  animation: burst 0.9s ease-out both;
+  animation: burst 1.3s cubic-bezier(0.25, 0.6, 0.3, 1) both;
 }
 
 @keyframes burst {
@@ -1741,12 +1734,12 @@ textarea:focus-visible {
     opacity: 0;
     transform: translate(0, 0);
   }
-  20% {
-    opacity: 0.85;
+  35% {
+    opacity: 0.5;
   }
   100% {
     opacity: 0;
-    transform: translate(var(--drift, 0), -90px);
+    transform: translate(var(--drift, 0), -70px);
   }
 }
 
@@ -1817,11 +1810,75 @@ textarea:focus-visible {
   transition: background-size 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.chapter-num {
-  transition: text-shadow 0.3s ease;
+/* ── Glow-and-settle, shared by every control ──
+   Glow strength = --glow (resting level, transitioned in and out) + --glow-peak (a one-shot
+   swell on top). Hover/focus raises --glow to --glow-rest and plays the swell, so the glow
+   rises to a peak, settles at ~65% and holds; leaving transitions --glow back to 0. */
+
+@property --glow {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
 
-/* Hex outline that draws itself around (hover), on the pills' own ::after. */
+@property --glow-peak {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+:root {
+  --glow-rest: 0.65;
+  --glow-selected: 0.8;
+  --glow-in: 0.38s;
+  --glow-out: 0.5s;
+  --glow-ease: cubic-bezier(0.25, 0.6, 0.3, 1);
+  --glow-color: 240, 205, 140;
+}
+
+.back,
+.link,
+.end-step,
+.icon-btn,
+.btn,
+.quill,
+.house-chip,
+.seg,
+.seg button,
+.chapter-row,
+.tome {
+  --_g: calc(var(--glow) + var(--glow-peak));
+  transition:
+    --glow var(--glow-out) var(--glow-ease),
+    transform 0.15s ease;
+}
+
+/* Text glow */
+.back,
+.link,
+.end-step,
+.icon-btn,
+.btn:not(.btn-primary),
+.quill,
+.house-chip,
+.seg button,
+.chapter-num,
+.cover-title {
+  text-shadow: 0 0 calc(var(--_g, 0) * 11px) rgba(var(--glow-color), calc(var(--_g, 0) * 0.75));
+}
+
+.chapter-num,
+.cover-title {
+  --_g: calc(var(--glow) + var(--glow-peak));
+}
+
+.cover-title {
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 0 calc(var(--_g) * 12px) color-mix(in srgb, var(--trim) calc(var(--_g) * 45%), transparent);
+}
+
+/* Border glow: hex outlines (pills, segmented controls, plain and gold buttons). */
 .quill::after,
 .house-chip::after,
 .seg::after {
@@ -1831,73 +1888,59 @@ textarea:focus-visible {
   z-index: -1;
   pointer-events: none;
   --hex-line: var(--amber-bright);
-  -webkit-mask: conic-gradient(from -90deg, #000 var(--draw), transparent 0);
-  mask: conic-gradient(from -90deg, #000 var(--draw), transparent 0);
+  opacity: min(1, calc(var(--_g) * 1.4));
+  filter: drop-shadow(0 0 calc(var(--_g) * 5px) rgba(var(--glow-color), calc(var(--_g) * 0.8)));
 }
 
-.cover::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    110deg,
-    transparent 38%,
-    color-mix(in srgb, var(--trim) 45%, transparent) 50%,
-    transparent 62%
-  );
-  background-size: 300% 100%;
-  background-position: 100% 0;
-  mix-blend-mode: plus-lighter;
-  opacity: 0;
+.btn:not(.btn-primary) {
+  filter: drop-shadow(0 0 calc(var(--_g) * 6px) rgba(var(--glow-color), calc(var(--_g) * 0.35)));
 }
 
-.cover-title {
-  transition: text-shadow 0.35s ease;
+.btn-primary::after {
+  --hex-line: color-mix(in srgb, var(--amber-bright) calc(var(--_g) * 100%), var(--hex-ring));
+  filter: drop-shadow(0 0 calc(var(--_g) * 6px) rgba(var(--glow-color), calc(var(--_g) * 0.7)));
+}
+
+.seg button.active {
+  --glow: var(--glow-selected);
+}
+
+@keyframes glow-swell {
+  0% {
+    --glow-peak: 0;
+  }
+  45% {
+    --glow-peak: 0.35;
+  }
+  100% {
+    --glow-peak: 0;
+  }
 }
 
 @media (hover: hover) {
+  :is(.back, .link, .end-step:is(a), .icon-btn, .btn, .quill, .house-chip, .seg, .seg button, .chapter-row, .tome):hover {
+    --glow: var(--glow-rest);
+    animation: glow-swell var(--glow-in) var(--glow-ease);
+  }
+
+  .seg button.active:hover {
+    --glow: var(--glow-selected);
+  }
+
   .tome:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
 
   .tome:hover .cover::after {
-    animation: sheen 0.38s ease-out both;
-  }
-
-  .tome:hover .cover-title {
-    text-shadow:
-      0 1px 0 rgba(0, 0, 0, 0.5),
-      0 0 12px color-mix(in srgb, var(--trim) 45%, transparent);
+    animation: sheen 1.1s cubic-bezier(0.45, 0, 0.25, 1) both;
   }
 
   .btn-primary:hover::before {
     animation: shimmer 1.6s ease-in-out;
   }
 
-  .btn-primary:hover {
-    --hex-ring: var(--amber-bright);
-  }
-
-  .quill:hover::after,
-  .house-chip:hover::after,
-  .seg:hover::after {
-    animation: draw 0.38s ease-out both;
-  }
-
-  .chapter-row:hover .chapter-num {
-    text-shadow: 0 0 10px rgba(240, 205, 140, 0.7);
-  }
-
   .chapter-row:hover .chapter-title {
     background-size: 100% 1px;
-  }
-
-  .back:hover,
-  .link:hover,
-  .end-step:is(a):hover,
-  .continue:hover .continue-arrow {
-    animation: breathe 0.38s ease-in-out;
   }
 
   .back:hover span {
@@ -1917,6 +1960,34 @@ textarea:focus-visible {
   }
 }
 
+:is(.back, .link, .end-step:is(a), .icon-btn, .btn, .quill, .house-chip, .seg button, .chapter-row, .tome):focus-visible {
+  --glow: var(--glow-rest);
+}
+
+/* Covers: slow, eased lift and a soft sheen. */
+.tome {
+  transition:
+    transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1),
+    --glow var(--glow-out) var(--glow-ease);
+}
+
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    color-mix(in srgb, var(--trim) 22%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+}
+
 .back span {
   display: inline-block;
   transition: transform 0.25s ease;
@@ -1924,11 +1995,17 @@ textarea:focus-visible {
 
 @keyframes sheen {
   0% {
-    opacity: 1;
+    opacity: 0;
     background-position: 100% 0;
   }
-  100% {
+  25% {
     opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
     background-position: 0 0;
   }
 }
@@ -1939,21 +2016,6 @@ textarea:focus-visible {
   }
   to {
     --shine: 130%;
-  }
-}
-
-@keyframes draw {
-  from {
-    --draw: 0deg;
-  }
-  to {
-    --draw: 360deg;
-  }
-}
-
-@keyframes breathe {
-  50% {
-    text-shadow: 0 0 10px rgba(240, 205, 140, 0.65);
   }
 }
 
@@ -2055,16 +2117,22 @@ textarea:focus-visible {
   .house-chip::after,
   .seg::after,
   .press,
-  .back,
-  .link,
-  .end-step {
+  :hover {
     animation: none !important;
   }
 
-  .quill:hover::after,
-  .house-chip:hover::after,
-  .seg:hover::after {
-    --draw: 360deg;
+  .back,
+  .link,
+  .end-step,
+  .icon-btn,
+  .btn,
+  .quill,
+  .house-chip,
+  .seg,
+  .seg button,
+  .chapter-row,
+  .tome {
+    transition: none !important;
   }
 
   .chapter-title,
