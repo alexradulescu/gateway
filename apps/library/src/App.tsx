@@ -13,6 +13,7 @@ import {
 } from "react";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { createPortal } from "react-dom";
 import { Prose } from "./prose";
 
 type BookId = Id<"libraryBooks">;
@@ -117,16 +118,6 @@ function useStored<T>(key: string, initial: T) {
   return [value, setValue] as const;
 }
 
-function useScrolled(threshold = 4) {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > threshold);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [threshold]);
-  return scrolled;
-}
 
 /* ── Reading history ── */
 
@@ -435,33 +426,38 @@ function Missing({ go }: { go: Go }) {
   );
 }
 
+/** Transparent strip of floating hexagon capsules: back on the left, actions on the right,
+ *  and an optional title in the middle. Only the capsules take taps. */
 function TopBar({
   onBack,
   backLabel,
   title,
-  titleClassName = "",
   actions,
 }: {
   onBack?: () => void;
   backLabel?: string;
   title?: string;
-  titleClassName?: string;
   actions?: ReactNode;
 }) {
-  const scrolled = useScrolled();
   return (
-    <header className={`topbar ${scrolled ? "scrolled" : ""}`}>
+    <header className="topbar">
       <div className="topbar-start">
         {onBack && (
-          <button className="back" onClick={onBack}>
-            <span aria-hidden="true">‹</span> {backLabel ?? "Back"}
-          </button>
+          <div className="capsule">
+            <button className="back" onClick={onBack}>
+              <span aria-hidden="true">‹</span> {backLabel ?? "Back"}
+            </button>
+          </div>
         )}
       </div>
-      <span className={`topbar-title ${titleClassName}`} aria-live="polite">
-        {title}
-      </span>
-      <div className="topbar-actions">{actions}</div>
+      <div className="topbar-title-slot" aria-live="polite">
+        {title && (
+          <div className="capsule topbar-title">
+            <span>{title}</span>
+          </div>
+        )}
+      </div>
+      <div className="topbar-actions">{actions && <div className="capsule">{actions}</div>}</div>
     </header>
   );
 }
@@ -505,13 +501,21 @@ function Sheet({
       }
     };
     document.addEventListener("keydown", onKey);
+    // Lock the page behind the sheet so nothing underneath (or Safari's toolbar) moves while
+    // settings change. overflow on the root still allows programmatic scrolling.
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = "hidden";
     return () => {
+      root.style.overflow = previous;
       document.removeEventListener("keydown", onKey);
       opener?.focus();
     };
   }, [onClose]);
 
-  return (
+  // Portalled to <body>: an animated or transformed ancestor would otherwise become the
+  // containing block for position: fixed and carry the sheet along with the page.
+  return createPortal(
     <div className="sheet-root">
       <div className="sheet-backdrop" onClick={onClose} />
       <div
@@ -529,7 +533,8 @@ function Sheet({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -770,6 +775,7 @@ function BookPage({
                   <span className="chapter-num">{toRoman(index + 1)}</span>
                   <span className="chapter-title">
                     {chapter.title}
+                    {current === chapter._id && <span className="reading-mark">· reading</span>}
                     {!chapter.published && <span className="badge">Draft</span>}
                   </span>
                   <span className="chapter-time">{readingTime(chapter.wordCount)}</span>
@@ -838,6 +844,8 @@ function toRoman(value: number) {
 type Paper = "parchment" | "night";
 type Align = "justify" | "left";
 type Mode = "pages" | "scroll";
+type Leading = "compact" | "normal" | "relaxed";
+const LEADING: Record<Leading, number> = { compact: 1.4, normal: 1.55, relaxed: 1.7 };
 type PageState = { page: number; count: number; perView: number };
 
 function Reader({
@@ -869,6 +877,7 @@ function Reader({
   const [paper, setPaper] = useStored<Paper>("library:paper", "parchment");
   const [align, setAlign] = useStored<Align>("library:align", "justify");
   const [mode, setMode] = useStored<Mode>("library:mode", "pages");
+  const [leading, setLeading] = useStored<Leading>("library:leading", "normal");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   // Progress is written straight to the bar so scrolling never re-renders the reader.
@@ -956,7 +965,10 @@ function Reader({
   return (
     <main
       className={`reader paper-${paper} mode-${mode} align-${align}`}
-      style={{ ["--reader-size" as string]: `${size}px` }}
+      style={{
+        ["--reader-size" as string]: `${size}px`,
+        ["--reader-leading" as string]: String(LEADING[leading] ?? LEADING.normal),
+      }}
     >
       <div className="progress-track" aria-hidden="true">
         <div ref={progressRef} className="progress" style={{ transform: "scaleX(0)" }} />
@@ -964,8 +976,9 @@ function Reader({
       <TopBar
         onBack={() => up({ view: "book", bookId })}
         backLabel="Contents"
-        title={showChapterTitle ? chapter.title : data.book.title}
-        titleClassName={showChapterTitle ? "" : "wide-only"}
+        // Pages mode has its own running header; scroll mode shows the title once the
+        // chapter heading has scrolled away.
+        title={mode === "scroll" && showChapterTitle ? chapter.title : undefined}
         actions={
           <>
             {scribe && (
@@ -993,7 +1006,7 @@ function Reader({
         <PagedView
           key={chapterId}
           chapterId={chapterId}
-          layoutKey={`${size}|${align}|${paper}`}
+          layoutKey={`${size}|${align}|${paper}|${leading}`}
           active={!settingsOpen}
           bookTitle={data.book.title}
           chapterTitle={chapter.title}
@@ -1054,6 +1067,16 @@ function Reader({
             options={[
               { value: "justify", label: "Justified" },
               { value: "left", label: "Left" },
+            ]}
+          />
+          <Choice
+            label="Line spacing"
+            value={leading}
+            onChange={setLeading}
+            options={[
+              { value: "compact", label: "Compact" },
+              { value: "normal", label: "Normal" },
+              { value: "relaxed", label: "Relaxed" },
             ]}
           />
           <Choice
@@ -1126,13 +1149,28 @@ function PagedView({
     const colWidth = (width - (perView - 1) * gap) / perView;
     // A chapter that ends on the left page of a spread moves its closing to the right page,
     // so the spread never shows a blank half. Decided with the closing in its natural place.
+    // The closing flows straight after the last paragraph and only moves on when it does not
+    // fit (break-inside: avoid). Columns are found from rendered boxes, which works the same in
+    // every engine, unlike offsetLeft/offsetTop inside multi-column layout.
     const end = cols.querySelector<HTMLElement>(".chapter-end");
+    const lastText = cols.querySelector<HTMLElement>(".prose")?.lastElementChild;
     if (end) {
       delete end.dataset.place;
-      if (perView === 2) {
-        const column = Math.round(end.offsetLeft / (colWidth + gap));
-        if (column % 2 === 0) end.dataset.place = "right";
-      } else if (end.offsetTop <= 4) end.dataset.place = "alone";
+      const origin = cols.getBoundingClientRect().left;
+      const columnOf = (el: Element) => {
+        const rects = el.getClientRects();
+        const rect = rects[rects.length - 1] ?? el.getBoundingClientRect();
+        return Math.round((rect.left - origin) / (colWidth + gap));
+      };
+      const endColumn = columnOf(end);
+      const textColumn = lastText ? columnOf(lastText) : endColumn;
+      if (perView === 2 && textColumn % 2 === 0) {
+        // Text ends on a left page: give the closing the right page so it is never blank.
+        end.dataset.place = "right";
+      } else if (endColumn !== textColumn) {
+        // Didn't fit under the text: centre it on its own page.
+        end.dataset.place = "alone";
+      }
     }
     const count = Math.max(1, Math.round((cols.scrollWidth + gap) / (colWidth + gap)));
     const views = Math.ceil(count / perView);
