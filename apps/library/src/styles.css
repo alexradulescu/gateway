@@ -328,7 +328,10 @@ textarea:focus-visible {
 .house-chip,
 .seg,
 .btn-primary::after,
-.hex-label::after {
+.hex-label::after,
+.quill::after,
+.house-chip::after,
+.seg::after {
   --_d: transparent 50%, var(--hex-line) calc(50% + 0.25px), var(--hex-line) calc(50% + 0.8px),
     transparent calc(50% + 1.15px);
   background:
@@ -477,8 +480,7 @@ textarea:focus-visible {
 }
 
 /* over bright parchment the bar needs more body to keep its labels legible */
-.paper-parchment .topbar::before,
-.paper-parchment.mode-scroll .chapter-nav::before {
+.paper-parchment .topbar::before {
   background: rgba(8, 30, 21, 0.84);
 }
 
@@ -693,7 +695,10 @@ textarea:focus-visible {
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.tome:hover,
+.tome {
+  position: relative;
+}
+
 .tome:focus-visible {
   transform: translateY(-6px);
 }
@@ -1201,25 +1206,191 @@ textarea:focus-visible {
 }
 
 .mode-pages .page {
+  --pad: clamp(24px, 5vw, 56px);
+  --fade: 22px;
   display: flex;
   flex-direction: column;
   width: min(680px, 100%);
   max-width: none;
   margin: 0;
-  padding: 34px clamp(24px, 5vw, 56px) 30px;
+  padding: 40px var(--pad) 38px;
 }
 
 .mode-pages .page.spread {
+  --pad: 56px;
+  --fade: 28px;
   width: min(1280px, 100%);
-  padding-inline: 56px;
 }
 
+/* The viewport reaches into the page margins by --fade, so text sliding out of its column
+   dissolves in the margin instead of hard-clipping at the edge. In a spread the same mask
+   also clears the gutter: words fade before they reach the centre line and never cross it. */
 .page-viewport {
   position: relative;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   touch-action: pan-y pinch-zoom;
+  margin-inline: calc(-1 * var(--fade));
+  padding-inline: var(--fade);
+  --_edge: transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%;
+  -webkit-mask-image: linear-gradient(90deg, var(--_edge));
+  mask-image: linear-gradient(90deg, var(--_edge));
+}
+
+.spread .page-viewport {
+  --_half: 40px;
+  --_edge: transparent 0, #000 var(--fade), #000 calc(50% - var(--_half)),
+    transparent calc(50% - 6px), transparent calc(50% + 6px), #000 calc(50% + var(--_half)),
+    #000 calc(100% - var(--fade)), transparent 100%;
+}
+
+/* Running header and folio live in the page margins, never over the text. */
+.running,
+.folios {
+  position: absolute;
+  left: var(--pad);
+  right: var(--pad);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  column-gap: 80px;
+  pointer-events: none;
+  text-align: center;
+  font-variant-numeric: oldstyle-nums;
+  opacity: 0.55;
+}
+
+.running {
+  top: 15px;
+  font-family: var(--display);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.running span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folios {
+  bottom: 13px;
+  font-family: var(--book);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.folio-of {
+  opacity: 0.7;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Gutter: one hairline in the frame's amber, fading toward top and bottom, with a notch
+   diamond at its centre. */
+.gutter {
+  position: absolute;
+  top: 26px;
+  bottom: 26px;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--frame-line-inner) 18%,
+    var(--frame-line) 50%,
+    var(--frame-line-inner) 82%,
+    transparent
+  );
+  box-shadow:
+    -1px 0 2px rgba(60, 38, 10, 0.06),
+    1px 0 2px rgba(60, 38, 10, 0.06);
+}
+
+.gutter-diamond {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--frame-line);
+  background: #e9d8b0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.paper-night .gutter-diamond {
+  background: #0d2219;
+}
+
+.mode-pages .chapter-end[data-place] {
+  justify-content: center;
+  height: 100%;
+}
+
+.mode-pages .chapter-end[data-place="right"] {
+  break-before: column;
+}
+
+/* Chapter links at the end of the chapter: one quiet line, real 44px targets. */
+.end-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.end-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  opacity: 0.62;
+}
+
+.end-step .arrow {
+  font-size: 17px;
+  line-height: 0;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.end-step[aria-disabled="true"] {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.end-pos {
+  padding: 0 4px;
+  opacity: 0.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.end-pos::before,
+.end-pos::after {
+  content: "·";
+  padding: 0 8px;
+}
+
+.mode-scroll .page {
+  margin-bottom: calc(var(--safe-bottom) + 28px);
 }
 
 .page-columns {
@@ -1230,121 +1401,6 @@ textarea:focus-visible {
 
 .page-columns.animate {
   transition: transform 0.42s cubic-bezier(0.22, 0.8, 0.24, 1);
-}
-
-.mode-pages .chapter-end {
-  break-before: column;
-  justify-content: center;
-  height: 100%;
-}
-
-.gutter {
-  position: absolute;
-  top: 22px;
-  bottom: 22px;
-  left: 50%;
-  width: 40px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(80, 52, 14, 0.07) 40%,
-    rgba(80, 52, 14, 0.16) 50%,
-    rgba(80, 52, 14, 0.07) 60%,
-    transparent
-  );
-}
-
-.paper-night .gutter {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 0, 0, 0.16) 45%,
-    rgba(212, 162, 76, 0.18) 50%,
-    rgba(0, 0, 0, 0.16) 55%,
-    transparent
-  );
-}
-
-/* Chapter navigation */
-
-.chapter-nav {
-  position: relative;
-  z-index: 5;
-  padding: 2px max(8px, calc(50vw - 482px)) calc(var(--safe-bottom) + 2px);
-}
-
-.mode-scroll .chapter-nav {
-  position: sticky;
-  bottom: 0;
-  margin: 28px calc(50% - 50vw) calc(-1 * var(--safe-bottom) - 48px);
-}
-
-.mode-scroll .chapter-nav::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--bar-material);
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(3px) saturate(120%);
-  border-top: 1px solid var(--bar-hairline);
-}
-
-.chapter-nav-inner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.nav-step {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  justify-self: start;
-  min-height: 44px;
-  padding: 0 8px;
-  font-family: var(--display);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--amber);
-}
-
-.nav-step span {
-  font-size: 20px;
-  line-height: 0;
-}
-
-.nav-next {
-  justify-self: end;
-}
-
-.nav-step[aria-disabled="true"] {
-  color: var(--ink-faint);
-  opacity: 0.45;
-  cursor: default;
-}
-
-.nav-pos {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--display);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
-}
-
-.nav-page {
-  font-family: var(--serif);
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  color: var(--ink-faint);
 }
 
 /* Settings sheet */
@@ -1581,6 +1637,326 @@ textarea:focus-visible {
   gap: 12px;
 }
 
+/* ───── Enchantments ─────
+   Hover and press effects. CSS-first, amber only, one effect per element. Hover lives under
+   (hover: hover); presses run as one-shot .press classes set by usePressEffects. */
+
+@property --shine {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -30%;
+}
+
+@property --lumos {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --lumos-a {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --draw {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --glint {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* View changes: content catches like a candle. */
+.app > main:not(.mode-pages),
+.mode-pages .stage {
+  animation: catch 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes catch {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Hero notch diamonds: slow idle twinkle. */
+.hero .notch {
+  animation: notch-twinkle 5.5s ease-in-out infinite;
+}
+
+.hero .notch-bottom {
+  animation-delay: -2.75s;
+}
+
+@keyframes notch-twinkle {
+  0%,
+  70%,
+  100% {
+    border-color: var(--line);
+    box-shadow: none;
+  }
+  82% {
+    border-color: var(--amber-bright);
+    box-shadow: 0 0 8px rgba(240, 205, 140, 0.55);
+  }
+}
+
+/* Drop cap: one faint glint when a chapter opens. */
+.prose {
+  animation: glint 0.4s ease-out 0.25s;
+}
+
+.prose > p:first-child::first-letter {
+  text-shadow: 0 0 calc(var(--glint) * 14px)
+    color-mix(in srgb, var(--amber-bright) calc(var(--glint) * 80%), transparent);
+}
+
+@keyframes glint {
+  50% {
+    --glint: 1;
+  }
+}
+
+/* Cover burst motes (press). */
+.burst-mote {
+  position: absolute;
+  top: 70%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--amber-bright);
+  box-shadow: 0 0 8px 2px rgba(240, 205, 140, 0.5);
+  pointer-events: none;
+  opacity: 0;
+  animation: burst 0.9s ease-out both;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift, 0), -90px);
+  }
+}
+
+/* Gold button: Lumos ring from the tap point (press). */
+.btn-primary::before {
+  background:
+    radial-gradient(
+      circle at var(--px, 50%) var(--py, 50%),
+      transparent calc(var(--lumos) - 14px),
+      rgba(255, 248, 225, calc(var(--lumos-a) * 0.75)) var(--lumos),
+      transparent calc(var(--lumos) + 3px)
+    ),
+    linear-gradient(
+      105deg,
+      transparent calc(var(--shine) - 14%),
+      rgba(255, 246, 220, 0.55) var(--shine),
+      transparent calc(var(--shine) + 14%)
+    ),
+    var(--hex-fill);
+}
+
+.btn-primary.press::before {
+  animation: lumos 0.38s ease-out;
+}
+
+@keyframes lumos {
+  from {
+    --lumos: 0px;
+    --lumos-a: 1;
+  }
+  to {
+    --lumos: 140px;
+    --lumos-a: 0;
+  }
+}
+
+.btn-primary::after {
+  transition: filter 0.3s ease;
+}
+
+/* Hex pills and toggles: ember flash (press). */
+.quill.press,
+.house-chip.press,
+.seg button.press {
+  animation: ember 0.32s ease-out;
+}
+
+@keyframes ember {
+  30% {
+    text-shadow: 0 0 10px rgba(240, 205, 140, 0.9);
+    filter: brightness(1.25);
+  }
+}
+
+/* Contents rows: gentle tint pulse (press). */
+.chapter-row.press {
+  animation: tint 0.36s ease-out;
+}
+
+@keyframes tint {
+  35% {
+    background: rgba(212, 162, 76, 0.12);
+  }
+}
+
+.chapter-title {
+  background: linear-gradient(var(--amber), var(--amber)) left bottom / 0 1px no-repeat;
+  transition: background-size 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chapter-num {
+  transition: text-shadow 0.3s ease;
+}
+
+/* Hex outline that draws itself around (hover), on the pills' own ::after. */
+.quill::after,
+.house-chip::after,
+.seg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  --hex-line: var(--amber-bright);
+  -webkit-mask: conic-gradient(from -90deg, #000 var(--draw), transparent 0);
+  mask: conic-gradient(from -90deg, #000 var(--draw), transparent 0);
+}
+
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 38%,
+    color-mix(in srgb, var(--trim) 45%, transparent) 50%,
+    transparent 62%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  mix-blend-mode: plus-lighter;
+  opacity: 0;
+}
+
+.cover-title {
+  transition: text-shadow 0.35s ease;
+}
+
+@media (hover: hover) {
+  .tome:hover {
+    transform: translateY(-6px);
+  }
+
+  .tome:hover .cover::after {
+    animation: sheen 0.38s ease-out both;
+  }
+
+  .tome:hover .cover-title {
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.5),
+      0 0 12px color-mix(in srgb, var(--trim) 45%, transparent);
+  }
+
+  .btn-primary:hover::before {
+    animation: shimmer 1.6s ease-in-out;
+  }
+
+  .btn-primary:hover {
+    --hex-ring: var(--amber-bright);
+  }
+
+  .quill:hover::after,
+  .house-chip:hover::after,
+  .seg:hover::after {
+    animation: draw 0.38s ease-out both;
+  }
+
+  .chapter-row:hover .chapter-num {
+    text-shadow: 0 0 10px rgba(240, 205, 140, 0.7);
+  }
+
+  .chapter-row:hover .chapter-title {
+    background-size: 100% 1px;
+  }
+
+  .back:hover,
+  .link:hover,
+  .end-step:is(a):hover,
+  .continue:hover .continue-arrow {
+    animation: breathe 0.38s ease-in-out;
+  }
+
+  .back:hover span {
+    transform: translateX(-2px);
+  }
+
+  .end-step:is(a):hover {
+    opacity: 0.9;
+  }
+
+  .end-step:is(a):hover .arrow {
+    transform: translateX(-2px);
+  }
+
+  .end-next:is(a):hover .arrow {
+    transform: translateX(2px);
+  }
+}
+
+.back span {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+@keyframes sheen {
+  0% {
+    opacity: 1;
+    background-position: 100% 0;
+  }
+  100% {
+    opacity: 1;
+    background-position: 0 0;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    --shine: -30%;
+  }
+  to {
+    --shine: 130%;
+  }
+}
+
+@keyframes draw {
+  from {
+    --draw: 0deg;
+  }
+  to {
+    --draw: 360deg;
+  }
+}
+
+@keyframes breathe {
+  50% {
+    text-shadow: 0 0 10px rgba(240, 205, 140, 0.65);
+  }
+}
+
 /* ───── Responsive ───── */
 
 @media (min-width: 720px) {
@@ -1645,11 +2021,12 @@ textarea:focus-visible {
   }
 
   .mode-pages .page {
-    padding: 28px 18px 24px;
+    --pad: 18px;
+    padding-block: 34px 32px;
   }
 
-  .nav-step {
-    letter-spacing: 0.08em;
+  .mode-pages .page {
+    --fade: 14px;
   }
 }
 
@@ -1662,8 +2039,38 @@ textarea:focus-visible {
     animation: none;
   }
 
-  .mote {
+  .mote,
+  .burst-mote {
     display: none;
+  }
+
+  .app > main,
+  .mode-pages .stage,
+  .hero .notch,
+  .prose,
+  .cover::after,
+  .btn-primary::before,
+  .btn-primary:hover::before,
+  .quill::after,
+  .house-chip::after,
+  .seg::after,
+  .press,
+  .back,
+  .link,
+  .end-step {
+    animation: none !important;
+  }
+
+  .quill:hover::after,
+  .house-chip:hover::after,
+  .seg:hover::after {
+    --draw: 360deg;
+  }
+
+  .chapter-title,
+  .back span,
+  .end-step .arrow {
+    transition: none;
   }
 
   .tome,

@@ -172,6 +172,7 @@ export function App() {
   const { route, go } = useRouter();
   const [scribe, setScribe] = useStored("library:scribe", false);
   const [lastRead, setLastRead] = useStored<LastRead>("library:lastRead", {});
+  usePressEffects();
 
   return (
     <>
@@ -249,6 +250,58 @@ function Link({
 }
 
 /* ───────────────────────── Ambience ───────────────────────── */
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const PRESSABLE = ".seg button, .quill, .house-chip, .chapter-row, .btn-primary";
+
+/** Restart a one-shot CSS animation class on an element. */
+function replay(element: HTMLElement, className: string) {
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element.classList.add(className);
+  element.addEventListener("animationend", () => element.classList.remove(className), {
+    once: true,
+  });
+}
+
+/**
+ * Press feedback that CSS alone can't time: :active ends the instant a quick tap lifts, so
+ * press effects run as one-shot classes instead. Covers also release a small burst of motes,
+ * and the gold button lights a "Lumos" ring from the tap point.
+ */
+function usePressEffects() {
+  useEffect(() => {
+    const onDown = (event: PointerEvent) => {
+      if (event.button !== 0 || prefersReducedMotion()) return;
+      const target = event.target instanceof Element ? event.target : null;
+      const pressable = target?.closest<HTMLElement>(PRESSABLE);
+      if (pressable && !pressable.matches(":disabled")) {
+        if (pressable.matches(".btn-primary")) {
+          const rect = pressable.getBoundingClientRect();
+          pressable.style.setProperty("--px", `${event.clientX - rect.left}px`);
+          pressable.style.setProperty("--py", `${event.clientY - rect.top}px`);
+        }
+        replay(pressable, "press");
+      }
+      const cover = target?.closest<HTMLElement>("a.tome");
+      if (cover) {
+        for (let index = 0; index < 6; index++) {
+          const mote = document.createElement("span");
+          mote.className = "burst-mote";
+          mote.style.left = `${22 + index * 11 + Math.random() * 6}%`;
+          mote.style.setProperty("--drift", `${(Math.random() - 0.5) * 24}px`);
+          mote.style.animationDelay = `${index * 40}ms`;
+          mote.addEventListener("animationend", () => mote.remove(), { once: true });
+          cover.appendChild(mote);
+        }
+      }
+    };
+    document.addEventListener("pointerdown", onDown, { passive: true });
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, []);
+}
 
 function Sky() {
   const motes = useMemo(
@@ -774,7 +827,6 @@ function Reader({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [progress, setProgress] = useState(0);
-  const [pages, setPages] = useState<PageState | null>(null);
   const [headingVisible, setHeadingVisible] = useState(true);
 
   useEffect(() => {
@@ -783,14 +835,9 @@ function Reader({
   }, [chapter?._id]);
 
   const onPageState = useCallback((state: PageState) => {
-    setPages(state);
     setProgress(Math.min(1, (state.page + state.perView) / state.count));
     setHeadingVisible(state.page === 0);
   }, []);
-
-  useEffect(() => {
-    if (mode === "scroll") setPages(null);
-  }, [mode]);
 
   if (data === undefined || chapter === undefined) return <Loading />;
   if (data === null || chapter === null) return <Missing go={go} />;
@@ -816,18 +863,30 @@ function Reader({
       </div>
       <div className="chapter-end">
         <Ornament />
-        {next ? (
-          <>
-            <p className="end-label">
-              End of {bookend ? chapter.title : `chapter ${toRoman(number)}`}
-            </p>
-            <Link go={go} replace className="btn btn-primary" to={toChapter(next._id)}>
-              Next: {next.title}
+        <p className="fin">Mischief managed — for now.</p>
+        <nav className="end-nav" aria-label="Chapters">
+          {prev ? (
+            <Link go={go} replace className="end-step" to={toChapter(prev._id)}>
+              <span className="arrow" aria-hidden="true">‹</span> Previous
             </Link>
-          </>
-        ) : (
-          <p className="fin">Mischief managed — for now.</p>
-        )}
+          ) : (
+            <span className="end-step" aria-disabled="true">
+              <span className="arrow" aria-hidden="true">‹</span> Previous
+            </span>
+          )}
+          <span className="end-pos" aria-label={`Chapter ${index + 1} of ${list.length}`}>
+            {toRoman(index + 1)} / {toRoman(list.length)}
+          </span>
+          {next ? (
+            <Link go={go} replace className="end-step end-next" to={toChapter(next._id)}>
+              Next <span className="arrow" aria-hidden="true">›</span>
+            </Link>
+          ) : (
+            <span className="end-step end-next" aria-disabled="true">
+              Next <span className="arrow" aria-hidden="true">›</span>
+            </span>
+          )}
+        </nav>
       </div>
     </>
   );
@@ -876,6 +935,8 @@ function Reader({
           chapterId={chapterId}
           layoutKey={`${size}|${align}|${paper}`}
           active={!settingsOpen}
+          bookTitle={data.book.title}
+          chapterTitle={chapter.title}
           onState={onPageState}
           onBeforeFirst={
             prev
@@ -900,40 +961,6 @@ function Reader({
         </ScrollView>
       )}
 
-      <nav className="chapter-nav" aria-label="Chapters">
-        <div className="chapter-nav-inner">
-          {prev ? (
-            <Link go={go} replace className="nav-step" to={toChapter(prev._id)}>
-              <span aria-hidden="true">‹</span> Previous
-            </Link>
-          ) : (
-            <span className="nav-step" aria-disabled="true">
-              <span aria-hidden="true">‹</span> Previous
-            </span>
-          )}
-          <span className="nav-pos">
-            <span>
-              {toRoman(index + 1)} / {toRoman(list.length)}
-            </span>
-            {pages && (
-              <span className="nav-page">
-                {pages.page + 1}
-                {pages.perView === 2 && pages.page + 2 <= pages.count && `–${pages.page + 2}`} /{" "}
-                {pages.count}
-              </span>
-            )}
-          </span>
-          {next ? (
-            <Link go={go} replace className="nav-step nav-next" to={toChapter(next._id)}>
-              Next <span aria-hidden="true">›</span>
-            </Link>
-          ) : (
-            <span className="nav-step nav-next" aria-disabled="true">
-              Next <span aria-hidden="true">›</span>
-            </span>
-          )}
-        </div>
-      </nav>
 
       {settingsOpen && (
         <Sheet title="Reading" onClose={closeSettings}>
@@ -984,9 +1011,6 @@ function Reader({
   );
 }
 
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
 /**
  * Paginates one chapter body with CSS multi-column inside a fixed-height viewport and moves
  * one page (or a two-page spread) at a time. Position is kept as a fraction of the chapter so
@@ -996,6 +1020,8 @@ function PagedView({
   chapterId,
   layoutKey,
   active,
+  bookTitle,
+  chapterTitle,
   onState,
   onBeforeFirst,
   onAfterLast,
@@ -1004,6 +1030,8 @@ function PagedView({
   chapterId: string;
   layoutKey: string;
   active: boolean;
+  bookTitle: string;
+  chapterTitle: string;
   onState: (state: PageState) => void;
   onBeforeFirst?: () => void;
   onAfterLast?: () => void;
@@ -1026,7 +1054,8 @@ function PagedView({
     const viewport = viewportRef.current;
     const cols = colsRef.current;
     if (!viewport || !cols) return;
-    const width = viewport.clientWidth;
+    // The columns sit inside the viewport's fade padding; their box is the text width.
+    const width = cols.clientWidth;
     // Spread when the stage (not the page, whose width follows this choice) has room for two.
     const stageWidth = viewport.closest(".stage")?.clientWidth ?? width;
     const perView = window.innerWidth >= 1000 && stageWidth >= 960 ? 2 : 1;
@@ -1034,6 +1063,16 @@ function PagedView({
     cols.style.columnCount = String(perView);
     cols.style.columnGap = `${gap}px`;
     const colWidth = (width - (perView - 1) * gap) / perView;
+    // A chapter that ends on the left page of a spread moves its closing to the right page,
+    // so the spread never shows a blank half. Decided with the closing in its natural place.
+    const end = cols.querySelector<HTMLElement>(".chapter-end");
+    if (end) {
+      delete end.dataset.place;
+      if (perView === 2) {
+        const column = Math.round(end.offsetLeft / (colWidth + gap));
+        if (column % 2 === 0) end.dataset.place = end.offsetTop > 4 ? "right" : "alone";
+      } else if (end.offsetTop <= 4) end.dataset.place = "alone";
+    }
     const count = Math.max(1, Math.round((cols.scrollWidth + gap) / (colWidth + gap)));
     const views = Math.ceil(count / perView);
     const target = Math.min(
@@ -1161,9 +1200,33 @@ function PagedView({
   const offset = -view * geom.step + (drag ?? 0);
   const animate = !instant && drag === null && !prefersReducedMotion();
 
+  const lastView = Math.ceil(geom.count / geom.perView) - 1;
+  const first = view * geom.perView;
+  const folio = (page: number) =>
+    page < geom.count ? (
+      <span className="folio">
+        {page + 1}
+        {(geom.perView === 1 || page % 2 === 1) && <span className="folio-of"> / {geom.count}</span>}
+      </span>
+    ) : (
+      <span />
+    );
+
   return (
     <div className="stage">
-      <article className={`page framed ${geom.perView === 2 ? "spread" : ""}`}>
+      <article
+        className={`page framed ${geom.perView === 2 ? "spread" : ""} ${view === lastView ? "last" : ""}`}
+      >
+        <div className="running" aria-hidden="true">
+          {geom.perView === 2 ? (
+            <>
+              <span>{first === 0 ? "" : bookTitle}</span>
+              <span>{chapterTitle}</span>
+            </>
+          ) : (
+            <span>{first === 0 ? "" : chapterTitle}</span>
+          )}
+        </div>
         <div
           ref={viewportRef}
           className="page-viewport"
@@ -1180,7 +1243,16 @@ function PagedView({
             {children}
           </div>
         </div>
-        {geom.perView === 2 && <span className="gutter" aria-hidden="true" />}
+        <div className="folios" aria-live="polite">
+          <span className="visually-hidden">Page </span>
+          {folio(first)}
+          {geom.perView === 2 && folio(first + 1)}
+        </div>
+        {geom.perView === 2 && (
+          <span className="gutter" aria-hidden="true">
+            <span className="gutter-diamond" />
+          </span>
+        )}
       </article>
     </div>
   );
